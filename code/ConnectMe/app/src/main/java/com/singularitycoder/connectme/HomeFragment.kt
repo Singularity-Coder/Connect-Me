@@ -48,6 +48,36 @@ class HomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = homeAdapter
         }
+        homeAdapter.newsList = listOf(
+            News(
+                imageUrl = "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
+                source = "www.google.com",
+                time = "9 hours ago",
+                link = ""
+            ),
+            News(
+                imageUrl = "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
+                source = "www.google.com",
+                time = "9 hours ago",
+                link = ""
+            ),
+            News(
+                imageUrl = "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
+                source = "www.google.com",
+                time = "9 hours ago",
+                link = ""
+            ),
+            News(
+                imageUrl = "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
+                source = "www.google.com",
+                time = "9 hours ago",
+                link = ""
+            ),
+        )
     }
 
     private fun FragmentHomeBinding.setupUserActionListeners() {
