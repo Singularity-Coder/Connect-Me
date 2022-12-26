@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".search.SearchFragment">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewpager_reminders"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layout_constraintBottom_toTopOf="@+id/card_header"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="-4dp"
+        android:background="@drawable/background_black_gradient_fade"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/card_header" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/card_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_top_rounded"
+        android:backgroundTint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout_topics"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/white"
+            android:elevation="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/et_search"
+            app:layout_constraintEnd_toStartOf="@+id/card_add_tab"
+            app:layout_constraintStart_toStartOf="parent"
+            app:tabBackground="@color/white"
+            app:tabGravity="fill"
+            app:tabIndicator="@drawable/bg_tab_indicator_bottom_rounded"
+            app:tabIndicatorColor="@color/purple_500"
+            app:tabIndicatorGravity="top"
+            app:tabIndicatorHeight="4dp"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/purple_500"
+            app:tabTextAppearance="@style/CustomTextAppearanceTab"
+            app:tabTextColor="@android:color/darker_gray" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_add_tab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            app:cardBackgroundColor="@color/purple_50"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tab_layout_topics"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tab_layout_topics">
+
+            <ImageButton
+                android:id="@+id/ib_add_tab"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_round_add_24"
+                app:tint="@color/purple_500" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:dividerColor="@color/black_50"
+            app:layout_constraintBottom_toTopOf="@+id/et_search" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_profile"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            android:src="@color/purple_50"
+            android:theme="@style/CustomRoundedImageView"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/et_search"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/et_search" />
+
+        <EditText
+            android:id="@+id/et_search"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="16dp"
+            android:background="@null"
+            android:elevation="4dp"
+            android:ellipsize="end"
+            android:hint="Search the web"
+            android:imeOptions="actionDone"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:padding="0dp"
+            android:scrollHorizontally="true"
+            android:text=""
+            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_profile" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_follow"
+            style="@style/Widget.App.Button.IconOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:backgroundTint="@color/white"
+            android:text="Follow"
+            android:textAllCaps="false"
+            android:textColor="@color/purple_500"
+            app:layout_constraintBottom_toBottomOf="@+id/et_search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/et_search" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

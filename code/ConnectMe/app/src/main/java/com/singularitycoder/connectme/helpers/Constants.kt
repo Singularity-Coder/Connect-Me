@@ -1,5 +1,8 @@
 package com.singularitycoder.connectme.helpers
 
+import com.singularitycoder.connectme.MainFragment
+import com.singularitycoder.connectme.search.SearchFragment
+
 val dummyImageUrls = listOf(
     "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/167587/pexels-photo-167587.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -22,6 +25,11 @@ object BroadcastKey {
     const val LOCATION_TOGGLE_STATUS = "LOCATION_TOGGLE_STATUS"
 }
 
+object FragmentsTag {
+    val MAIN = MainFragment::class.java.simpleName
+    val SEARCH = SearchFragment::class.java.simpleName
+}
+
 enum class DateType(val value: String) {
     dd_MMM_yyyy(value = "dd MMM yyyy"),
     dd_MMM_yyyy_h_mm_a(value = "dd-MMM-yyyy h:mm a"),
@@ -35,6 +43,8 @@ enum class Tab(val value: String) {
     EXPLORE(value = "Explore"),
     FOLLOWING(value = "Following"),
     FEED(value = "Feed"),
+    REMAINDERS(value = "Remainders"),
+    NOTES(value = "Notes"),
     HISTORY(value = "History"),
     COLLECTIONS(value = "Collections"),
 }

@@ -59,7 +59,7 @@ class FeedFragment : Fragment() {
             ),
             Feed(
                 imageUrl = dummyImageUrls[3],
-                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
+                title = "Two people stranded on an unknwon sea. People call it the scary Hahahah phenomenon.",
                 source = "www.google.com",
                 time = "4 hours ago",
                 link = ""

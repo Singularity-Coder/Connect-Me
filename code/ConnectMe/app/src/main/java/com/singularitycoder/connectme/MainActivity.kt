@@ -17,19 +17,11 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
-import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
 import com.singularitycoder.connectme.databinding.ActivityMainBinding
-import com.singularitycoder.connectme.feed.FeedFragment
-import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
+import com.singularitycoder.connectme.search.SearchTabFragment
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -43,16 +35,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val viewModel: MainViewModel by viewModels()
-
-    private val tabNamesList = listOf(
-        Tab.EXPLORE.value,
-        Tab.FEED.value,
-        Tab.COLLECTIONS.value,
-        Tab.FOLLOWING.value,
-        Tab.HISTORY.value,
-    )
-
-    var lastUpdatedLocation: Location? = null
 
     // FIXME This is not working
     private val locationToggleStatusReceiver = object : BroadcastReceiver() {
@@ -100,31 +82,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val viewPager2PageChangeListener = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageScrollStateChanged(state: Int) {
-            super.onPageScrollStateChanged(state)
-            println("viewpager2: onPageScrollStateChanged")
-        }
-
-        override fun onPageSelected(position: Int) {
-            super.onPageSelected(position)
-            println("viewpager2: onPageSelected")
-        }
-
-        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-            super.onPageScrolled(position, positionOffset, positionOffsetPixels)
-            println("viewpager2: onPageScrolled")
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.setupUI()
-        binding.setUpViewPager()
+        showScreen(
+            fragment = MainFragment.newInstance(""),
+            tag = FragmentsTag.MAIN,
+            isAdd = true,
+            isAddToBackStack = false
+        )
         setLocationToggleListener()
-        observeForData()
     }
 
     override fun onStart() {
@@ -147,33 +115,6 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         unbindService(viewModel)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        binding.viewpagerHome.unregisterOnPageChangeCallback(viewPager2PageChangeListener)
-    }
-
-    private fun ActivityMainBinding.setupUI() {
-        tvAppSubtitle.setOnClickListener {
-            clipboard()?.text = binding.tvAppSubtitle.text
-            binding.root.showSnackBar("Copied location: ${clipboard()?.text}")
-        }
-    }
-
-    private fun ActivityMainBinding.setUpViewPager() {
-        viewpagerHome.apply {
-            adapter = HomeViewPagerAdapter(fragmentManager = supportFragmentManager, lifecycle = lifecycle)
-            registerOnPageChangeCallback(viewPager2PageChangeListener)
-        }
-        tabLayoutHome.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) = Unit
-            override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
-            override fun onTabReselected(tab: TabLayout.Tab?) = Unit
-        })
-        TabLayoutMediator(tabLayoutHome, viewpagerHome) { tab, position ->
-            tab.text = tabNamesList[position]
-        }.attach()
     }
 
     // https://developer.android.com/reference/android/location/LocationManager#registerGnssStatusCallback(android.location.GnssStatus.Callback,%20android.os.Handler)
@@ -200,26 +141,6 @@ class MainActivity : AppCompatActivity() {
                     println("location toggle: ${status.satelliteCount}")
                 }
             }, null)
-        }
-    }
-
-    private fun observeForData() {
-        collectLatestLifecycleFlow(flow = viewModel.lastLocation) { lastLocation: Location? ->
-            println("lastLocation: ${lastLocation?.latitude}, ${lastLocation?.longitude}")
-            lastUpdatedLocation = lastLocation
-            if (playServicesAvailabilityChecker.isGooglePlayServicesAvailable()) {
-                binding.tvAppSubtitle.text = if (lastLocation != null) {
-                    getString(
-                        R.string.location_lat_lng,
-                        lastLocation.latitude,
-                        lastLocation.longitude
-                    )
-                } else {
-                    getString(R.string.waiting_for_location)
-                }
-            } else {
-                binding.tvAppSubtitle.text = getString(R.string.play_services_unavailable)
-            }
         }
     }
 
@@ -269,17 +190,6 @@ class MainActivity : AppCompatActivity() {
             }
             create()
             show()
-        }
-    }
-
-    inner class HomeViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = tabNamesList.size
-        override fun createFragment(position: Int): Fragment = when (position) {
-            0 -> FeedFragment.newInstance(screenType = tabNamesList[position])
-            1 -> FeedFragment.newInstance(screenType = tabNamesList[position])
-            2 -> FeedFragment.newInstance(screenType = tabNamesList[position])
-            3 -> FollowingFragment.newInstance(screenType = tabNamesList[position])
-            else -> FeedFragment.newInstance(screenType = tabNamesList[position])
         }
     }
 }

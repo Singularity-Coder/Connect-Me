@@ -40,6 +40,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
@@ -292,7 +293,7 @@ fun AppCompatActivity.showScreen(
 ) {
     supportFragmentManager.beginTransaction()
         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        .add(R.id.cl_home_container, fragment, tag)
+        .add(R.id.cl_main_container, fragment, tag)
         .addToBackStack(null)
         .commit()
 }
@@ -450,3 +451,24 @@ fun Context.isLocationToggleEnabled(): Boolean {
         locationProviders.isNotBlank()
     }
 }
+
+fun MainActivity.showScreen(
+    fragment: Fragment,
+    tag: String,
+    isAdd: Boolean = false,
+    isAddToBackStack: Boolean = true
+) {
+    if (isAdd) {
+        val transaction = supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.slide_to_left, R.anim.slide_to_right, R.anim.slide_to_left, R.anim.slide_to_right)
+            .add(R.id.fragment_container_view, fragment, tag)
+        if (isAddToBackStack) transaction.addToBackStack(null)
+        transaction.commit()
+    } else {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container_view, fragment, tag)
+            .commit()
+    }
+}
+
+fun String.capFirstChar(): String = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
