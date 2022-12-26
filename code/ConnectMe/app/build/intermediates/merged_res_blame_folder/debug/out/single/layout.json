@@ -1,0 +1,34 @@
+[
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/fragment_home.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/activity_main.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/list_item_feed.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/list_item_feed.xml"
+    },
+    {
+        "merged": "com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/list_item_following.xml",
+        "source": "com.singularitycoder.connectme.app-main-54:/layout/list_item_following.xml"
+    },
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/fragment_feed.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/fragment_feed.xml"
+    },
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/fragment_following.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/fragment_following.xml"
+    },
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/list_item_following.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/list_item_following.xml"
+    },
+    {
+        "merged": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-mergeDebugResources-51:/layout/list_item_news.xml",
+        "source": "/Users/singularitycoder/.gradle/daemon/7.4/com.singularitycoder.connectme.app-main-54:/layout/list_item_news.xml"
+    }
+]

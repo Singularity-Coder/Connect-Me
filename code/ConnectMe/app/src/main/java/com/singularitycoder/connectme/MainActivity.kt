@@ -25,8 +25,10 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import com.singularitycoder.connectme.data.PlayServicesAvailabilityChecker
+import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
 import com.singularitycoder.connectme.databinding.ActivityMainBinding
+import com.singularitycoder.connectme.feed.FeedFragment
+import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,8 +48,8 @@ class MainActivity : AppCompatActivity() {
         Tab.EXPLORE.value,
         Tab.FEED.value,
         Tab.COLLECTIONS.value,
-        Tab.HISTORY.value,
         Tab.FOLLOWING.value,
+        Tab.HISTORY.value,
     )
 
     var lastUpdatedLocation: Location? = null
@@ -272,6 +274,12 @@ class MainActivity : AppCompatActivity() {
 
     inner class HomeViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount(): Int = tabNamesList.size
-        override fun createFragment(position: Int): Fragment = HomeFragment.newInstance(screenType = tabNamesList[position])
+        override fun createFragment(position: Int): Fragment = when (position) {
+            0 -> FeedFragment.newInstance(screenType = tabNamesList[position])
+            1 -> FeedFragment.newInstance(screenType = tabNamesList[position])
+            2 -> FeedFragment.newInstance(screenType = tabNamesList[position])
+            3 -> FollowingFragment.newInstance(screenType = tabNamesList[position])
+            else -> FeedFragment.newInstance(screenType = tabNamesList[position])
+        }
     }
 }

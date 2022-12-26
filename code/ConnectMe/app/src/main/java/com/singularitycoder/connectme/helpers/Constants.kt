@@ -1,5 +1,13 @@
 package com.singularitycoder.connectme.helpers
 
+val dummyImageUrls = listOf(
+    "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/167587/pexels-photo-167587.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://cdn.pixabay.com/photo/2022/12/11/07/07/pine-7648311_1280.jpg",
+    "https://images.pexels.com/photos/33041/antelope-canyon-lower-canyon-arizona.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/2922672/pexels-photo-2922672.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+)
 
 object IntentKey {
     const val LOCATION_TOGGLE_STATUS = "LOCATION_TOGGLE_STATUS"

@@ -19,9 +19,9 @@ package com.singularitycoder.treasurehunt
 import android.content.ServiceConnection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.singularitycoder.connectme.ForegroundLocationServiceConnection
-import com.singularitycoder.connectme.data.LocationPreferences
-import com.singularitycoder.connectme.data.LocationRepository
+import com.singularitycoder.connectme.helpers.ForegroundLocationServiceConnection
+import com.singularitycoder.connectme.helpers.locationData.LocationPreferences
+import com.singularitycoder.connectme.helpers.locationData.LocationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
