@@ -18,6 +18,7 @@ import com.singularitycoder.connectme.feed.FeedFragment
 import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
+import com.singularitycoder.connectme.history.HistoryFragment
 import com.singularitycoder.connectme.search.SearchFragment
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,15 +43,6 @@ class MainFragment : Fragment() {
     private var lastUpdatedLocation: Location? = null
     private var topicParam: String? = null
     private val viewModel: MainViewModel by viewModels()
-    private val tabNamesList = listOf(
-        Tab.EXPLORE.value,
-        Tab.FEED.value,
-        Tab.COLLECTIONS.value,
-        Tab.REMAINDERS.value,
-        Tab.NOTES.value,
-        Tab.FOLLOWING.value,
-        Tab.HISTORY.value,
-    )
 
     private lateinit var binding: FragmentMainBinding
 
@@ -135,18 +127,20 @@ class MainFragment : Fragment() {
             override fun onTabReselected(tab: TabLayout.Tab?) = Unit
         })
         TabLayoutMediator(tabLayoutHome, viewpagerHome) { tab, position ->
-            tab.text = tabNamesList[position]
+            tab.text = Tab.values()[position].value
         }.attach()
     }
 
     inner class HomeViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = tabNamesList.size
+        override fun getItemCount(): Int = Tab.values().size
         override fun createFragment(position: Int): Fragment = when (position) {
-            0 -> FeedFragment.newInstance(screenType = tabNamesList[position])
-            1 -> FeedFragment.newInstance(screenType = tabNamesList[position])
-            2 -> FeedFragment.newInstance(screenType = tabNamesList[position])
-            5 -> FollowingFragment.newInstance(screenType = tabNamesList[position])
-            else -> FeedFragment.newInstance(screenType = tabNamesList[position])
+            Tab.EXPLORE.ordinal -> FeedFragment.newInstance(screenType = Tab.EXPLORE.value)
+            Tab.FEED.ordinal -> FeedFragment.newInstance(screenType = Tab.FEED.value)
+            Tab.COLLECTIONS.ordinal -> FeedFragment.newInstance(screenType = Tab.COLLECTIONS.value)
+//            Tab.REMAINDERS.ordinal -> FeedFragment.newInstance(screenType = Tab.REMAINDERS.value)
+//            Tab.NOTES.ordinal -> FeedFragment.newInstance(screenType = Tab.NOTES.value)
+            Tab.FOLLOWING.ordinal -> FollowingFragment.newInstance(screenType = Tab.FOLLOWING.value)
+            else -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
         }
     }
 }

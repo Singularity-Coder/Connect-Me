@@ -12,8 +12,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:scaleType="centerCrop"
-        android:src="@color/purple_50"
         android:theme="@style/CustomRoundedImageView"
+        android:background="@drawable/ic_placeholder_rectangle"
         app:cardCornerRadius="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,7 +76,6 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         app:dividerColor="@color/black_50"
-        app:dividerInsetStart="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/ll_following_titles" />

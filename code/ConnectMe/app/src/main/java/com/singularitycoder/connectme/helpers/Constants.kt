@@ -41,10 +41,10 @@ enum class DateType(val value: String) {
 
 enum class Tab(val value: String) {
     EXPLORE(value = "Explore"),
-    FOLLOWING(value = "Following"),
     FEED(value = "Feed"),
-    REMAINDERS(value = "Remainders"),
-    NOTES(value = "Notes"),
-    HISTORY(value = "History"),
     COLLECTIONS(value = "Collections"),
+//    REMAINDERS(value = "Remainders"),
+//    NOTES(value = "Notes"),
+    FOLLOWING(value = "Following"),
+    HISTORY(value = "History"),
 }

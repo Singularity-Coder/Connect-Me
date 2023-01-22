@@ -1,0 +1,7 @@
+.DS_Store
+gradle-wrapper.jar
+gradle-wrapper.properties
+local.properties
+app/gradle-wrapper.jar
+app/gradle-wrapper.properties
+app/local.properties
