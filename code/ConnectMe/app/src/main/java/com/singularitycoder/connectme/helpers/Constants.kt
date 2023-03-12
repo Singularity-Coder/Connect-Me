@@ -30,6 +30,16 @@ object FragmentsTag {
     val SEARCH = SearchFragment::class.java.simpleName
 }
 
+enum class QuickActionTabMenu(val value: String) {
+    NONE(value = ""),
+    NAVIGATE_BACK(value = "Navigate Back"),
+    HOME(value = "Home"),
+    SHARE_TAB(value = "Share Tab"),
+    CLOSE_TAB(value = "Close Tab"),
+    REFRESH_TAB(value = "Refresh Tab"),
+    NAVIGATE_FORWARD(value = "Navigate Forward"),
+}
+
 enum class Tab(val value: String) {
     EXPLORE(value = "Explore"),
     FEED(value = "Feed"),
