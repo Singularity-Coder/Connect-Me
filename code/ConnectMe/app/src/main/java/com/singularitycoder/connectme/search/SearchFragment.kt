@@ -80,6 +80,13 @@ class SearchFragment : Fragment() {
         setTabMenuTouchOptions()
 //        setTabMenuTouchOptions2()
 
+        ivProfile.onSafeClick {
+            TabMenuBottomSheetFragment.newInstance().show(
+                /* manager = */ requireActivity().supportFragmentManager,
+                /* tag = */ BottomSheetTag.TAB_MENU
+            )
+        }
+
         cardAddTab.onSafeClick {
             ibAddTab.performClick()
         }

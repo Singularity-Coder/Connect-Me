@@ -10,7 +10,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentTabMenuBottomSheetBinding
+import com.singularitycoder.connectme.helpers.drawable
 import com.singularitycoder.connectme.helpers.setTransparentBackground
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -41,6 +43,41 @@ class TabMenuBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentTabMenuBottomSheetBinding.setupUI() {
         setTransparentBackground()
         setBottomSheetBehaviour()
+        itemHistory.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_history_24))
+            tvTitle.text = "History"
+            tvSubtitle.text = "Last visited on 18 April 2093"
+        }
+        itemDownloads.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_file_download_24))
+            tvTitle.text = "Downloads"
+            tvSubtitle.text = "Last downloaded on 18 April 2093"
+        }
+        itemAddToCollections.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_library_add_24))
+            tvTitle.text = "Add to collections"
+            tvSubtitle.text = "Last added on 18 April 2093"
+        }
+        itemFindInPage.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.ic_round_search_24))
+            tvTitle.text = "Find in page"
+            tvSubtitle.text = "Search for text in this web page"
+        }
+        itemAddShortcut.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_add_home_24))
+            tvTitle.text = "Add shortcut"
+            tvSubtitle.text = "Add shortcut to home screen"
+        }
+        itemPrint.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_print_24))
+            tvTitle.text = "Print"
+            tvSubtitle.text = "Print this web page"
+        }
+        itemTranslate.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_translate_24))
+            tvTitle.text = "Translate"
+            tvSubtitle.text = "Translate this web page"
+        }
     }
 
     private fun FragmentTabMenuBottomSheetBinding.setupUserActionListeners() {

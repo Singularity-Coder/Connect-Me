@@ -1,10 +1,10 @@
 
 TODO
-2. Explore
-3. PR
-4. tab feture dropdown/bottom sheet
-5. New tab screen
-6. Site PR
+2. Explore - will be based on time of the day. If its 8 am then show posts of breakfast. If evening then show entertainment stuff. User can customise topics
+3. Profile - share profile through internet through some kind of P2P protocol like torrents do. Users can let other users view their collections. 4 tabs - FOLLOW, FOLLOWING, FOLLOWERS, FOLLOW REQUESTS
+5. New tab screen - on clicking new tab we see 3 collections, 3 history, 3 downloads, 3 following, ability to set private mode, scan QR code, set VPN, se ad blocker, block cookies
+6. Site Profile - almost done
+7. Today on the internet
 
 
 Long press add tab to add incognito tab

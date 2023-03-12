@@ -30,6 +30,10 @@ object FragmentsTag {
     val SEARCH = SearchFragment::class.java.simpleName
 }
 
+object BottomSheetTag {
+    const val TAB_MENU = "TAB_MENU_BOTTOM_SHEET"
+}
+
 enum class QuickActionTabMenu(val value: String) {
     NONE(value = ""),
     NAVIGATE_BACK(value = "Navigate Back"),
