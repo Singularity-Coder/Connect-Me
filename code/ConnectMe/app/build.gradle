@@ -41,19 +41,20 @@ android {
 dependencies {
 
     // View Stuff
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation "com.google.android.exoplayer:exoplayer:2.18.2"
-    implementation "io.coil-kt:coil:2.1.0"
+    implementation "com.google.android.exoplayer:exoplayer:2.18.4"
+    implementation "io.coil-kt:coil:2.2.2"
     implementation "androidx.fragment:fragment-ktx:1.5.5"
     implementation "androidx.activity:activity-ktx:1.6.1"
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
     implementation 'com.r0adkll:slidableactivity:2.1.0'
-    implementation "com.google.android.exoplayer:exoplayer:2.18.2"
 
     // Web scraping stuff
     implementation "org.jsoup:jsoup:1.15.3"
-    implementation "commons-io:commons-io:2.5" // htmlunit needs 2.5 to work properly - https://github.com/HtmlUnit/htmlunit-android
+    implementation("commons-io:commons-io:2.5") {
+        because "htmlunit needs 2.5 to work properly - https://github.com/HtmlUnit/htmlunit-android"
+    }
     implementation group: 'net.sourceforge.htmlunit', name: 'htmlunit-android', version: '2.66.0'
 
     // Coroutines
@@ -62,7 +63,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
 
     // Room ORM
-    var room_version = "2.4.3"
+    var room_version = "2.5.0"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
@@ -74,8 +75,8 @@ dependencies {
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     // Youtube
     implementation fileTree(dir: 'libs', include: ['*.jar']) // Includes all jars in the libs path
@@ -84,7 +85,7 @@ dependencies {
     }
 
     // Play Services
-    implementation 'com.google.android.gms:play-services-base:18.1.0'
+    implementation 'com.google.android.gms:play-services-base:18.2.0'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
 
     // Lifecycle
@@ -92,10 +93,14 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
 
+    // Barcode
+    implementation "com.google.zxing:core:3.3.0" // Barcode Generator - 3.3.0 for api < 24 compatibility with barcode scanner
+    implementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false } // Barcode Scanner
+
     // Others
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation "androidx.work:work-runtime-ktx:2.7.1"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "androidx.work:work-runtime-ktx:2.8.0"
     implementation 'com.google.code.gson:gson:2.9.1'
     implementation "androidx.datastore:datastore-preferences:1.0.0"
 }

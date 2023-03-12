@@ -1,16 +1,19 @@
 package com.singularitycoder.connectme.search
 
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
-import com.singularitycoder.connectme.helpers.capFirstChar
+import com.singularitycoder.connectme.helpers.*
 import dagger.hilt.android.AndroidEntryPoint
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
@@ -48,6 +51,13 @@ class SearchFragment : Fragment() {
         binding.ibAddTab.performClick()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (topicTabsList.size == 1 && binding.etSearch.text.isBlank()) {
+            binding.etSearch.showKeyboard()
+        }
+    }
+
     private fun setUpViewPager() {
         binding.viewpagerReminders.isUserInputEnabled = false
         binding.viewpagerReminders.adapter = SearchViewPagerAdapter(
@@ -60,11 +70,51 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setUpUserActionListeners() {
-        cardAddTab.setOnClickListener {
+        cardAddTab.onSafeClick {
             ibAddTab.performClick()
         }
-        ibAddTab.setOnClickListener {
-            addTopic("google".capFirstChar())
+
+        ibAddTab.onSafeClick {
+            binding.etSearch.showKeyboard()
+            addTopic("New Tab".capFirstChar())
+            etSearch.setSelection(0, etSearch.text.length)
+            binding.etSearch.setSelectAllOnFocus(true)
+        }
+
+        etSearch.onImeClick {
+            etSearch.hideKeyboard()
+            etSearch.clearFocus()
+        }
+
+        etSearch.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                etSearch.setSelection(0, etSearch.text.length)
+                binding.etSearch.setSelectAllOnFocus(true)
+            } else {
+                etSearch.clearFocus()
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                etSearch.clearFocus()
+                requireActivity().supportFragmentManager.popBackStackImmediate()
+            }
+        })
+
+        // https://stackoverflow.com/questions/25216749/soft-keyboard-open-and-close-listener-in-an-activity-in-android
+        root.viewTreeObserver.addOnGlobalLayoutListener {
+            val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
+            root.getWindowVisibleDisplayFrame(rect)
+            val heightDiff: Int = root.rootView.height - (rect.bottom - rect.top)
+//            if (heightDiff > 500) {
+//            // if more than 500 pixels, its probably a keyboard...
+//            } else {
+//                if (etSearch.isKeyboardVisible.not()) {
+//                    etSearch.hideKeyboard()
+//                    etSearch.clearFocus()
+//                }
+//            }
         }
     }
 

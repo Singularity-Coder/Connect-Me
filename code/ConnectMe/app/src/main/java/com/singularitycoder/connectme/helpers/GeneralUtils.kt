@@ -10,7 +10,6 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Point
-import android.graphics.drawable.Drawable
 import android.location.LocationManager
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -25,19 +24,15 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
-import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.singularitycoder.connectme.MainActivity
@@ -50,9 +45,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 fun View.showSnackBar(
     message: String,
@@ -126,38 +119,6 @@ inline fun deleteAllFilesFrom(
 
 fun Context.isCameraPresent(): Boolean {
     return packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
-}
-
-// Get Epoch Time
-val timeNow: Long
-    get() = System.currentTimeMillis()
-
-fun Long.toIntuitiveDateTime(): String {
-    val postedTime = this
-    val elapsedTimeMillis = timeNow - postedTime
-    val elapsedTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTimeMillis)
-    val elapsedTimeInMinutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTimeMillis)
-    val elapsedTimeInHours = TimeUnit.MILLISECONDS.toHours(elapsedTimeMillis)
-    val elapsedTimeInDays = TimeUnit.MILLISECONDS.toDays(elapsedTimeMillis)
-    val elapsedTimeInMonths = elapsedTimeInDays / 30
-    return when {
-        elapsedTimeInSeconds < 60 -> "Now"
-        elapsedTimeInMinutes == 1L -> "$elapsedTimeInMinutes Minute ago"
-        elapsedTimeInMinutes < 60 -> "$elapsedTimeInMinutes Minutes ago"
-        elapsedTimeInHours == 1L -> "$elapsedTimeInHours Hour ago"
-        elapsedTimeInHours < 24 -> "$elapsedTimeInHours Hours ago"
-        elapsedTimeInDays == 1L -> "$elapsedTimeInDays Day ago"
-        elapsedTimeInDays < 30 -> "$elapsedTimeInDays Days ago"
-        elapsedTimeInMonths == 1L -> "$elapsedTimeInMonths Month ago"
-        elapsedTimeInMonths < 12 -> "$elapsedTimeInMonths Months ago"
-        else -> postedTime toTimeOfType DateType.dd_MMM_yyyy_hh_mm_a
-    }
-}
-
-infix fun Long.toTimeOfType(type: DateType): String {
-    val date = Date(this)
-    val dateFormat = SimpleDateFormat(type.value, Locale.getDefault())
-    return dateFormat.format(date)
 }
 
 val mainActivityPermissions = arrayOf(
@@ -270,34 +231,6 @@ fun Context.sendWhatsAppMessage(whatsAppPhoneNum: String) {
     }
 }
 
-// https://stackoverflow.com/questions/37104960/bottomsheetdialog-with-transparent-background
-fun BottomSheetDialogFragment.setTransparentBackground() {
-    dialog?.apply {
-        // window?.setDimAmount(0.2f) // Set dim amount here
-        setOnShowListener {
-            val bottomSheet =
-                findViewById<View?>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheet?.setBackgroundResource(android.R.color.transparent)
-        }
-    }
-}
-
-fun Context.color(@ColorRes colorRes: Int) = ContextCompat.getColor(this, colorRes)
-
-fun Context.drawable(@DrawableRes drawableRes: Int): Drawable? =
-    ContextCompat.getDrawable(this, drawableRes)
-
-fun AppCompatActivity.showScreen(
-    fragment: Fragment,
-    tag: String
-) {
-    supportFragmentManager.beginTransaction()
-        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        .add(R.id.cl_main_container, fragment, tag)
-        .addToBackStack(null)
-        .commit()
-}
-
 fun View.setMargins(
     all: Int? = null,
     start: Int = 0,
@@ -397,46 +330,6 @@ fun showSettingsAlert(context: Context) {
     }
 }
 
-fun Context?.clipboard(): ClipboardManager? =
-    this?.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-
-/** Request focus before showing keyboard - editText.requestFocus() */
-fun EditText?.showKeyboard() {
-    if (this?.hasFocus() == true) {
-        val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
-        imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
-    }
-}
-
-/** Request focus before hiding keyboard - editText.requestFocus() */
-fun EditText?.hideKeyboard() {
-    if (this?.hasFocus() == true) {
-        val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
-        imm?.hideSoftInputFromWindow(this.windowToken, 0)
-    }
-}
-
-fun Activity.hideKeyboard() {
-    val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-    // Find the currently focused view, so we can grab the correct window token from it.
-    var view = currentFocus
-    // If no view currently has focus, create a new one, just so we can grab a window token from it
-    if (view == null) {
-        view = View(this)
-    }
-    imm.hideSoftInputFromWindow(view.windowToken, 0)
-}
-
-// https://stackoverflow.com/questions/4745988/how-do-i-detect-if-software-keyboard-is-visible-on-android-device-or-not
-val View.isKeyboardVisible: Boolean
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        WindowInsetsCompat
-            .toWindowInsetsCompat(rootWindowInsets)
-            .isVisible(WindowInsetsCompat.Type.ime())
-    } else {
-        false
-    }
-
 // https://stackoverflow.com/questions/10311834/how-to-check-if-location-services-are-enabled#:~:text=%40lenik%2C%20some%20devices%20provide%20a,if%20specific%20providers%20are%20enabled.
 // https://developer.android.com/reference/android/provider/Settings.Secure#LOCATION_PROVIDERS_ALLOWED
 fun Context.isLocationToggleEnabled(): Boolean {
@@ -471,4 +364,44 @@ fun MainActivity.showScreen(
     }
 }
 
-fun String.capFirstChar(): String = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+fun Context?.clipboard(): ClipboardManager? =
+    this?.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+
+fun Activity.hideKeyboard() {
+    val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    // Find the currently focused view, so we can grab the correct window token from it.
+    var view = currentFocus
+    // If no view currently has focus, create a new one, just so we can grab a window token from it
+    if (view == null) {
+        view = View(this)
+    }
+    imm.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
+// https://stackoverflow.com/questions/4745988/how-do-i-detect-if-software-keyboard-is-visible-on-android-device-or-not
+val View.isKeyboardVisible: Boolean
+    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        WindowInsetsCompat
+            .toWindowInsetsCompat(rootWindowInsets)
+            .isVisible(WindowInsetsCompat.Type.ime())
+    } else {
+        false
+    }
+
+/** Request focus before showing keyboard - editText.requestFocus() */
+fun EditText?.showKeyboard() {
+    this?.requestFocus()
+    if (this?.hasFocus() == true) {
+        val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+    }
+}
+
+/** Request focus before hiding keyboard - editText.requestFocus() */
+fun EditText?.hideKeyboard() {
+    this?.requestFocus()
+    if (this?.hasFocus() == true) {
+        val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(this.windowToken, 0)
+    }
+}
