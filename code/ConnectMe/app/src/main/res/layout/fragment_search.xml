@@ -14,7 +14,9 @@
         android:background="@color/white"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toTopOf="@+id/card_header"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        tools:layout_editor_absoluteX="51dp" />
 
     <View
         android:layout_width="match_parent"
@@ -70,7 +72,8 @@
                 app:cardElevation="0dp"
                 app:layout_constraintBottom_toBottomOf="@+id/tab_layout_topics"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/tab_layout_topics">
+                app:layout_constraintTop_toTopOf="@+id/tab_layout_topics"
+                app:rippleColor="@color/purple_200">
 
                 <ImageButton
                     android:id="@+id/ib_add_tab"
@@ -94,6 +97,21 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent">
 
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/linear_progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="50"
+                    android:visibility="visible"
+                    app:indicatorColor="@color/black_50"
+                    app:layout_constraintBottom_toBottomOf="@+id/et_search"
+                    app:layout_constraintTop_toTopOf="@+id/et_search"
+                    app:trackColor="@color/white"
+                    app:trackColorInactive="@color/white"
+                    app:trackThickness="50dp" />
+
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/iv_profile"
                     android:layout_width="32dp"
@@ -107,13 +125,15 @@
                     app:cardCornerRadius="10dp"
                     app:layout_constraintBottom_toBottomOf="@+id/et_search"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/et_search" />
+                    app:layout_constraintTop_toTopOf="@+id/et_search"
+                    app:rippleColor="@color/purple_200" />
 
                 <EditText
                     android:id="@+id/et_search"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="16dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@null"
                     android:elevation="4dp"
                     android:ellipsize="end"
@@ -126,23 +146,50 @@
                     android:text=""
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                     android:textColor="@color/black"
-                    android:layout_marginEnd="8dp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/btn_tab_menu"
+                    app:layout_constraintEnd_toStartOf="@+id/ll_tab_action_buttons"
                     app:layout_constraintStart_toEndOf="@+id/iv_profile" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_tab_menu"
-                    style="@style/Widget.App.Button.IconOnly"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginBottom="4dp"
-                    app:icon="@drawable/baseline_keyboard_command_key_24"
-                    app:layout_constraintBottom_toBottomOf="@+id/et_search"
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_tab_action_buttons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/et_search" />
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_website_quick_actions"
+                        style="@style/Widget.App.Button.IconOnly"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="12dp"
+                        app:icon="@drawable/baseline_keyboard_command_key_24"
+                        app:rippleColor="@color/purple_200" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_qr_scan"
+                        style="@style/Widget.App.Button.IconOnly"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="12dp"
+                        android:visibility="gone"
+                        app:icon="@drawable/round_filter_center_focus_24"
+                        app:rippleColor="@color/purple_200" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_voice_search"
+                        style="@style/Widget.App.Button.IconOnly"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="12dp"
+                        android:visibility="gone"
+                        app:icon="@drawable/round_keyboard_voice_24"
+                        app:rippleColor="@color/purple_200" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>

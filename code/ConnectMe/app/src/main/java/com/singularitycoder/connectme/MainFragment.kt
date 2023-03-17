@@ -19,7 +19,9 @@ import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
 import com.singularitycoder.connectme.history.HistoryFragment
+import com.singularitycoder.connectme.profile.UserProfileBottomSheetFragment
 import com.singularitycoder.connectme.search.SearchFragment
+import com.singularitycoder.connectme.search.WebsiteActionsBottomSheetFragment
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -75,7 +77,7 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.setUpViewPager()
+        binding.setupUI()
         binding.setupUserActionListeners()
         observeForData()
     }
@@ -85,14 +87,26 @@ class MainFragment : Fragment() {
         binding.viewpagerHome.unregisterOnPageChangeCallback(viewPager2PageChangeListener)
     }
 
+    private fun FragmentMainBinding.setupUI() {
+        setUpViewPager()
+        ivProfileImage.setImageDrawable(requireContext().drawable(R.drawable.hithesh))
+    }
+
     private fun FragmentMainBinding.setupUserActionListeners() {
-        tvAppSubtitle.setOnClickListener {
-            requireContext().clipboard()?.text = binding.tvAppSubtitle.text
-            binding.root.showSnackBar("Copied location: ${requireContext().clipboard()?.text}")
+//        tvAppSubtitle.setOnClickListener {
+//            requireContext().clipboard()?.text = binding.tvAppSubtitle.text
+//            binding.root.showSnackBar("Copied location: ${requireContext().clipboard()?.text}")
+//        }
+
+        fabSearch.onSafeClick {
+            (requireActivity() as MainActivity).showScreen(SearchFragment.newInstance(""), FragmentsTag.SEARCH, isAdd = true)
         }
 
-        fabSearch.setOnClickListener {
-            (requireActivity() as MainActivity).showScreen(SearchFragment.newInstance(""), FragmentsTag.SEARCH, isAdd = true)
+        cardProfileImage.onSafeClick {
+            UserProfileBottomSheetFragment.newInstance().show(
+                /* manager = */ requireActivity().supportFragmentManager,
+                /* tag = */ BottomSheetTag.USER_PROFILE
+            )
         }
     }
 
@@ -101,17 +115,17 @@ class MainFragment : Fragment() {
             println("lastLocation: ${lastLocation?.latitude}, ${lastLocation?.longitude}")
             lastUpdatedLocation = lastLocation
             if (playServicesAvailabilityChecker.isGooglePlayServicesAvailable()) {
-                binding.tvAppSubtitle.text = if (lastLocation != null) {
-                    getString(
-                        R.string.location_lat_lng,
-                        lastLocation.latitude,
-                        lastLocation.longitude
-                    )
-                } else {
-                    getString(R.string.waiting_for_location)
-                }
+//                binding.tvAppSubtitle.text = if (lastLocation != null) {
+//                    getString(
+//                        R.string.location_lat_lng,
+//                        lastLocation.latitude,
+//                        lastLocation.longitude
+//                    )
+//                } else {
+//                    getString(R.string.waiting_for_location)
+//                }
             } else {
-                binding.tvAppSubtitle.text = getString(R.string.play_services_unavailable)
+//                binding.tvAppSubtitle.text = getString(R.string.play_services_unavailable)
             }
         }
     }

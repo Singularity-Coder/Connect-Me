@@ -31,7 +31,8 @@ object FragmentsTag {
 }
 
 object BottomSheetTag {
-    const val TAB_MENU = "TAB_MENU_BOTTOM_SHEET"
+    const val WEBSITE_ACTIONS = "WEBSITE_ACTIONS_BOTTOM_SHEET"
+    const val USER_PROFILE = "USER_PROFILE_BOTTOM_SHEET"
 }
 
 enum class QuickActionTabMenu(val value: String) {
@@ -52,4 +53,11 @@ enum class Tab(val value: String) {
 //    NOTES(value = "Notes"),
     FOLLOWING(value = "Following"),
     HISTORY(value = "History"),
+}
+
+enum class UserProfile(val value: String) {
+    FOLLOW(value = "Follow"),
+    FOLLOWING(value = "Following"),
+    FOLLOWERS(value = "Followers"),
+    FOLLOW_REQUESTS(value = "Requests"),
 }

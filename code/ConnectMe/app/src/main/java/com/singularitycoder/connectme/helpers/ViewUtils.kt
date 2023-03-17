@@ -175,8 +175,10 @@ fun Context.showAlertDialog(
     message: String,
     positiveBtnText: String,
     negativeBtnText: String = "",
+    neutralBtnText: String = "",
     positiveAction: () -> Unit = {},
     negativeAction: () -> Unit = {},
+    neutralAction: () -> Unit = {},
 ) {
     MaterialAlertDialogBuilder(this, com.google.android.material.R.style.ThemeOverlay_MaterialComponents_Dialog).apply {
         setCancelable(false)
@@ -191,10 +193,24 @@ fun Context.showAlertDialog(
                 negativeAction.invoke()
             }
         }
+        if (neutralBtnText.isNotBlank()) {
+            setNeutralButton(neutralBtnText) { dialog, int ->
+                neutralAction.invoke()
+            }
+        }
         val dialog = create()
         dialog.show()
-        dialog.getButton(DialogInterface.BUTTON_POSITIVE).isAllCaps = false
-        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).isAllCaps = false
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).apply {
+            isAllCaps = false
+            setPadding(0, 0, 16.dpToPx().toInt(), 0)
+        }
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).apply {
+            isAllCaps = false
+        }
+        dialog.getButton(DialogInterface.BUTTON_NEUTRAL).apply {
+            isAllCaps = false
+            setPadding(16.dpToPx().toInt(), 0, 0, 0)
+        }
     }
 }
 

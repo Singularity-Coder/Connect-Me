@@ -10,6 +10,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Point
+import android.graphics.drawable.InsetDrawable
 import android.location.LocationManager
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -17,9 +18,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.view.KeyEvent
-import android.view.View
-import android.view.ViewGroup
+import android.util.TypedValue
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.lang.reflect.Method
 import java.util.*
 
 fun View.showSnackBar(
@@ -403,5 +405,33 @@ fun EditText?.hideKeyboard() {
     if (this?.hasFocus() == true) {
         val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.hideSoftInputFromWindow(this.windowToken, 0)
+    }
+}
+
+fun setMarginBtwMenuIconAndText(context: Context, menu: Menu, iconMarginDp: Int) {
+    menu.forEach { item: MenuItem ->
+        val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, iconMarginDp.toFloat(), context.resources.displayMetrics).toInt()
+        if (null != item.icon) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+                item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
+            } else {
+                item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
+                    override fun getIntrinsicWidth(): Int = intrinsicHeight + iconMarginPx + iconMarginPx
+                }
+            }
+        }
+    }
+}
+
+// https://www.programmersought.com/article/39074216761/
+fun Menu.invokeSetMenuIconMethod() {
+    if (this.javaClass.simpleName.equals("MenuBuilder", ignoreCase = true)) {
+        try {
+            val method: Method = this.javaClass.getDeclaredMethod("setOptionalIconsVisible", java.lang.Boolean.TYPE)
+            method.isAccessible = true
+            method.invoke(this, true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
