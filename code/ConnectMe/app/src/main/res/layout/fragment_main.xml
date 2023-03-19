@@ -39,18 +39,18 @@
                     android:textStyle="bold"
                     app:layout_constraintTop_toTopOf="parent" />
 
-<!--                <TextView-->
-<!--                    android:id="@+id/tv_app_subtitle"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="4dp"-->
-<!--                    android:maxLines="1"-->
-<!--                    android:paddingStart="16dp"-->
-<!--                    android:paddingEnd="16dp"-->
-<!--                    android:text="12.958459, 77.662461"-->
-<!--                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"-->
-<!--                    android:textColor="@android:color/darker_gray"-->
-<!--                    app:layout_constraintTop_toBottomOf="@+id/tv_following_site" />-->
+                <!--                <TextView-->
+                <!--                    android:id="@+id/tv_app_subtitle"-->
+                <!--                    android:layout_width="match_parent"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    android:layout_marginTop="4dp"-->
+                <!--                    android:maxLines="1"-->
+                <!--                    android:paddingStart="16dp"-->
+                <!--                    android:paddingEnd="16dp"-->
+                <!--                    android:text="12.958459, 77.662461"-->
+                <!--                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"-->
+                <!--                    android:textColor="@android:color/darker_gray"-->
+                <!--                    app:layout_constraintTop_toBottomOf="@+id/tv_following_site" />-->
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_profile_image"
@@ -61,10 +61,10 @@
                     android:layout_marginEnd="16dp"
                     app:cardCornerRadius="48dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/black_50"
                     app:layout_constraintBottom_toBottomOf="@+id/tv_app_name"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:strokeColor="@color/black_50"
+                    app:strokeWidth="1dp">
 
                     <ImageView
                         android:id="@+id/iv_profile_image"
@@ -89,6 +89,7 @@
                     app:tabIndicatorColor="@color/purple_500"
                     app:tabIndicatorHeight="4dp"
                     app:tabMode="scrollable"
+                    app:tabPaddingStart="16dp"
                     app:tabSelectedTextColor="@color/purple_500"
                     app:tabTextAppearance="@style/CustomTextAppearanceTab"
                     app:tabTextColor="@android:color/darker_gray" />

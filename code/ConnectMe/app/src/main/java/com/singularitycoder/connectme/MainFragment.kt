@@ -19,9 +19,8 @@ import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
 import com.singularitycoder.connectme.history.HistoryFragment
-import com.singularitycoder.connectme.profile.UserProfileBottomSheetFragment
+import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
-import com.singularitycoder.connectme.search.WebsiteActionsBottomSheetFragment
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -103,10 +102,7 @@ class MainFragment : Fragment() {
         }
 
         cardProfileImage.onSafeClick {
-            UserProfileBottomSheetFragment.newInstance().show(
-                /* manager = */ requireActivity().supportFragmentManager,
-                /* tag = */ BottomSheetTag.USER_PROFILE
-            )
+            (requireActivity() as MainActivity).showScreen(UserProfileFragment.newInstance(), FragmentsTag.USER_PROFILE, isAdd = true)
         }
     }
 
@@ -154,7 +150,8 @@ class MainFragment : Fragment() {
 //            Tab.REMAINDERS.ordinal -> FeedFragment.newInstance(screenType = Tab.REMAINDERS.value)
 //            Tab.NOTES.ordinal -> FeedFragment.newInstance(screenType = Tab.NOTES.value)
             Tab.FOLLOWING.ordinal -> FollowingFragment.newInstance(screenType = Tab.FOLLOWING.value)
-            else -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
+            Tab.HISTORY.ordinal -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
+            else -> HistoryFragment.newInstance(screenType = Tab.DOWNLOADS.value)
         }
     }
 }

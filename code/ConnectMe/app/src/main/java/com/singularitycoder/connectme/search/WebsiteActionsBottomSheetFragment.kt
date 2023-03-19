@@ -14,10 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentWebsiteActionsBottomSheetBinding
-import com.singularitycoder.connectme.helpers.color
-import com.singularitycoder.connectme.helpers.drawable
-import com.singularitycoder.connectme.helpers.onSafeClick
-import com.singularitycoder.connectme.helpers.setTransparentBackground
+import com.singularitycoder.connectme.helpers.*
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -153,6 +150,18 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         itemClearCookies.root.onSafeClick {  }
 
         itemClearCache.root.onSafeClick {  }
+
+        btnMenu.onSafeClick {
+            val optionsList = listOf("Close")
+            requireContext().showPopup(
+                view = it.first,
+                menuList = optionsList
+            ) { menuPosition: Int ->
+                when (optionsList[menuPosition]) {
+                    optionsList[0] -> dismiss()
+                }
+            }
+        }
 
         itemDesktopSite.apply {
             root.onSafeClick { switchOnOff.performClick() }

@@ -20,6 +20,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
@@ -47,6 +49,23 @@ class SearchFragment : Fragment() {
     private var topicParam: String? = null
     private val topicTabsList = mutableListOf<String>()
 
+    private val viewPager2PageChangeListener = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrollStateChanged(state: Int) {
+            super.onPageScrollStateChanged(state)
+            println("viewpager2: onPageScrollStateChanged")
+        }
+
+        override fun onPageSelected(position: Int) {
+            super.onPageSelected(position)
+            println("viewpager2: onPageSelected")
+        }
+
+        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+            println("viewpager2: onPageScrolled")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
@@ -73,19 +92,26 @@ class SearchFragment : Fragment() {
     }
 
     private fun setUpViewPager() {
-        binding.viewpagerReminders.isUserInputEnabled = false
-        binding.viewpagerReminders.adapter = SearchViewPagerAdapter(
-            fragmentManager = requireActivity().supportFragmentManager,
-            lifecycle = lifecycle
-        )
-        TabLayoutMediator(binding.tabLayoutTopics, binding.viewpagerReminders) { tab, position ->
+        binding.viewpagerReminders.apply {
+            isUserInputEnabled = false
+            adapter = SearchViewPagerAdapter(
+                fragmentManager = requireActivity().supportFragmentManager,
+                lifecycle = lifecycle
+            )
+            registerOnPageChangeCallback(viewPager2PageChangeListener)
+        }
+        TabLayoutMediator(binding.tabLayoutTabs, binding.viewpagerReminders) { tab, position ->
             tab.text = topicTabsList[position]
+            tab.icon = when (topicTabsList[position]) {
+                NewTabType.NEW_PRIVATE_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
+                NewTabType.NEW_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_timer_24)
+                else -> null
+            }
         }.attach()
     }
 
     private fun FragmentSearchBinding.setUpUserActionListeners() {
         setTabMenuTouchOptions()
-//        setTabMenuTouchOptions2()
 
         ivProfile.onSafeClick {
             WebsiteActionsBottomSheetFragment.newInstance().show(
@@ -110,7 +136,7 @@ class SearchFragment : Fragment() {
 
         ibAddTab.onSafeClick {
             binding.etSearch.showKeyboard()
-            addTopic("New Tab".capFirstChar())
+            addTab(NewTabType.NEW_TAB.value)
             etSearch.setSelection(0, etSearch.text.length)
             binding.etSearch.setSelectAllOnFocus(true)
         }
@@ -143,34 +169,16 @@ class SearchFragment : Fragment() {
             }
             try {
                 val searchTabFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
-                    it.javaClass.simpleName == SearchTabFragment.newInstance("").javaClass.simpleName
+                    it.javaClass.simpleName == SearchTabFragment.newInstance(/*topicTabsList[binding.tabLayoutTabs.selectedTabPosition]*/"").javaClass.simpleName
                 } as? SearchTabFragment
                 searchTabFragment?.showWebView(isFocused.not())
             } catch (_: Exception) {
             }
         }
 
-        requireActivity().onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // TODO set a neutral button to save all tabs to a collection
-                requireContext().showAlertDialog(
-                    title = "Close all tabs?",
-                    message = """
-                        Press "Close" to permanently close all tabs.
-                        Press "Keep" to retain them in collections. 
-                    """.trimIndent(),
-                    positiveBtnText = "Close",
-                    negativeBtnText = "Keep",
-                    neutralBtnText = "Cancel",
-                    positiveAction = {
-                        etSearch.clearFocus()
-                        requireActivity().supportFragmentManager.popBackStackImmediate()
-                    },
-                    negativeAction = {
-                        etSearch.clearFocus()
-                        requireActivity().supportFragmentManager.popBackStackImmediate()
-                    }
-                )
+                showCloseAllTabsPopup()
             }
         })
 
@@ -179,34 +187,100 @@ class SearchFragment : Fragment() {
             val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
             root.getWindowVisibleDisplayFrame(rect)
             val heightDiff: Int = root.rootView.height - (rect.bottom - rect.top)
-//            if (heightDiff > 500) {
-//            // if more than 500 pixels, its probably a keyboard...
-//            } else {
-//                if (etSearch.isKeyboardVisible.not()) {
-//                    etSearch.hideKeyboard()
-//                    etSearch.clearFocus()
-//                }
-//            }
+            // if heightDiff more than 500 pixels, its probably a keyboard...
         }
     }
 
-    // https://stackoverflow.com/questions/13445594/data-sharing-between-fragments-and-activity-in-android
-    @SuppressLint("NotifyDataSetChanged")
-    private fun addTopic(topic: String) {
-        topicTabsList.add(topic)
-        val position = if (topicTabsList.isNotEmpty()) topicTabsList.lastIndex else 0
-        binding.tabLayoutTopics.addTab(
-            /* tab = */ binding.tabLayoutTopics.newTab().apply {
-                text = topicTabsList[topicTabsList.lastIndex]
-//                this.parent?.requestFocus()
+    private fun FragmentSearchBinding.showCloseAllTabsPopup() {
+        requireContext().showAlertDialog(
+            title = "Close all tabs?",
+            message = """
+                Press "Close" to permanently close all tabs.
+                Press "Keep" to retain them in collections. 
+            """.trimIndent(),
+            positiveBtnText = "Close",
+            negativeBtnText = "Keep",
+            neutralBtnText = "Cancel",
+            positiveAction = {
+                etSearch.clearFocus()
+                requireActivity().supportFragmentManager.popBackStackImmediate()
             },
-            /* position = */ position,
+            negativeAction = {
+                etSearch.clearFocus()
+                requireActivity().supportFragmentManager.popBackStackImmediate()
+            }
+        )
+    }
+
+    // https://stackoverflow.com/questions/13445594/data-sharing-between-fragments-and-activity-in-android
+    // https://stackoverflow.com/questions/34562117/how-do-i-change-the-color-of-icon-of-the-selected-tab-of-tablayout
+    // https://stackoverflow.com/questions/50496593/show-popup-on-long-click-on-selected-tab-of-tablayout
+    // https://stackoverflow.com/questions/37833495/add-iconstext-to-tablayout
+    @SuppressLint("NotifyDataSetChanged")
+    private fun FragmentSearchBinding.addTab(topic: String) {
+        topicTabsList.add(topic)
+        val currentTabPosition = if (topicTabsList.isNotEmpty()) topicTabsList.lastIndex else 0
+        val newTab = tabLayoutTabs.newTab().apply {
+            text = topicTabsList[topicTabsList.lastIndex] // Actual setting happens here TabLayoutMediator
+        }
+        tabLayoutTabs.addTab(
+            /* tab = */ newTab,
+            /* position = */ currentTabPosition,
             /* setSelected = */ true
         )
-//        binding.viewpagerReminders.adapter?.notifyItemInserted(topicTabsList.lastIndex)
-        binding.viewpagerReminders.adapter?.notifyDataSetChanged()
-//        binding.tabLayoutTopics.getTabAt(position)?.select()
-//        binding.tabLayoutTopics.get(position).requestFocus()
+        tabLayoutTabs.tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
+        tabLayoutTabs.getTabAt(currentTabPosition)?.view?.setOnLongClickListener {
+            fun closeOtherTabs() {
+                try {
+                    // FIXME not working
+                    for (position: Int in 0 until tabLayoutTabs.tabCount) {
+                        if (position == currentTabPosition) continue
+                        topicTabsList.removeAt(position)
+                        tabLayoutTabs.removeTabAt(position)
+                    }
+                } catch (_: Exception) {
+                }
+            }
+
+            fun closeTab() {
+                if (topicTabsList.size == 1) {
+                    requireActivity().supportFragmentManager.popBackStackImmediate()
+                } else {
+                    topicTabsList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
+                    binding.tabLayoutTabs.removeTabAt(binding.tabLayoutTabs.selectedTabPosition)
+                    binding.viewpagerReminders.adapter?.notifyDataSetChanged()
+                }
+            }
+
+            val tabOptionsList = if (tabLayoutTabs.tabCount == 1) {
+                listOf("Close tab")
+            } else {
+                listOf("Close other tabs", "Close tab")
+            }
+
+            requireContext().showPopup(
+                view = it,
+                menuList = tabOptionsList
+            ) { menuPosition: Int ->
+                when (tabOptionsList[menuPosition]) {
+                    tabOptionsList[0] -> {
+                        if (tabOptionsList.size == 1) closeTab() else closeOtherTabs()
+                    }
+                    tabOptionsList[1] -> {
+                        closeTab()
+                    }
+                }
+            }
+            true
+        }
+        tabLayoutTabs.getTabAt(currentTabPosition)?.view?.onSafeClick {
+            root.showSnackBar(
+                message = tabLayoutTabs.getTabAt(currentTabPosition)?.text.toString(),
+                anchorView = tabLayoutTabs,
+                isAnimated = false
+            )
+        }
+        viewpagerReminders.adapter?.notifyDataSetChanged()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -227,7 +301,7 @@ class SearchFragment : Fragment() {
             createChildView(R.drawable.round_arrow_back_24, QuickActionTabMenu.NAVIGATE_BACK.value, R.color.purple_50),
             createChildView(R.drawable.round_arrow_forward_24, QuickActionTabMenu.NAVIGATE_FORWARD.value, R.color.purple_50),
             createChildView(R.drawable.other_houses_black_24dp, QuickActionTabMenu.HOME.value, R.color.purple_50),
-            createChildView(R.drawable.round_close_24, QuickActionTabMenu.CLOSE_TAB.value, R.color.purple_50),
+            createChildView(R.drawable.round_close_24, QuickActionTabMenu.CLOSE_ALL_TABS.value, R.color.purple_50),
             createChildView(R.drawable.round_refresh_24, QuickActionTabMenu.REFRESH_TAB.value, R.color.purple_50),
             createChildView(R.drawable.round_share_24, QuickActionTabMenu.SHARE_TAB.value, R.color.purple_50),
         )
@@ -258,7 +332,7 @@ class SearchFragment : Fragment() {
         val action3 = Action(id = QuickActionTabMenu.SHARE_TAB.ordinal, icon = icon3!!, title = QuickActionTabMenu.SHARE_TAB.value)
 
         val icon4 = requireContext().drawable(R.drawable.round_close_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action4 = Action(id = QuickActionTabMenu.CLOSE_TAB.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_TAB.value)
+        val action4 = Action(id = QuickActionTabMenu.CLOSE_ALL_TABS.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_ALL_TABS.value)
 
         val icon5 = requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
         val action5 = Action(id = QuickActionTabMenu.REFRESH_TAB.ordinal, icon = icon5!!, title = QuickActionTabMenu.REFRESH_TAB.value)
@@ -292,15 +366,8 @@ class SearchFragment : Fragment() {
                 QuickActionTabMenu.NAVIGATE_BACK.ordinal -> {}
                 QuickActionTabMenu.NAVIGATE_FORWARD.ordinal -> {}
                 QuickActionTabMenu.HOME.ordinal -> {}
-                QuickActionTabMenu.CLOSE_TAB.ordinal -> {
-                    if (topicTabsList.size == 1) {
-                        requireActivity().supportFragmentManager.popBackStackImmediate()
-                    } else {
-                        topicTabsList.removeAt(binding.tabLayoutTopics.selectedTabPosition)
-                        binding.tabLayoutTopics.removeTabAt(binding.tabLayoutTopics.selectedTabPosition)
-//                        binding.viewpagerReminders.adapter?.notifyItemRemoved(binding.tabLayoutTopics.selectedTabPosition)
-                        binding.viewpagerReminders.adapter?.notifyDataSetChanged()
-                    }
+                QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
+                    binding.showCloseAllTabsPopup()
                 }
                 QuickActionTabMenu.REFRESH_TAB.ordinal -> {}
                 QuickActionTabMenu.SHARE_TAB.ordinal -> {}
@@ -320,7 +387,7 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun showPopupMenu(
+    private fun FragmentSearchBinding.showPopupMenu(
         view: View,
         @MenuRes menuRes: Int
     ) {
@@ -330,17 +397,17 @@ class SearchFragment : Fragment() {
             setOnMenuItemClickListener { menuItem: MenuItem ->
                 when (menuItem.itemId) {
                     R.id.menu_item_new_private_tab -> {
-                        binding.etSearch.showKeyboard()
-                        addTopic("New Private Tab".capFirstChar())
-                        binding.etSearch.setSelection(0, binding.etSearch.text.length)
-                        binding.etSearch.setSelectAllOnFocus(true)
+                        etSearch.showKeyboard()
+                        addTab(NewTabType.NEW_PRIVATE_TAB.value)
+                        etSearch.setSelection(0, etSearch.text.length)
+                        etSearch.setSelectAllOnFocus(true)
                         false
                     }
                     R.id.menu_item_new_disappearing_tab -> {
-                        binding.etSearch.showKeyboard()
-                        addTopic("New Disappearing Tab".capFirstChar())
-                        binding.etSearch.setSelection(0, binding.etSearch.text.length)
-                        binding.etSearch.setSelectAllOnFocus(true)
+                        etSearch.showKeyboard()
+                        addTab(NewTabType.NEW_DISAPPEARING_TAB.value)
+                        etSearch.setSelection(0, etSearch.text.length)
+                        etSearch.setSelectAllOnFocus(true)
                         false
                     }
                     else -> false

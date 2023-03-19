@@ -20,6 +20,7 @@ import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
 import dagger.hilt.android.AndroidEntryPoint
 
+private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
@@ -63,12 +64,14 @@ class SearchTabFragment : Fragment() {
             layoutIconText.tvText.text = "Enable Private Mode"
 //            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
             layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_policy_24))
+            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
             layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
         }
         layoutVpn.apply {
             layoutIconText.tvText.text = "Enable VPN"
 //            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
             layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_vpn_key_24))
+            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
             layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
         }
         layoutCollections.apply {
@@ -121,7 +124,7 @@ class SearchTabFragment : Fragment() {
                     super.onPageFinished(view, url)
                 }
             }
-            loadUrl("https://www.github.com")
+            loadUrl("")
         }
     }
 
@@ -155,5 +158,3 @@ class SearchTabFragment : Fragment() {
         }
     }
 }
-
-private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"

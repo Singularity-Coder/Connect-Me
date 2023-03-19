@@ -1,6 +1,7 @@
 package com.singularitycoder.connectme.helpers
 
 import com.singularitycoder.connectme.MainFragment
+import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
 
 val dummyImageUrls = listOf(
@@ -26,13 +27,13 @@ object BroadcastKey {
 }
 
 object FragmentsTag {
-    val MAIN = MainFragment::class.java.simpleName
-    val SEARCH = SearchFragment::class.java.simpleName
+    val MAIN: String = MainFragment::class.java.simpleName
+    val SEARCH: String = SearchFragment::class.java.simpleName
+    val USER_PROFILE: String = UserProfileFragment::class.java.simpleName
 }
 
 object BottomSheetTag {
     const val WEBSITE_ACTIONS = "WEBSITE_ACTIONS_BOTTOM_SHEET"
-    const val USER_PROFILE = "USER_PROFILE_BOTTOM_SHEET"
 }
 
 enum class QuickActionTabMenu(val value: String) {
@@ -40,7 +41,7 @@ enum class QuickActionTabMenu(val value: String) {
     NAVIGATE_BACK(value = "Navigate Back"),
     HOME(value = "Home"),
     SHARE_TAB(value = "Share Tab"),
-    CLOSE_TAB(value = "Close Tab"),
+    CLOSE_ALL_TABS(value = "Close All Tabs"),
     REFRESH_TAB(value = "Refresh Tab"),
     NAVIGATE_FORWARD(value = "Navigate Forward"),
 }
@@ -53,6 +54,7 @@ enum class Tab(val value: String) {
 //    NOTES(value = "Notes"),
     FOLLOWING(value = "Following"),
     HISTORY(value = "History"),
+    DOWNLOADS(value = "Downloads"),
 }
 
 enum class UserProfile(val value: String) {
@@ -60,4 +62,10 @@ enum class UserProfile(val value: String) {
     FOLLOWING(value = "Following"),
     FOLLOWERS(value = "Followers"),
     FOLLOW_REQUESTS(value = "Requests"),
+}
+
+enum class NewTabType(val value: String) {
+    NEW_TAB(value = "New Tab".capFirstChar()),
+    NEW_PRIVATE_TAB(value = "New Private Tab".capFirstChar()),
+    NEW_DISAPPEARING_TAB(value = "New Disappearing Tab".capFirstChar())
 }

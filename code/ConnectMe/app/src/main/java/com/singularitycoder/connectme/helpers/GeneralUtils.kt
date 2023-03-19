@@ -54,10 +54,13 @@ fun View.showSnackBar(
     anchorView: View? = null,
     duration: Int = Snackbar.LENGTH_SHORT,
     actionBtnText: String = "NA",
+    isAnimated: Boolean = true,
     action: () -> Unit = {},
 ) {
     Snackbar.make(this, message, duration).apply {
-        this.animationMode = BaseTransientBottomBar.ANIMATION_MODE_SLIDE
+        if (isAnimated) this.animationMode = BaseTransientBottomBar.ANIMATION_MODE_SLIDE
+//        this.setBackgroundTint(this.context.color(R.color.black_50))
+//        this.setTextColor(this.context.color(R.color.title_color))
         if (null != anchorView) this.anchorView = anchorView
         if ("NA" != actionBtnText) setAction(actionBtnText) { action.invoke() }
         this.show()
@@ -231,83 +234,6 @@ fun Context.sendWhatsAppMessage(whatsAppPhoneNum: String) {
         } catch (e: Exception) {
         }
     }
-}
-
-fun View.setMargins(
-    all: Int? = null,
-    start: Int = 0,
-    top: Int = 0,
-    end: Int = 0,
-    bottom: Int = 0
-) {
-    if (this.layoutParams !is ViewGroup.MarginLayoutParams) return
-    val params = this.layoutParams as ViewGroup.MarginLayoutParams
-    if (all != null) {
-        params.setMargins(all, all, all, all)
-    } else {
-        params.setMargins(start, top, end, bottom)
-    }
-    this.requestLayout()
-}
-
-// https://stackoverflow.com/questions/2004344/how-do-i-handle-imeoptions-done-button-click
-inline fun EditText.onImeDoneClick(crossinline callback: () -> Unit) {
-    setOnEditorActionListener { _, actionId, event ->
-        if (actionId == EditorInfo.IME_ACTION_DONE ||
-            (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)
-        ) {
-            callback.invoke()
-            return@setOnEditorActionListener true
-        }
-        return@setOnEditorActionListener false
-    }
-}
-
-// https://stackoverflow.com/questions/7200535/how-to-convert-views-to-bitmaps
-// https://www.youtube.com/watch?v=laySURtxUTk
-/** If layout inflated already */
-fun View.toBitmapWith(defaultColor: Int): Bitmap? = try {
-    val bitmap = Bitmap.createBitmap(
-        /* width = */ this.width,
-        /* height = */ this.height,
-        /* config = */ Bitmap.Config.ARGB_8888
-    )
-    val canvas = Canvas(bitmap).apply {
-        drawColor(defaultColor)
-    }
-    this.draw(canvas)
-    bitmap
-} catch (e: Exception) {
-    println("Error: $e")
-    null
-}
-
-// https://stackoverflow.com/questions/7200535/how-to-convert-views-to-bitmaps
-// https://www.youtube.com/watch?v=laySURtxUTk
-/** When layout not inflated yet. Measure the view first before extracting the bitmap.
- * Else the width and height will be 0. Which means u cant do view.width & view.height.
- * If unsure of width and height specify MeasureSpec.UNSPECIFIED */
-fun View.toBitmapOf(width: Int, height: Int): Bitmap? = try {
-    this.measure(
-        /* widthMeasureSpec = */ View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-        /* heightMeasureSpec = */ View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY)
-    )
-    val bitmap = Bitmap.createBitmap(
-        /* width = */ this.measuredWidth,
-        /* height = */ this.measuredHeight,
-        /* config = */ Bitmap.Config.ARGB_8888 // Each pixel is set to 4 bytes of memory in this config
-    )
-    this.layout(
-        /* l = */ 0,
-        /* t = */ 0,
-        /* r = */ this.measuredWidth,
-        /* b = */ this.measuredHeight
-    )
-    this.draw(Canvas(bitmap /* The canvas is drawn on the bitmap */)) // We are basically drawing the view on the Canvas
-    bitmap
-} catch (e: Exception) {
-    println("Error: $e")
-    null
 }
 
 // Credit: Philip Lackner

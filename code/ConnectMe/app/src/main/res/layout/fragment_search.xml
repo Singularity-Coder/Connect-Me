@@ -40,7 +40,7 @@
             android:backgroundTint="@color/white">
 
             <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_layout_topics"
+                android:id="@+id/tab_layout_tabs"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -53,11 +53,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:tabBackground="@color/white"
                 app:tabGravity="fill"
+                app:tabIconTint="@color/tab_icon_color_selector"
                 app:tabIndicator="@drawable/bg_tab_indicator_bottom_rounded"
                 app:tabIndicatorColor="@color/purple_500"
                 app:tabIndicatorGravity="top"
                 app:tabIndicatorHeight="4dp"
+                app:tabInlineLabel="true"
                 app:tabMode="scrollable"
+                app:tabPaddingStart="16dp"
                 app:tabSelectedTextColor="@color/purple_500"
                 app:tabTextAppearance="@style/CustomTextAppearanceTab"
                 app:tabTextColor="@android:color/darker_gray" />
@@ -70,9 +73,9 @@
                 app:cardBackgroundColor="@color/purple_50"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="0dp"
-                app:layout_constraintBottom_toBottomOf="@+id/tab_layout_topics"
+                app:layout_constraintBottom_toBottomOf="@+id/tab_layout_tabs"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/tab_layout_topics"
+                app:layout_constraintTop_toTopOf="@+id/tab_layout_tabs"
                 app:rippleColor="@color/purple_200">
 
                 <ImageButton
@@ -166,7 +169,9 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginEnd="12dp"
+                        android:backgroundTint="@color/purple_500"
                         app:icon="@drawable/baseline_keyboard_command_key_24"
+                        app:iconTint="@color/white"
                         app:rippleColor="@color/purple_200" />
 
                     <com.google.android.material.button.MaterialButton

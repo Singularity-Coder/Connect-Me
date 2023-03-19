@@ -1,9 +1,20 @@
+TODAY
+2. Close other tabs
+3. Change profile form bottom sheet to normal frag - finish it
+4. Downloads UI
+5. History UI
+6. Following UI
+7. Collections UI
+8. Explore UI - need to think
+9. Webview Functionality
+
+
 
 TODO
 2. Explore - will be based on time of the day. If its 8 am then show posts of breakfast. If evening then show entertainment stuff. User can customise topics
 3. Profile - share profile through internet through some kind of P2P protocol like torrents do. Users can let other users view their collections. 4 tabs - FOLLOW, FOLLOWING, FOLLOWERS, FOLLOW REQUESTS
 5. New tab screen - on clicking new tab we see 3 collections, 3 history, 3 downloads, 3 following, ability to set private mode, scan QR code, set VPN, se ad blocker, block cookies
-7. Today on the internet
+7. Today on the internet - something like internet health or status. What are people talking on the internet now. Scrape google trends in ur location. Provide location filter.
 
 
 New Tab Variations
@@ -13,3 +24,12 @@ New Tab Variations
 
 
 Font size, TTS will be in reader mode
+Download videos/Media
+Generate QR code for link
+Save webpage
+Detect media resources
+View source code
+Rolling screen capture website
+Recent tabs, Bookmarks, reading list, etc, etc will all be part of collections
+Play youtube videos in background - Vivaldi is amazing
+Use javascript interface to provide haptic feedback on button taps inside webview

@@ -4,34 +4,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentUserProfileBinding
 import com.singularitycoder.connectme.feed.FeedFragment
-import com.singularitycoder.connectme.helpers.Tab
-import com.singularitycoder.connectme.helpers.UserProfile
-import com.singularitycoder.connectme.helpers.drawable
-import com.singularitycoder.connectme.helpers.setTransparentBackground
+import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.history.HistoryFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class UserProfileBottomSheetFragment : BottomSheetDialogFragment() {
+class UserProfileFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance() = UserProfileBottomSheetFragment()
+        fun newInstance() = UserProfileFragment()
     }
 
     private lateinit var binding: FragmentUserProfileBinding
@@ -66,14 +58,24 @@ class UserProfileBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun FragmentUserProfileBinding.setupUI() {
-        setTransparentBackground()
-        setBottomSheetBehaviour()
         setUpViewPager()
         ivProfileImage.setImageDrawable(requireContext().drawable(R.drawable.hithesh))
     }
 
     private fun FragmentUserProfileBinding.setupUserActionListeners() {
-
+        btnMenu.onSafeClick {
+            val optionsList = listOf("Close")
+            requireContext().showPopup(
+                view = it.first,
+                menuList = optionsList
+            ) { menuPosition: Int ->
+                when (optionsList[menuPosition]) {
+                    optionsList[0] -> {
+                        requireActivity().supportFragmentManager.popBackStackImmediate()
+                    }
+                }
+            }
+        }
     }
 
     private fun FragmentUserProfileBinding.observeForData() {
@@ -103,39 +105,5 @@ class UserProfileBottomSheetFragment : BottomSheetDialogFragment() {
             UserProfile.FOLLOWERS.ordinal -> FeedFragment.newInstance(screenType = Tab.COLLECTIONS.value)
             else -> HistoryFragment.newInstance(screenType = UserProfile.FOLLOW_REQUESTS.value)
         }
-    }
-
-    private fun setBottomSheetBehaviour() {
-        val bottomSheetDialog = dialog as BottomSheetDialog
-        val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout? ?: return
-        val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet)
-//        bottomSheet.layoutParams.height = deviceHeight()
-//        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-        var oldState = BottomSheetBehavior.STATE_HIDDEN
-        behavior.addBottomSheetCallback(object : BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                println("bottom sheet state: ${behavior.state}")
-                when (newState) {
-                    BottomSheetBehavior.STATE_COLLAPSED -> {
-                        behavior.state = BottomSheetBehavior.STATE_HIDDEN
-                    }
-                    BottomSheetBehavior.STATE_DRAGGING -> Unit
-                    BottomSheetBehavior.STATE_EXPANDED -> {
-                        oldState = BottomSheetBehavior.STATE_EXPANDED
-                    }
-                    BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
-                    BottomSheetBehavior.STATE_HIDDEN -> Unit
-                    BottomSheetBehavior.STATE_SETTLING -> {
-                        if (oldState == BottomSheetBehavior.STATE_EXPANDED) {
-                            behavior.state = BottomSheetBehavior.STATE_HIDDEN
-                        }
-                    }
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                // React to dragging events
-            }
-        })
     }
 }

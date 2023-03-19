@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.feed
+package com.singularitycoder.connectme.explore
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,19 +13,19 @@ import dagger.hilt.android.AndroidEntryPoint
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
 @AndroidEntryPoint
-class FeedFragment : Fragment() {
+class ExploreFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(screenType: String) = FeedFragment().apply {
+        fun newInstance(screenType: String) = ExploreFragment().apply {
             arguments = Bundle().apply { putString(ARG_PARAM_SCREEN_TYPE, screenType) }
         }
     }
 
     private lateinit var binding: FragmentFeedBinding
 
-    private val feedAdapter = FeedAdapter()
-    private val feedList = mutableListOf<Feed>()
+    private val feedAdapter = ExploreAdapter()
+    private val feedList = mutableListOf<Explore>()
 
     private var topicParam: String? = null
 
@@ -52,28 +52,28 @@ class FeedFragment : Fragment() {
             adapter = feedAdapter
         }
         feedAdapter.feedList = listOf(
-            Feed(
+            Explore(
                 imageUrl = dummyImageUrls[1],
                 title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
                 source = "www.news.com",
                 time = "5 hours ago",
                 link = ""
             ),
-            Feed(
+            Explore(
                 imageUrl = dummyImageUrls[3],
                 title = "Two people stranded on an unknwon sea. People call it the scary Hahahah phenomenon.",
                 source = "www.google.com",
                 time = "4 hours ago",
                 link = ""
             ),
-            Feed(
+            Explore(
                 imageUrl = dummyImageUrls[0],
                 title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
                 source = "www.newsplus.com",
                 time = "2 hours ago",
                 link = ""
             ),
-            Feed(
+            Explore(
                 imageUrl = dummyImageUrls[2],
                 title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
                 source = "www.google.com",
@@ -84,7 +84,7 @@ class FeedFragment : Fragment() {
     }
 
     private fun FragmentFeedBinding.setupUserActionListeners() {
-        feedAdapter.setOnNewsClickListener { it: Feed ->
+        feedAdapter.setOnNewsClickListener { it: Explore ->
         }
     }
 
