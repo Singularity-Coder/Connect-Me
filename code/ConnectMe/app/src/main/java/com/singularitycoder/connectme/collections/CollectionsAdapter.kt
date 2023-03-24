@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.databinding.ListItemCollectionBinding
 import com.singularitycoder.connectme.databinding.ListItemFeedBinding
 
 class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -13,7 +14,7 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var newsClickListener: (collection: Collection) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val itemBinding = ListItemFeedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val itemBinding = ListItemCollectionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NewsViewHolder(itemBinding)
     }
 
@@ -30,20 +31,16 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     inner class NewsViewHolder(
-        private val itemBinding: ListItemFeedBinding,
+        private val itemBinding: ListItemCollectionBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(collection: Collection) {
             itemBinding.apply {
-                ivNewsImage.load(collection.imageUrl) {
-                    placeholder(R.color.black)
-                }
-                val source = if (collection.source.isNullOrBlank()) {
-                    collection.link?.substringAfter("//")?.substringBefore("/")?.replace("www.", "")
-                } else {
-                    collection.source
-                }
-                tvSource.text = "$source  \u2022  ${collection.time}"
                 tvTitle.text = collection.title
+                listOf(layoutFollowingApp1, layoutFollowingApp2, layoutFollowingApp3, layoutFollowingApp4).forEachIndexed { index, listItemAppBinding ->
+                    listItemAppBinding.ivAppIcon.load(collection.websitesList.get(index).imageUrl) {
+                        placeholder(R.color.black)
+                    }
+                }
                 root.setOnClickListener {
                     newsClickListener.invoke(collection)
                 }

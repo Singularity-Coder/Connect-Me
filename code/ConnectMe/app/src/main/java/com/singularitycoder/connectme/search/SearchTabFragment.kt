@@ -3,7 +3,6 @@ package com.singularitycoder.connectme.search
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,8 +12,12 @@ import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
@@ -76,6 +79,23 @@ class SearchTabFragment : Fragment() {
         }
         layoutCollections.apply {
             tvTitle.text = "Collections"
+            tvTitle.setTextColor(requireContext().color(R.color.purple_500))
+            ivDropdownArrow.isVisible = true
+        }
+        layoutFollowing.apply {
+            tvTitle.text = "Following"
+        }
+        listOf(layoutFollowing, layoutCollections).forEach {
+            it.apply {
+                layoutFollowingApp1.ivAppIcon.load(dummyFaviconUrls[0])
+                layoutFollowingApp1.tvAppName.text = "Doodle"
+                layoutFollowingApp2.ivAppIcon.load(dummyFaviconUrls[1])
+                layoutFollowingApp2.tvAppName.text = "Stupify"
+                layoutFollowingApp3.ivAppIcon.load(dummyFaviconUrls[2])
+                layoutFollowingApp3.tvAppName.text = "Hitgub"
+                layoutFollowingApp4.ivAppIcon.load(dummyFaviconUrls[3])
+                layoutFollowingApp4.tvAppName.text = "Coldstar"
+            }
         }
         layoutHistory.apply {
             tvTitle.text = "History"
@@ -129,6 +149,40 @@ class SearchTabFragment : Fragment() {
     }
 
     private fun FragmentSearchTabBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
+        layoutCollections.apply {
+            viewDummyForDropdown.onSafeClick {
+                val collectionsList = listOf("Collection 1", "Collection 2", "Collection 3")
+                val adapter = ArrayAdapter(
+                    /* context = */ requireContext(),
+                    /* resource = */ android.R.layout.simple_list_item_1,
+                    /* objects = */ collectionsList
+                )
+                ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
+                    anchorView = it.first
+                    setAdapter(adapter)
+                    setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+                        layoutCollections.tvTitle.text = collectionsList[position]
+                        this.dismiss()
+                    }
+                    show()
+                }
+            }
+            tvTitle.setOnClickListener {
+                layoutCollections.viewDummyForDropdown.performClick()
+            }
+            ivDropdownArrow.setOnClickListener {
+                layoutCollections.tvTitle.performClick()
+            }
+            clShowMore.setOnClickListener {
+                layoutCollections.ivShowMore.performClick()
+            }
+            ivShowMore.onSafeClick {
+                requireContext().showToast("Show more")
+            }
+        }
+
         layoutPrivateMode.apply {
             root.onSafeClick { switchOnOff.performClick() }
             switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->

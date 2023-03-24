@@ -4,6 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_history_icon"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/ic_placeholder_rectangle"
+        android:scaleType="centerCrop"
+        android:theme="@style/CustomRoundedImageView"
+        app:cardCornerRadius="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/black_50"
+        app:strokeWidth="1dp" />
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_history_titles"
         android:layout_width="0dp"
@@ -11,17 +28,18 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:orientation="vertical"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/ll_image">
+        app:layout_constraintBottom_toBottomOf="@+id/iv_history_icon"
+        app:layout_constraintEnd_toStartOf="@+id/tv_time"
+        app:layout_constraintStart_toEndOf="@+id/iv_history_icon"
+        app:layout_constraintTop_toTopOf="@+id/iv_history_icon">
 
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="2"
-            android:text="Randomness is our forte. Let us randomize ur life."
+            android:lines="1"
+            android:text="Randomness is random."
             android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
             android:textColor="@color/title_color"
             android:textStyle="bold" />
@@ -32,51 +50,33 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
             android:ellipsize="end"
-            android:maxLines="1"
-            android:text="random.com"
+            android:lines="1"
+            android:text="https://www.randompub.com"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:textColor="@android:color/darker_gray"
-            app:layout_constraintTop_toBottomOf="@+id/tv_following_site" />
+            app:layout_constraintStart_toEndOf="@+id/checkbox_app"
+            app:layout_constraintTop_toBottomOf="@+id/tv_title" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="1dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.7" />
-
-    <LinearLayout
-        android:id="@+id/ll_image"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:orientation="vertical"
+        android:maxLines="1"
+        android:text="12:57 PM"
+        android:textAllCaps="false"
+        android:textColor="@android:color/darker_gray"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/guideline"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_image"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:scaleType="centerCrop"
-            android:src="@color/purple_50"
-            android:theme="@style/CustomRoundedImageView"
-            app:cardCornerRadius="10dp" />
-    </LinearLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider_bottom"
         android:layout_width="0dp"
         android:layout_height="1dp"
         app:dividerColor="@color/black_50"
-        app:dividerInsetStart="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/ll_history_titles" />
 </androidx.constraintlayout.widget.ConstraintLayout>

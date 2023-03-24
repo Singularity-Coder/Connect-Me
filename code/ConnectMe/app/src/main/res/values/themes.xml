@@ -57,6 +57,8 @@
 
     <!--https://stackoverflow.com/questions/59248890/imageview-with-only-one-rounded-corner-->
     <style name="CustomRoundedImageView" parent="">
+<!--        <item name="cornerFamilyTopLeft">rounded</item>-->
+<!--        <item name="cornerFamilyTopRight">cut</item>-->
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">0dp</item>
         <item name="cornerSizeTopRight">10dp</item>

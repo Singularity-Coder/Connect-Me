@@ -131,6 +131,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
         itemHistory.root.onSafeClick {  }
 
         itemDownloads.root.onSafeClick {  }
@@ -151,17 +153,17 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
         itemClearCache.root.onSafeClick {  }
 
-        btnMenu.onSafeClick {
-            val optionsList = listOf("Close")
-            requireContext().showPopup(
-                view = it.first,
-                menuList = optionsList
-            ) { menuPosition: Int ->
-                when (optionsList[menuPosition]) {
-                    optionsList[0] -> dismiss()
-                }
-            }
-        }
+//        btnMenu.onSafeClick {
+//            val optionsList = listOf("Close")
+//            requireContext().showPopup(
+//                view = it.first,
+//                menuList = optionsList
+//            ) { menuPosition: Int ->
+//                when (optionsList[menuPosition]) {
+//                    optionsList[0] -> dismiss()
+//                }
+//            }
+//        }
 
         itemDesktopSite.apply {
             root.onSafeClick { switchOnOff.performClick() }

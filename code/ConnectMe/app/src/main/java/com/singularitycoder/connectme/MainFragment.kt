@@ -13,7 +13,10 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.singularitycoder.connectme.collections.CollectionsFragment
 import com.singularitycoder.connectme.databinding.FragmentMainBinding
+import com.singularitycoder.connectme.downloads.DownloadsFragment
+import com.singularitycoder.connectme.explore.ExploreFragment
 import com.singularitycoder.connectme.feed.FeedFragment
 import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
@@ -23,6 +26,7 @@ import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import javax.inject.Inject
 
 // TODO Notifications for remainders
@@ -45,6 +49,7 @@ class MainFragment : Fragment() {
     private var topicParam: String? = null
     private val viewModel: MainViewModel by viewModels()
 
+    private lateinit var dateTimeTimer: Timer
     private lateinit var binding: FragmentMainBinding
 
     private val viewPager2PageChangeListener = object : ViewPager2.OnPageChangeCallback() {
@@ -56,6 +61,11 @@ class MainFragment : Fragment() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
             println("viewpager2: onPageSelected")
+            if (position == 0) {
+                setTimeAndDate()
+            } else {
+                binding.tvAppName.text = getString(R.string.app_name)
+            }
         }
 
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
@@ -83,15 +93,19 @@ class MainFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        dateTimeTimer.purge()
         binding.viewpagerHome.unregisterOnPageChangeCallback(viewPager2PageChangeListener)
     }
 
     private fun FragmentMainBinding.setupUI() {
         setUpViewPager()
+        refreshDateTime()
         ivProfileImage.setImageDrawable(requireContext().drawable(R.drawable.hithesh))
     }
 
     private fun FragmentMainBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
 //        tvAppSubtitle.setOnClickListener {
 //            requireContext().clipboard()?.text = binding.tvAppSubtitle.text
 //            binding.root.showSnackBar("Copied location: ${requireContext().clipboard()?.text}")
@@ -126,6 +140,29 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun refreshDateTime() {
+        dateTimeTimer = Timer()
+        dateTimeTimer.doEvery(
+            duration = 1.seconds(),
+            withInitialDelay = 0.seconds(),
+        ) {
+            if (binding.tabLayoutHome.selectedTabPosition == 0) {
+                setTimeAndDate()
+            }
+        }
+    }
+
+    private fun setTimeAndDate() {
+        val time = timeNow toTimeOfType DateType.h_mm_a
+        val hours = time.substringBefore(":")
+        val formattedHours = if (hours.length == 1) "0${hours}" else hours
+        val minutes = time.substringAfter(":").substringBefore(" ")
+        val dayPeriod = time.substringAfter(" ").toUpCase()
+        val html = "$formattedHours : $minutes <small><small><small>$dayPeriod</small></small></small>"
+        val day = Calendar.getInstance().time.toString().substringBefore(" ")
+        binding.tvAppName.text = getHtmlFormattedTime(html)
+    }
+
     private fun FragmentMainBinding.setUpViewPager() {
         viewpagerHome.apply {
             adapter = HomeViewPagerAdapter(fragmentManager = requireActivity().supportFragmentManager, lifecycle = lifecycle)
@@ -136,22 +173,24 @@ class MainFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
             override fun onTabReselected(tab: TabLayout.Tab?) = Unit
         })
+        tabLayoutHome.tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
         TabLayoutMediator(tabLayoutHome, viewpagerHome) { tab, position ->
             tab.text = Tab.values()[position].value
         }.attach()
+        tabLayoutHome.selectTab(tabLayoutHome.getTabAt(1))
     }
 
     inner class HomeViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount(): Int = Tab.values().size
         override fun createFragment(position: Int): Fragment = when (position) {
-            Tab.EXPLORE.ordinal -> FeedFragment.newInstance(screenType = Tab.EXPLORE.value)
+            Tab.EXPLORE.ordinal -> ExploreFragment.newInstance(screenType = Tab.EXPLORE.value)
             Tab.FEED.ordinal -> FeedFragment.newInstance(screenType = Tab.FEED.value)
-            Tab.COLLECTIONS.ordinal -> FeedFragment.newInstance(screenType = Tab.COLLECTIONS.value)
+            Tab.COLLECTIONS.ordinal -> CollectionsFragment.newInstance(screenType = Tab.COLLECTIONS.value)
 //            Tab.REMAINDERS.ordinal -> FeedFragment.newInstance(screenType = Tab.REMAINDERS.value)
 //            Tab.NOTES.ordinal -> FeedFragment.newInstance(screenType = Tab.NOTES.value)
             Tab.FOLLOWING.ordinal -> FollowingFragment.newInstance(screenType = Tab.FOLLOWING.value)
             Tab.HISTORY.ordinal -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
-            else -> HistoryFragment.newInstance(screenType = Tab.DOWNLOADS.value)
+            else -> DownloadsFragment.newInstance(screenType = Tab.DOWNLOADS.value)
         }
     }
 }

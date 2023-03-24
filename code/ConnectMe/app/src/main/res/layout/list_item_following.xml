@@ -11,13 +11,15 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
+        android:background="@drawable/ic_placeholder_rectangle"
         android:scaleType="centerCrop"
         android:theme="@style/CustomRoundedImageView"
-        android:background="@drawable/ic_placeholder_rectangle"
         app:cardCornerRadius="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/black_50"
+        app:strokeWidth="1dp" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_following_titles"

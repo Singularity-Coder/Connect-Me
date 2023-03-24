@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
-import com.singularitycoder.connectme.helpers.dummyImageUrls
+import com.singularitycoder.connectme.helpers.dummyFaviconUrls
+import com.singularitycoder.connectme.search.WebApp
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
@@ -51,39 +53,28 @@ class CollectionsFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
-        feedAdapter.feedList = listOf(
-            Collection(
-                imageUrl = dummyImageUrls[1],
-                title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
-                source = "www.news.com",
-                time = "5 hours ago",
-                link = ""
-            ),
-            Collection(
-                imageUrl = dummyImageUrls[3],
-                title = "Two people stranded on an unknwon sea. People call it the scary Hahahah phenomenon.",
-                source = "www.google.com",
-                time = "4 hours ago",
-                link = ""
-            ),
-            Collection(
-                imageUrl = dummyImageUrls[0],
-                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
-                source = "www.newsplus.com",
-                time = "2 hours ago",
-                link = ""
-            ),
-            Collection(
-                imageUrl = dummyImageUrls[2],
-                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
-                source = "www.google.com",
-                time = "9 hours ago",
-                link = ""
-            ),
-        )
+        (0..30).forEach { it: Int ->
+            feedList.add(
+                Collection(
+                    title = "Collection $it",
+                    websitesList = (0..4).map {
+                        WebApp(
+                            imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
+                            title = "The Random Publications",
+                            source = "Randomness is random.",
+                            time = "5 hours ago",
+                            link = "https://www.randompub.com",
+                        )
+                    }
+                )
+            )
+        }
+        feedAdapter.feedList = feedList
     }
 
     private fun FragmentFeedBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
         feedAdapter.setOnNewsClickListener { it: Collection ->
         }
     }

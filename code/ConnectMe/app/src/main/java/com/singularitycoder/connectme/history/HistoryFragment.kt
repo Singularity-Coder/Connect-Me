@@ -7,7 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
+import com.singularitycoder.connectme.databinding.FragmentHistoryBinding
+import com.singularitycoder.connectme.following.Following
+import com.singularitycoder.connectme.helpers.dummyFaviconUrls
+import com.singularitycoder.connectme.helpers.onSafeClick
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
@@ -19,7 +24,7 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    private lateinit var binding: FragmentFollowingBinding
+    private lateinit var binding: FragmentHistoryBinding
 
     private val historyAdapter = HistoryAdapter()
     private val historyList = mutableListOf<History>()
@@ -32,7 +37,7 @@ class HistoryFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentFollowingBinding.inflate(inflater, container, false)
+        binding = FragmentHistoryBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -43,19 +48,19 @@ class HistoryFragment : Fragment() {
         observeForData()
     }
 
-    private fun FragmentFollowingBinding.setupUI() {
-        rvFollowing.apply {
+    private fun FragmentHistoryBinding.setupUI() {
+        rvHistory.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = historyAdapter
         }
-        (0..10).forEach { it: Int ->
+        (0..30).forEach { it: Int ->
             historyList.add(
                 History(
-                    imageUrl = "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                    imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
                     title = "The Random Publications",
-                    source = "random.com",
+                    source = "Randomness is random.",
                     time = "5 hours ago",
-                    link = "",
+                    link = "https://www.randompub.com",
                     posts = 17L + it
                 )
             )
@@ -63,7 +68,11 @@ class HistoryFragment : Fragment() {
         historyAdapter.historyList = historyList
     }
 
-    private fun FragmentFollowingBinding.setupUserActionListeners() {
+    private fun FragmentHistoryBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
+        btnDeleteAllHistory.onSafeClick {  }
+
         historyAdapter.setOnClickListener { it: History ->
         }
     }

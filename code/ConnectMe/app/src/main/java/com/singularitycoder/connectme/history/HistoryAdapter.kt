@@ -35,7 +35,7 @@ class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(history: History) {
             itemBinding.apply {
-                ivImage.load(history.imageUrl) {
+                ivHistoryIcon.load(history.imageUrl) {
                     placeholder(R.drawable.ic_placeholder_rectangle)
                     error(R.drawable.ic_placeholder_rectangle)
                 }
@@ -45,7 +45,7 @@ class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     history.source
                 }
                 tvTitle.text = "$source"
-                tvSubtitle.text = "Posted ${history.posts} articles today"
+                tvSubtitle.text = history.link
                 root.setOnClickListener {
                     itemClickListener.invoke(history)
                 }

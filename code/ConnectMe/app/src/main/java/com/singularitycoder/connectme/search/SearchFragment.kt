@@ -1,7 +1,6 @@
 package com.singularitycoder.connectme.search
 
 import android.annotation.SuppressLint
-import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -111,9 +110,11 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setUpUserActionListeners() {
+        root.setOnClickListener { }
+
         setTabMenuTouchOptions()
 
-        ivProfile.onSafeClick {
+        ivWebappProfile.onSafeClick {
             WebsiteActionsBottomSheetFragment.newInstance().show(
                 /* manager = */ requireActivity().supportFragmentManager,
                 /* tag = */ BottomSheetTag.WEBSITE_ACTIONS
@@ -151,21 +152,13 @@ class SearchFragment : Fragment() {
 
         etSearch.onImeClick {
             etSearch.hideKeyboard()
-            etSearch.clearFocus()
         }
 
         etSearch.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
-                etSearch.setSelection(0, etSearch.text.length)
-                binding.etSearch.setSelectAllOnFocus(true)
-                btnWebsiteQuickActions.isVisible = false
-                btnQrScan.isVisible = true
-                btnVoiceSearch.isVisible = true
+                doWhenSearchIsFocused()
             } else {
-                etSearch.clearFocus()
-                btnWebsiteQuickActions.isVisible = true
-                btnQrScan.isVisible = false
-                btnVoiceSearch.isVisible = false
+                doWhenSearchIsNotFocused()
             }
             try {
                 val searchTabFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
@@ -183,20 +176,42 @@ class SearchFragment : Fragment() {
         })
 
         // https://stackoverflow.com/questions/25216749/soft-keyboard-open-and-close-listener-in-an-activity-in-android
-        root.viewTreeObserver.addOnGlobalLayoutListener {
-            val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
-            root.getWindowVisibleDisplayFrame(rect)
-            val heightDiff: Int = root.rootView.height - (rect.bottom - rect.top)
-            // if heightDiff more than 500 pixels, its probably a keyboard...
+        etSearch.viewTreeObserver.addOnGlobalLayoutListener {
+            if (root.isKeyboardHidden()) {
+                etSearch.clearFocus()
+            } else {
+                etSearch.requestFocus()
+            }
         }
     }
+
+    private fun FragmentSearchBinding.doWhenSearchIsFocused() {
+        etSearch.setSelection(0, etSearch.text.length)
+        binding.etSearch.setSelectAllOnFocus(true)
+        btnWebsiteQuickActions.isVisible = false
+        btnQrScan.isVisible = true
+        btnVoiceSearch.isVisible = true
+        ivWebappProfile.isVisible = false
+    }
+
+    private fun doWhenSearchIsNotFocused() {
+        binding.etSearch.clearFocus()
+        binding.btnWebsiteQuickActions.isVisible = true
+        binding.btnQrScan.isVisible = false
+        binding.btnVoiceSearch.isVisible = false
+        binding.ivWebappProfile.isVisible = true
+    }
+
+    fun isKeyboardShown(): Boolean = binding.etSearch.isKeyboardVisible
 
     private fun FragmentSearchBinding.showCloseAllTabsPopup() {
         requireContext().showAlertDialog(
             title = "Close all tabs?",
             message = """
                 Press "Close" to permanently close all tabs.
-                Press "Keep" to retain them in collections. 
+                
+                Press "Keep" to retain them in collections.
+                 
             """.trimIndent(),
             positiveBtnText = "Close",
             negativeBtnText = "Keep",
@@ -252,22 +267,41 @@ class SearchFragment : Fragment() {
                 }
             }
 
+            fun duplicateTab() {
+                addTab(NewTabType.NEW_TAB.value)
+            }
+
             val tabOptionsList = if (tabLayoutTabs.tabCount == 1) {
-                listOf("Close tab")
+                listOf(
+                    "Duplicate Tab",
+                    "Close Tab"
+                )
             } else {
-                listOf("Close other tabs", "Close tab")
+                listOf(
+                    "Close Tabs to the Left",
+                    "Close Tabs to the Right",
+                    "Close Other Tabs",
+                    "New Tab to the Left",
+                    "New Tab to the Right",
+                    "Duplicate Tab",
+                    "Close Tab",
+                )
             }
 
             requireContext().showPopup(
                 view = it,
                 menuList = tabOptionsList
             ) { menuPosition: Int ->
-                when (tabOptionsList[menuPosition]) {
-                    tabOptionsList[0] -> {
-                        if (tabOptionsList.size == 1) closeTab() else closeOtherTabs()
+                if (tabOptionsList.size == 2) {
+                    when (tabOptionsList[menuPosition]) {
+                        tabOptionsList[0] -> closeTab()
+                        tabOptionsList[1] -> duplicateTab()
                     }
-                    tabOptionsList[1] -> {
-                        closeTab()
+                } else {
+                    when (tabOptionsList[menuPosition]) {
+                        tabOptionsList[0] -> closeOtherTabs()
+                        tabOptionsList[1] -> closeTab()
+                        tabOptionsList[2] -> duplicateTab()
                     }
                 }
             }
@@ -302,8 +336,8 @@ class SearchFragment : Fragment() {
             createChildView(R.drawable.round_arrow_forward_24, QuickActionTabMenu.NAVIGATE_FORWARD.value, R.color.purple_50),
             createChildView(R.drawable.other_houses_black_24dp, QuickActionTabMenu.HOME.value, R.color.purple_50),
             createChildView(R.drawable.round_close_24, QuickActionTabMenu.CLOSE_ALL_TABS.value, R.color.purple_50),
-            createChildView(R.drawable.round_refresh_24, QuickActionTabMenu.REFRESH_TAB.value, R.color.purple_50),
-            createChildView(R.drawable.round_share_24, QuickActionTabMenu.SHARE_TAB.value, R.color.purple_50),
+            createChildView(R.drawable.round_refresh_24, QuickActionTabMenu.REFRESH_WEBSITE.value, R.color.purple_50),
+            createChildView(R.drawable.round_share_24, QuickActionTabMenu.SHARE_LINK.value, R.color.purple_50),
         )
         binding.pinterestView.setPinClickListener(object : PinterestView.PinMenuClickListener {
             override fun onMenuItemClick(checkedView: View?, clickItemPos: Int) {
@@ -328,14 +362,17 @@ class SearchFragment : Fragment() {
         val icon2 = requireContext().drawable(R.drawable.other_houses_black_24dp)?.changeColor(requireContext(), R.color.purple_500)
         val action2 = Action(id = QuickActionTabMenu.HOME.ordinal, icon = icon2!!, title = QuickActionTabMenu.HOME.value)
 
+        val icon2dot5 = requireContext().drawable(R.drawable.outline_library_add_24)?.changeColor(requireContext(), R.color.purple_500)
+        val action2dot5 = Action(id = QuickActionTabMenu.COLLECT_ALL_TABS.ordinal, icon = icon2dot5!!, title = QuickActionTabMenu.COLLECT_ALL_TABS.value)
+
         val icon3 = requireContext().drawable(R.drawable.round_share_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action3 = Action(id = QuickActionTabMenu.SHARE_TAB.ordinal, icon = icon3!!, title = QuickActionTabMenu.SHARE_TAB.value)
+        val action3 = Action(id = QuickActionTabMenu.SHARE_LINK.ordinal, icon = icon3!!, title = QuickActionTabMenu.SHARE_LINK.value)
 
         val icon4 = requireContext().drawable(R.drawable.round_close_24)?.changeColor(requireContext(), R.color.purple_500)
         val action4 = Action(id = QuickActionTabMenu.CLOSE_ALL_TABS.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_ALL_TABS.value)
 
         val icon5 = requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action5 = Action(id = QuickActionTabMenu.REFRESH_TAB.ordinal, icon = icon5!!, title = QuickActionTabMenu.REFRESH_TAB.value)
+        val action5 = Action(id = QuickActionTabMenu.REFRESH_WEBSITE.ordinal, icon = icon5!!, title = QuickActionTabMenu.REFRESH_WEBSITE.value)
 
         val icon6 = requireContext().drawable(R.drawable.round_arrow_forward_24)?.changeColor(requireContext(), R.color.purple_500)
         val action6 = Action(id = QuickActionTabMenu.NAVIGATE_FORWARD.ordinal, icon = icon6!!, title = QuickActionTabMenu.NAVIGATE_FORWARD.value)
@@ -343,6 +380,7 @@ class SearchFragment : Fragment() {
         val addFabQuickActionView = QuickActionView.make(requireContext()).apply {
             addAction(action1)
             addAction(action2)
+            addAction(action2dot5)
             addAction(action3)
             addAction(action4)
             addAction(action5)
@@ -369,8 +407,8 @@ class SearchFragment : Fragment() {
                 QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
                     binding.showCloseAllTabsPopup()
                 }
-                QuickActionTabMenu.REFRESH_TAB.ordinal -> {}
-                QuickActionTabMenu.SHARE_TAB.ordinal -> {}
+                QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {}
+                QuickActionTabMenu.SHARE_LINK.ordinal -> {}
             }
         }
     }

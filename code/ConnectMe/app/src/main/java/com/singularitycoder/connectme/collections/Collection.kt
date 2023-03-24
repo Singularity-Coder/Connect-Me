@@ -1,16 +1,15 @@
 package com.singularitycoder.connectme.collections
 
 import android.os.Parcelable
+import com.singularitycoder.connectme.search.WebApp
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Collection(
     val id: Long = 0,
-    val imageUrl: String? = "",
     val title: String = "",
-    val source: String? = "",
-    val time: String? = "",
-    val link: String? = ""
+    val websitesList: List<WebApp> = emptyList()
 ) : Parcelable {
-    constructor() : this(0, "", "", "", "", "")
+    constructor() : this(id = 0, title = "", websitesList = emptyList())
 }
+

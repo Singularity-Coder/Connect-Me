@@ -1,36 +1,41 @@
-package com.singularitycoder.connectme.following
+package com.singularitycoder.connectme.profile
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
-import com.singularitycoder.connectme.helpers.dummyFaviconUrls
+import com.singularitycoder.connectme.helpers.UserProfile
+import com.singularitycoder.connectme.helpers.dummyFaceUrls
+import com.singularitycoder.connectme.helpers.dummyFaceUrls2
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
+const val ARG_PARAM_USER_PROFILE_SCREEN_TYPE = "ARG_PARAM_USER_PROFILE_SCREEN_TYPE"
+
 @AndroidEntryPoint
-class FollowingFragment : Fragment() {
+class UserFollowingFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(screenType: String) = FollowingFragment().apply {
-            arguments = Bundle().apply { putString(ARG_PARAM_SCREEN_TYPE, screenType) }
+        fun newInstance(screenType: String) = UserFollowingFragment().apply {
+            arguments = Bundle().apply { putString(ARG_PARAM_USER_PROFILE_SCREEN_TYPE, screenType) }
         }
     }
 
     private lateinit var binding: FragmentFollowingBinding
 
-    private val followingAdapter = FollowingAdapter()
-    private val followingList = mutableListOf<Following>()
+    private val followingAdapter = UserFollowingAdapter()
+    private val followingList = mutableListOf<UserFollowing>()
 
-    private var topicParam: String? = null
+    private var profileScreenType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
+        profileScreenType = arguments?.getString(ARG_PARAM_USER_PROFILE_SCREEN_TYPE)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -46,16 +51,28 @@ class FollowingFragment : Fragment() {
     }
 
     private fun FragmentFollowingBinding.setupUI() {
+        when (profileScreenType) {
+            UserProfile.FOLLOW.value -> {
+                cardSearch.isVisible = false
+            }
+            UserProfile.FOLLOWING.value -> {
+            }
+            UserProfile.FOLLOWERS.value -> {}
+            UserProfile.FOLLOW_REQUESTS.value -> {
+                cardSearch.isVisible = false
+            }
+        }
         rvFollowing.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = followingAdapter
+            followingAdapter.profileScreenType = profileScreenType
         }
         (0..30).forEach { it: Int ->
             followingList.add(
-                Following(
-                    imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
-                    title = "The Random Publications",
-                    source = "random.com",
+                UserFollowing(
+                    imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
+                    title = "Cringe Lord $it",
+                    source = "Cringe Lord $it",
                     time = "5 hours ago",
                     link = "",
                     posts = 17L + it
@@ -68,7 +85,7 @@ class FollowingFragment : Fragment() {
     private fun FragmentFollowingBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
-        followingAdapter.setOnClickListener { it: Following ->
+        followingAdapter.setOnClickListener { it: UserFollowing ->
         }
     }
 
@@ -76,5 +93,3 @@ class FollowingFragment : Fragment() {
 
     }
 }
-
-private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"

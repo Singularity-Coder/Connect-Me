@@ -1,12 +1,28 @@
 TODAY
 2. Close other tabs
-3. Change profile form bottom sheet to normal frag - finish it
 4. Downloads UI
 5. History UI
 6. Following UI
 7. Collections UI
 8. Explore UI - need to think
 9. Webview Functionality
+
+
+Search
+TODO when in focus show copy, special edit options - www, .com, ., /, letter navigation using sliders, slider will show on another tap
+TODO on focus show recent searches
+
+History
+TODO need date strip
+TODO need delete all and some filters
+
+Downloads
+TODO handle gif, image, audio, video, file
+TODO if image/gif show bottomsheet fullscreen image
+TODO if audio play options in bottomsheet.
+TODO if video play options in fullscreen bottomsheet.
+TODO if file send it to chrome
+TODO long press download item to see full file name with options to delete, show in chrome, share
 
 
 
@@ -23,13 +39,28 @@ New Tab Variations
 3. Timed normal & incognito tab - disappears after some fixed time - for timed tab there will a countdown shown on the top
 
 
+Favicons - either request safari ones or AI upscale them in background. tricky stuff
+
+
 Font size, TTS will be in reader mode
 Download videos/Media
 Generate QR code for link
 Save webpage
 Detect media resources
 View source code
-Rolling screen capture website
+Duplicate tab
+Screenshot - Capture full page, capture visible area
 Recent tabs, Bookmarks, reading list, etc, etc will all be part of collections
 Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
+
+
+Basic WebApps
+0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
+1. Writing: Google docs, sheets, Slides, Notion
+2. Notetaking: Keep, Notion
+3. Entertainment: Youtube, Netflix
+4. Mail:
+5. Directions: Maps,
+6. Tools: Drive, Dropbox,
+7. Education:

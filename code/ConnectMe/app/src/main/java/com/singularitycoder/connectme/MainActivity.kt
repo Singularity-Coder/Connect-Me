@@ -7,11 +7,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.GnssStatus
-import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +21,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.databinding.ActivityMainBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
-import com.singularitycoder.connectme.search.SearchTabFragment
+import com.singularitycoder.connectme.search.SearchFragment
 import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -35,6 +35,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val viewModel: MainViewModel by viewModels()
+
+//    private val onBackPressedCallback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+//        override fun handleOnBackPressed() {
+//            val searchFragment = supportFragmentManager.fragments.firstOrNull {
+//                it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
+//            } as? SearchFragment
+//            if (searchFragment?.isKeyboardShown() == true) {
+//                searchFragment.doWhenSearchIsNotFocused()
+//            } else {
+//                this@MainActivity.finish()
+//            }
+//        }
+//    }
 
     // FIXME This is not working
     private val locationToggleStatusReceiver = object : BroadcastReceiver() {
@@ -84,6 +97,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         showScreen(

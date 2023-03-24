@@ -116,7 +116,7 @@
                     app:trackThickness="50dp" />
 
                 <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/iv_profile"
+                    android:id="@+id/iv_webapp_profile"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_marginStart="12dp"
@@ -151,7 +151,7 @@
                     android:textColor="@color/black"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/ll_tab_action_buttons"
-                    app:layout_constraintStart_toEndOf="@+id/iv_profile" />
+                    app:layout_constraintStart_toEndOf="@+id/iv_webapp_profile" />
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/ll_tab_action_buttons"

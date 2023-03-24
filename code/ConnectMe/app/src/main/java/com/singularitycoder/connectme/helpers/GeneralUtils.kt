@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Point
 import android.graphics.drawable.InsetDrawable
 import android.location.LocationManager
@@ -18,9 +17,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.text.Spanned
 import android.util.TypedValue
 import android.view.*
-import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
@@ -28,6 +27,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
@@ -39,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.Flow
@@ -151,6 +152,20 @@ fun Context.showToast(
     message: String,
     duration: Int = Toast.LENGTH_LONG,
 ) = Toast.makeText(this, message, duration).show()
+
+fun Timer.doEvery(
+    duration: Long,
+    withInitialDelay: Long = 0.seconds(),
+    task: suspend () -> Unit
+) = scheduleAtFixedRate(
+    object : TimerTask() {
+        override fun run() {
+            CoroutineScope(Dispatchers.IO).launch { task.invoke() }
+        }
+    },
+    withInitialDelay,
+    duration
+)
 
 fun doAfter(duration: Long, task: () -> Unit) {
     Handler(Looper.getMainLooper()).postDelayed(task, duration)
@@ -360,4 +375,8 @@ fun Menu.invokeSetMenuIconMethod() {
             e.printStackTrace()
         }
     }
+}
+
+fun getHtmlFormattedTime(html: String): Spanned {
+    return HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 }

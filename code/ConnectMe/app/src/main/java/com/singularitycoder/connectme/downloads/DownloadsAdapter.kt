@@ -5,7 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
-import com.singularitycoder.connectme.databinding.ListItemFeedBinding
+import com.singularitycoder.connectme.databinding.ListItemDownloadBinding
+import com.singularitycoder.connectme.helpers.deviceWidth
+import com.singularitycoder.connectme.helpers.dpToPx
 
 class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -13,7 +15,7 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var newsClickListener: (download: Download) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val itemBinding = ListItemFeedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val itemBinding = ListItemDownloadBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NewsViewHolder(itemBinding)
     }
 
@@ -30,10 +32,12 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     inner class NewsViewHolder(
-        private val itemBinding: ListItemFeedBinding,
+        private val itemBinding: ListItemDownloadBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(download: Download) {
             itemBinding.apply {
+                ivNewsImage.layoutParams.height = (deviceWidth() / 2) - 16.dpToPx().toInt()
+                ivNewsImage.layoutParams.width = (deviceWidth() / 2) - 16.dpToPx().toInt()
                 ivNewsImage.load(download.imageUrl) {
                     placeholder(R.color.black)
                 }
@@ -42,7 +46,8 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 } else {
                     download.source
                 }
-                tvSource.text = "$source  \u2022  ${download.time}"
+//                "\u2022"
+                tvSource.text = download.time
                 tvTitle.text = download.title
                 root.setOnClickListener {
                     newsClickListener.invoke(download)

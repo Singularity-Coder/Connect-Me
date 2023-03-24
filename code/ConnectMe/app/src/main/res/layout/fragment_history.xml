@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".following.FollowingFragment">
+    tools:context=".history.HistoryFragment">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -16,14 +16,16 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_search"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="8dp"
                 android:backgroundTint="@color/black_50"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="0dp"
+                app:layout_constraintEnd_toStartOf="@+id/btn_delete_all_history"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -65,19 +67,47 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_all_history"
+                style="@style/Widget.App.Button.IconOnly"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="16dp"
+                app:icon="@drawable/outline_delete_24"
+                app:layout_constraintBottom_toBottomOf="@+id/card_search"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/card_search" />
+
+            <TextView
+                android:id="@+id/tv_date"
+                style="@style/TextAppearance.AppCompat.Body1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@color/black_50"
+                android:paddingStart="16dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="8dp"
+                android:text="5 March, 2023"
+                android:textColor="@android:color/darker_gray"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@+id/card_search" />
+
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_following"
+                android:id="@+id/rv_history"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:nestedScrollingEnabled="true"
                 android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@+id/card_search"
-                tools:listitem="@layout/list_item_following" />
+                app:layout_constraintTop_toBottomOf="@+id/tv_date"
+                tools:listitem="@layout/list_item_history" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
-                app:layout_constraintTop_toBottomOf="@+id/rv_following" />
+                app:layout_constraintTop_toBottomOf="@+id/rv_history" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

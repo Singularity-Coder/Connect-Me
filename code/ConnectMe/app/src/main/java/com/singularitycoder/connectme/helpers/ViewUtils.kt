@@ -5,10 +5,7 @@ import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -379,6 +376,17 @@ fun View.toBitmapOf(width: Int, height: Int): Bitmap? = try {
 } catch (e: Exception) {
     println("Error: $e")
     null
+}
+
+fun View.isKeyboardHidden(): Boolean {
+    val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
+    this.getWindowVisibleDisplayFrame(rect)
+    val heightDiff: Int = this.rootView.height - (rect.bottom - rect.top)
+    // if heightDiff more than 500 pixels, its probably a keyboard...
+    println("deviceHeight(): ${deviceHeight()}") // 3036
+    println("rect.height(): ${rect.height()}") // 2952, 1860
+    println("root.rootView.height: ${this.rootView.height}") // 3120
+    return this.rootView.height - rect.height() < 300
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

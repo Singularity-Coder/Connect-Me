@@ -63,6 +63,8 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun FragmentUserProfileBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
         btnMenu.onSafeClick {
             val optionsList = listOf("Close")
             requireContext().showPopup(
@@ -92,6 +94,7 @@ class UserProfileFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
             override fun onTabReselected(tab: TabLayout.Tab?) = Unit
         })
+        tabLayoutUserProfile.tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
         TabLayoutMediator(tabLayoutUserProfile, viewpagerUserProfile) { tab, position ->
             tab.text = UserProfile.values()[position].value
         }.attach()
@@ -100,10 +103,10 @@ class UserProfileFragment : Fragment() {
     inner class UserProfileViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount(): Int = UserProfile.values().size
         override fun createFragment(position: Int): Fragment = when (position) {
-            UserProfile.FOLLOW.ordinal -> FeedFragment.newInstance(screenType = Tab.EXPLORE.value)
-            UserProfile.FOLLOWING.ordinal -> FeedFragment.newInstance(screenType = Tab.FEED.value)
-            UserProfile.FOLLOWERS.ordinal -> FeedFragment.newInstance(screenType = Tab.COLLECTIONS.value)
-            else -> HistoryFragment.newInstance(screenType = UserProfile.FOLLOW_REQUESTS.value)
+            UserProfile.FOLLOW.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOW.value)
+            UserProfile.FOLLOWING.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOWING.value)
+            UserProfile.FOLLOWERS.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOWERS.value)
+            else -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOW_REQUESTS.value)
         }
     }
 }

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.singularitycoder.connectme.databinding.FragmentExploreBinding
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
 import com.singularitycoder.connectme.helpers.dummyImageUrls
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,7 +23,7 @@ class ExploreFragment : Fragment() {
         }
     }
 
-    private lateinit var binding: FragmentFeedBinding
+    private lateinit var binding: FragmentExploreBinding
 
     private val feedAdapter = ExploreAdapter()
     private val feedList = mutableListOf<Explore>()
@@ -35,7 +36,7 @@ class ExploreFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentFeedBinding.inflate(inflater, container, false)
+        binding = FragmentExploreBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -46,7 +47,7 @@ class ExploreFragment : Fragment() {
         observeForData()
     }
 
-    private fun FragmentFeedBinding.setupUI() {
+    private fun FragmentExploreBinding.setupUI() {
         rvFeed.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
@@ -83,7 +84,9 @@ class ExploreFragment : Fragment() {
         )
     }
 
-    private fun FragmentFeedBinding.setupUserActionListeners() {
+    private fun FragmentExploreBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
         feedAdapter.setOnNewsClickListener { it: Explore ->
         }
     }

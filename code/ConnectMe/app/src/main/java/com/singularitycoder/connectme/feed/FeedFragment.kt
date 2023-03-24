@@ -84,6 +84,8 @@ class FeedFragment : Fragment() {
     }
 
     private fun FragmentFeedBinding.setupUserActionListeners() {
+        root.setOnClickListener { }
+
         feedAdapter.setOnNewsClickListener { it: Feed ->
         }
     }
