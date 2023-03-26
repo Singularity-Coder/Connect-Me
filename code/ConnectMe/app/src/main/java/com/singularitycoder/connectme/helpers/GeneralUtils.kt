@@ -40,13 +40,9 @@ import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.lang.reflect.Method
 import java.util.*
 
@@ -78,50 +74,6 @@ fun getDeviceSize(): Point = try {
 fun deviceWidth() = Resources.getSystem().displayMetrics.widthPixels
 
 fun deviceHeight() = Resources.getSystem().displayMetrics.heightPixels
-
-fun File?.customPath(directory: String?, fileName: String?): String {
-    var path = this?.absolutePath
-
-    if (directory != null) {
-        path += File.separator + directory
-    }
-
-    if (fileName != null) {
-        path += File.separator + fileName
-    }
-
-    return path ?: ""
-}
-
-/** /data/user/0/com.singularitycoder.audioweb/files */
-fun Context.internalFilesDir(
-    directory: String? = null,
-    fileName: String? = null,
-): File = File(filesDir.customPath(directory, fileName))
-
-/** /storage/emulated/0/Android/data/com.singularitycoder.audioweb/files */
-fun Context.externalFilesDir(
-    rootDir: String = "",
-    subDir: String? = null,
-    fileName: String? = null,
-): File = File(getExternalFilesDir(rootDir).customPath(subDir, fileName))
-
-inline fun deleteAllFilesFrom(
-    directory: File?,
-    withName: String,
-    crossinline onDone: () -> Unit = {},
-) {
-    CoroutineScope(Default).launch {
-        directory?.listFiles()?.forEach files@{ it: File? ->
-            it ?: return@files
-            if (it.name.contains(withName)) {
-                if (it.exists()) it.delete()
-            }
-        }
-
-        withContext(Main) { onDone.invoke() }
-    }
-}
 
 fun Context.isCameraPresent(): Boolean {
     return packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)

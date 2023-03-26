@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.singularitycoder.connectme.databinding.FragmentFeedBinding
+import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.dummyFaviconUrls
 import com.singularitycoder.connectme.search.WebApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,7 +24,7 @@ class CollectionsFragment : Fragment() {
         }
     }
 
-    private lateinit var binding: FragmentFeedBinding
+    private lateinit var binding: FragmentCollectionsBinding
 
     private val feedAdapter = CollectionsAdapter()
     private val feedList = mutableListOf<Collection>()
@@ -37,7 +37,7 @@ class CollectionsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentFeedBinding.inflate(inflater, container, false)
+        binding = FragmentCollectionsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -48,7 +48,7 @@ class CollectionsFragment : Fragment() {
         observeForData()
     }
 
-    private fun FragmentFeedBinding.setupUI() {
+    private fun FragmentCollectionsBinding.setupUI() {
         rvFeed.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
@@ -72,7 +72,7 @@ class CollectionsFragment : Fragment() {
         feedAdapter.feedList = feedList
     }
 
-    private fun FragmentFeedBinding.setupUserActionListeners() {
+    private fun FragmentCollectionsBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
         feedAdapter.setOnNewsClickListener { it: Collection ->

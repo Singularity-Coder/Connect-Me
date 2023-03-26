@@ -55,7 +55,7 @@ Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
 
 
-Basic WebApps
+Basic WebApp Collections
 0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
 1. Writing: Google docs, sheets, Slides, Notion
 2. Notetaking: Keep, Notion
@@ -64,3 +64,6 @@ Basic WebApps
 5. Directions: Maps,
 6. Tools: Drive, Dropbox,
 7. Education:
+
+
+Use queue to add urls navigating from the tab forward and backward

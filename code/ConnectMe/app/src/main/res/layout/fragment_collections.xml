@@ -14,14 +14,78 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_search"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/black_50"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toStartOf="@+id/btn_collections_more_options"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_search"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="16dp"
+                        android:background="@null"
+                        android:drawableStart="@drawable/ic_round_search_24"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@android:color/darker_gray"
+                        android:enabled="true"
+                        android:hint="Search"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:textColor="@color/title_color"
+                        android:textColorHint="@android:color/darker_gray"
+                        android:textSize="16sp"
+                        app:layout_constraintEnd_toStartOf="@+id/ib_clear_search"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageButton
+                        android:id="@+id/ib_clear_search"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@null"
+                        android:src="@drawable/ic_round_cancel_24"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@android:color/darker_gray" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_collections_more_options"
+                style="@style/Widget.App.Button.IconOnly"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="16dp"
+                app:icon="@drawable/ic_round_add_24"
+                app:layout_constraintBottom_toBottomOf="@+id/card_search"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/card_search" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_feed"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:nestedScrollingEnabled="true"
                 android:scrollbars="none"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:listitem="@layout/list_item_collection" />
+                app:layout_constraintTop_toBottomOf="@+id/card_search"
+                tools:listitem="@layout/list_item_feed" />
 
             <View
                 android:layout_width="match_parent"

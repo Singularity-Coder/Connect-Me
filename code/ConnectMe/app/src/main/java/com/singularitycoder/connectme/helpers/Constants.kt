@@ -122,3 +122,11 @@ enum class NewTabType(val value: String) {
     NEW_PRIVATE_TAB(value = "New Private Tab".capFirstChar()),
     NEW_DISAPPEARING_TAB(value = "New Disappearing Tab".capFirstChar())
 }
+
+enum class SearchSuggestionProvider(val value: String) {
+    GOOGLE(value = "Google"),
+    BING(value = "Bing"),
+    DUCK(value = "DuckDuckGo"),
+    YAHOO(value = "Yahoo"),
+    BAIDU(value = "Baidu")
+}
