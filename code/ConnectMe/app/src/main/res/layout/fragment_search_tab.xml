@@ -17,7 +17,7 @@
             android:orientation="vertical">
 
             <include
-                android:id="@+id/layout_private_mode"
+                android:id="@+id/layout_vpn"
                 layout="@layout/layout_icon_text_switch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
                 android:layout_marginEnd="16dp" />
 
             <include
-                android:id="@+id/layout_vpn"
+                android:id="@+id/layout_ad_blocker"
                 layout="@layout/layout_icon_text_switch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

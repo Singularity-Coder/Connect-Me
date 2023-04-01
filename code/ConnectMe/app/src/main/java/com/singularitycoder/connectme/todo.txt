@@ -67,3 +67,8 @@ Basic WebApp Collections
 
 
 Use queue to add urls navigating from the tab forward and backward
+
+
+RSS Reader
+https://code.google.com/archive/p/android-rss/source/default/source
+https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-android

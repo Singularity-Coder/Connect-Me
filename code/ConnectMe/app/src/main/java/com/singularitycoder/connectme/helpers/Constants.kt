@@ -1,5 +1,6 @@
 package com.singularitycoder.connectme.helpers
 
+import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.profile.UserProfileFragment
@@ -120,13 +121,13 @@ enum class UserProfile(val value: String) {
 enum class NewTabType(val value: String) {
     NEW_TAB(value = "New Tab".capFirstChar()),
     NEW_PRIVATE_TAB(value = "New Private Tab".capFirstChar()),
-    NEW_DISAPPEARING_TAB(value = "New Disappearing Tab".capFirstChar())
+    NEW_DISAPPEARING_TAB(value = "New Disappearing Tab".capFirstChar()),
+    NEW_PRIVATE_DISAPPEARING_TAB(value = "New Private Disappearing Tab".capFirstChar())
 }
 
-enum class SearchSuggestionProvider(val value: String) {
-    GOOGLE(value = "Google"),
-    BING(value = "Bing"),
-    DUCK(value = "DuckDuckGo"),
-    YAHOO(value = "Yahoo"),
-    BAIDU(value = "Baidu")
+enum class SearchEngine(val value: String, @DrawableRes val icon: Int) {
+    GOOGLE(value = "Google", icon = R.drawable.google),
+    BING(value = "Bing", icon = R.drawable.bing),
+    DUCK(value = "DuckDuckGo", icon = R.drawable.duckduckgo),
+    YAHOO(value = "Yahoo", icon = R.drawable.yahoo),
 }

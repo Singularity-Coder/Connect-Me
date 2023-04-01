@@ -63,17 +63,17 @@ class SearchTabFragment : Fragment() {
     // https://guides.codepath.com/android/Working-with-the-WebView
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentSearchTabBinding.setupUI() {
-        layoutPrivateMode.apply {
-            layoutIconText.tvText.text = "Enable Private Mode"
-//            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
-            layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_policy_24))
-            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
-            layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-        }
         layoutVpn.apply {
             layoutIconText.tvText.text = "Enable VPN"
 //            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
             layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_vpn_key_24))
+            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
+            layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+        }
+        layoutAdBlocker.apply {
+            layoutIconText.tvText.text = "Enable Ad Blocker"
+//            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
+            layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.outline_block_24))
             layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
             layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
         }
@@ -183,7 +183,7 @@ class SearchTabFragment : Fragment() {
             }
         }
 
-        layoutPrivateMode.apply {
+        layoutVpn.apply {
             root.onSafeClick { switchOnOff.performClick() }
             switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
                 if (isChecked) {
@@ -194,7 +194,7 @@ class SearchTabFragment : Fragment() {
             }
         }
 
-        layoutVpn.apply {
+        layoutAdBlocker.apply {
             root.onSafeClick { switchOnOff.performClick() }
             switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
                 if (isChecked) {

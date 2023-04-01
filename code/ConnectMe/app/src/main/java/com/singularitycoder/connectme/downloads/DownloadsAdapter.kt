@@ -36,8 +36,8 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(download: Download) {
             itemBinding.apply {
-                ivNewsImage.layoutParams.height = (deviceWidth() / 2) - 16.dpToPx().toInt()
-                ivNewsImage.layoutParams.width = (deviceWidth() / 2) - 16.dpToPx().toInt()
+                ivNewsImage.layoutParams.height = (deviceWidth() / 3) - 20.dpToPx().toInt() // 20 is margin size
+                ivNewsImage.layoutParams.width = (deviceWidth() / 2) - 20.dpToPx().toInt()
                 ivNewsImage.load(download.imageUrl) {
                     placeholder(R.color.black)
                 }

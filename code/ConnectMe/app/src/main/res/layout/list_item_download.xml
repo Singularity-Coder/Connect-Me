@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
+    android:layout_marginStart="8dp"
     android:layout_marginTop="16dp"
     android:clipChildren="true"
     android:clipToPadding="true"
@@ -25,7 +25,7 @@
             <TextView
                 android:id="@+id/tv_file_extension"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="0dp"
                 android:background="@color/purple_100"
                 android:gravity="center"
                 android:text="pdf"
@@ -38,7 +38,7 @@
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/iv_news_image"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="wrap_content"
                 android:background="@color/purple_200"
                 android:scaleType="centerCrop"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -60,6 +60,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
+                android:ellipsize="end"
                 android:text="12:47 PM"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                 android:textColor="@color/white"

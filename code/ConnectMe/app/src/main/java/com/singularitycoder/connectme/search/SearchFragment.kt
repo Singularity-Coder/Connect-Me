@@ -1,16 +1,20 @@
 package com.singularitycoder.connectme.search
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
 import androidx.annotation.MenuRes
+import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.forEach
@@ -20,11 +24,13 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.chip.Chip
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.searchSuggestions.*
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
 import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
 import com.singularitycoder.flowlauncher.helper.quickActionView.Action
@@ -78,7 +84,7 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.etSearch.setText("https://www.github.com")
-        setUpViewPager()
+        binding.setupUI()
         binding.setUpUserActionListeners()
         binding.ibAddTab.performClick()
     }
@@ -90,8 +96,52 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun setUpViewPager() {
-        binding.viewpagerReminders.apply {
+    private fun FragmentSearchBinding.setupUI() {
+        val selectedSearchEngine = Preferences.read(requireContext()).getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
+        ivSearchEngine.setImageResource(SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name).icon)
+        setUpViewPager()
+        listOf("Copy", "Share", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
+            .forEach { it: String ->
+                val chip = Chip(requireContext()).apply {
+                    text = it
+                    isCheckable = false
+                    isClickable = false
+                    when (it) {
+                        "Copy" -> {
+                            setTextColor(requireContext().color(R.color.purple_500))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
+                            chipIcon = requireContext().drawable(R.drawable.baseline_content_copy_24)
+                            chipIconSize = 16.dpToPx()
+                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                            iconStartPadding = 6.dpToPx()
+                        }
+                        "Share" -> {
+                            setTextColor(requireContext().color(R.color.purple_500))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
+                            chipIcon = requireContext().drawable(R.drawable.round_share_24)
+                            chipIconSize = 16.dpToPx()
+                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                            iconStartPadding = 6.dpToPx()
+                        }
+                        "" -> {
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.transparent_white_50))
+                        }
+                        else -> {
+                            setTextColor(requireContext().color(R.color.title_color))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.black_50))
+                        }
+                    }
+                    textAlignment = View.TEXT_ALIGNMENT_CENTER
+                    elevation = 0f
+                    onSafeClick {
+                    }
+                }
+                chipGroupLinkTextActions.addView(chip)
+            }
+    }
+
+    private fun FragmentSearchBinding.setUpViewPager() {
+        viewpagerReminders.apply {
             isUserInputEnabled = false
             adapter = SearchViewPagerAdapter(
                 fragmentManager = requireActivity().supportFragmentManager,
@@ -99,9 +149,10 @@ class SearchFragment : Fragment() {
             )
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
-        TabLayoutMediator(binding.tabLayoutTabs, binding.viewpagerReminders) { tab, position ->
+        TabLayoutMediator(tabLayoutTabs, viewpagerReminders) { tab, position ->
             tab.text = topicTabsList[position]
             tab.icon = when (topicTabsList[position]) {
+                NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
                 NewTabType.NEW_PRIVATE_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
                 NewTabType.NEW_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_timer_24)
                 else -> null
@@ -121,6 +172,28 @@ class SearchFragment : Fragment() {
             )
         }
 
+        ivSearchEngine.onSafeClick {
+            dummyView.performClick()
+        }
+
+        dummyView.setOnClickListener {
+            val adapter = ArrayAdapter(
+                /* context = */ requireContext(),
+                /* resource = */ android.R.layout.simple_list_item_1,
+                /* objects = */ SearchEngine.values().map { it.value }
+            )
+            ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
+                anchorView = it
+                setAdapter(adapter)
+                setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+                    ivSearchEngine.setImageResource(SearchEngine.values()[position].icon)
+                    Preferences.write(requireContext()).putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.values()[position].name).apply()
+                    this.dismiss()
+                }
+                show()
+            }
+        }
+
         cardAddTab.onSafeClick {
             ibAddTab.performClick()
         }
@@ -136,10 +209,10 @@ class SearchFragment : Fragment() {
         }
 
         ibAddTab.onSafeClick {
-            binding.etSearch.showKeyboard()
+            etSearch.showKeyboard()
             addTab(NewTabType.NEW_TAB.value)
             etSearch.setSelection(0, etSearch.text.length)
-            binding.etSearch.setSelectAllOnFocus(true)
+            etSearch.setSelectAllOnFocus(true)
         }
 
         btnVoiceSearch.onSafeClick {
@@ -186,20 +259,26 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsFocused() {
+        clTabs.isVisible = false
+        chipGroupLinkTextActions.isVisible = true
         etSearch.setSelection(0, etSearch.text.length)
-        binding.etSearch.setSelectAllOnFocus(true)
+        etSearch.setSelectAllOnFocus(true)
         btnWebsiteQuickActions.isVisible = false
         btnQrScan.isVisible = true
         btnVoiceSearch.isVisible = true
         ivWebappProfile.isVisible = false
+        ivSearchEngine.isVisible = true
     }
 
-    private fun doWhenSearchIsNotFocused() {
-        binding.etSearch.clearFocus()
-        binding.btnWebsiteQuickActions.isVisible = true
-        binding.btnQrScan.isVisible = false
-        binding.btnVoiceSearch.isVisible = false
-        binding.ivWebappProfile.isVisible = true
+    private fun FragmentSearchBinding.doWhenSearchIsNotFocused() {
+        clTabs.isVisible = true
+        chipGroupLinkTextActions.isVisible = false
+        etSearch.clearFocus()
+        btnWebsiteQuickActions.isVisible = true
+        btnQrScan.isVisible = false
+        btnVoiceSearch.isVisible = false
+        ivWebappProfile.isVisible = true
+        ivSearchEngine.isVisible = false
     }
 
     fun isKeyboardShown(): Boolean = binding.etSearch.isKeyboardVisible
@@ -365,8 +444,8 @@ class SearchFragment : Fragment() {
         val icon2dot5 = requireContext().drawable(R.drawable.outline_library_add_24)?.changeColor(requireContext(), R.color.purple_500)
         val action2dot5 = Action(id = QuickActionTabMenu.COLLECT_ALL_TABS.ordinal, icon = icon2dot5!!, title = QuickActionTabMenu.COLLECT_ALL_TABS.value)
 
-        val icon3 = requireContext().drawable(R.drawable.round_share_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action3 = Action(id = QuickActionTabMenu.SHARE_LINK.ordinal, icon = icon3!!, title = QuickActionTabMenu.SHARE_LINK.value)
+//        val icon3 = requireContext().drawable(R.drawable.round_share_24)?.changeColor(requireContext(), R.color.purple_500)
+//        val action3 = Action(id = QuickActionTabMenu.SHARE_LINK.ordinal, icon = icon3!!, title = QuickActionTabMenu.SHARE_LINK.value)
 
         val icon4 = requireContext().drawable(R.drawable.round_close_24)?.changeColor(requireContext(), R.color.purple_500)
         val action4 = Action(id = QuickActionTabMenu.CLOSE_ALL_TABS.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_ALL_TABS.value)
@@ -381,7 +460,7 @@ class SearchFragment : Fragment() {
             addAction(action1)
             addAction(action2)
             addAction(action2dot5)
-            addAction(action3)
+//            addAction(action3)
             addAction(action4)
             addAction(action5)
             addAction(action6)
@@ -408,7 +487,7 @@ class SearchFragment : Fragment() {
                     binding.showCloseAllTabsPopup()
                 }
                 QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {}
-                QuickActionTabMenu.SHARE_LINK.ordinal -> {}
+//                QuickActionTabMenu.SHARE_LINK.ordinal -> {}
             }
         }
     }
@@ -434,6 +513,13 @@ class SearchFragment : Fragment() {
             menuInflater.inflate(menuRes, this.menu)
             setOnMenuItemClickListener { menuItem: MenuItem ->
                 when (menuItem.itemId) {
+                    R.id.menu_item_new_private_disappearing_tab -> {
+                        etSearch.showKeyboard()
+                        addTab(NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value)
+                        etSearch.setSelection(0, etSearch.text.length)
+                        etSearch.setSelectAllOnFocus(true)
+                        false
+                    }
                     R.id.menu_item_new_private_tab -> {
                         etSearch.showKeyboard()
                         addTab(NewTabType.NEW_PRIVATE_TAB.value)
@@ -465,6 +551,19 @@ class SearchFragment : Fragment() {
             }
             show()
         }
+    }
+
+    private suspend fun fetchSearchSuggestions(query: String) {
+        var linksList = mutableListOf<String>()
+        if (query.isBlank()) return
+        linksList = GoogleSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
+        if (linksList.isNotEmpty()) return
+        linksList = BingSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
+        if (linksList.isNotEmpty()) return
+        linksList = DuckSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
+        if (linksList.isNotEmpty()) return
+        linksList = YahooSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
+        if (linksList.isNotEmpty()) return
     }
 
     inner class SearchViewPagerAdapter(

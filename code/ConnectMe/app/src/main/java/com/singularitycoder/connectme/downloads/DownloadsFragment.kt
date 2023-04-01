@@ -50,7 +50,7 @@ class DownloadsFragment : Fragment() {
 
     private fun FragmentDownloadsBinding.setupUI() {
         rvDownloads.apply {
-            layoutManager = GridLayoutManager(context, 2)
+            layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = feedAdapter
         }
         (0..30).forEach { it: Int ->

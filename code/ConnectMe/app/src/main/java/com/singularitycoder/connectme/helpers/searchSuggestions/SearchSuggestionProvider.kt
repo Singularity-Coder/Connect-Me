@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.singularitycoder.connectme.helpers.suggestions
+package com.singularitycoder.connectme.helpers.searchSuggestions
 
 import android.text.TextUtils
 import android.util.Log
 import com.singularitycoder.connectme.helpers.readStringFromStream
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.io.BufferedInputStream
 import java.io.IOException
@@ -56,9 +54,7 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
     suspend fun fetchSearchSuggestionResultsList(rawQuery: String): List<String> {
         val resultsList: MutableList<String> = ArrayList(/* initialCapacity = */ 5)
         val query: String = try {
-            withContext(Dispatchers.IO) {
-                URLEncoder.encode(rawQuery, encoding)
-            }
+            URLEncoder.encode(rawQuery, encoding)
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "Unable to encode the URL", e)
             return resultsList
@@ -96,20 +92,13 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
      */
     open suspend fun parseResults(
         content: String,
-        callback: ResultCallback
+        callback: suspend (suggestion: String) -> Unit
     ) {
-        suspendCoroutine<Unit> {
-            val respArray = JSONArray(content)
-            val jsonArray = respArray.getJSONArray(1)
-            var n = 0
-            val size = jsonArray.length()
-            while (n < size) {
-                val suggestion = jsonArray.getString(n)
-                if (!callback.addResult(suggestion)) {
-                    break
-                }
-                n++
-            }
+        val respArray = JSONArray(content)
+        val jsonArray = respArray.getJSONArray(1)
+        repeat(jsonArray.length()) { position: Int ->
+            val suggestion = jsonArray.getString(position)
+            callback.invoke(suggestion)
         }
     }
 
@@ -156,9 +145,5 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
             }
         }
         return encoding
-    }
-
-    internal fun interface ResultCallback {
-        fun addResult(suggestion: String): Boolean
     }
 }

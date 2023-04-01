@@ -198,7 +198,7 @@ fun Context.sendWhatsAppMessage(whatsAppPhoneNum: String) {
                 uri
             ).apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) }
             startActivity(intent)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 }

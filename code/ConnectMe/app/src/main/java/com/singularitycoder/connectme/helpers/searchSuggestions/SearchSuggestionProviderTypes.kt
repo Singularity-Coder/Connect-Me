@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.singularitycoder.connectme.helpers.suggestions
+package com.singularitycoder.connectme.helpers.searchSuggestions
 
 import org.json.JSONArray
 
@@ -41,18 +41,13 @@ internal class DuckSearchSuggestionProvider : SearchSuggestionProvider("UTF-8") 
 
     override suspend fun parseResults(
         content: String,
-        callback: ResultCallback
+        callback: suspend (suggestion: String) -> Unit
     ) {
         val jsonArray = JSONArray(content)
-        var n = 0
-        val size = jsonArray.length()
-        while (n < size) {
-            val obj = jsonArray.getJSONObject(n)
+        repeat(jsonArray.length()) { position: Int ->
+            val obj = jsonArray.getJSONObject(position)
             val suggestion = obj.getString("phrase")
-            if (!callback.addResult(suggestion)) {
-                break
-            }
-            n++
+            callback.invoke(suggestion)
         }
     }
 }
@@ -62,11 +57,4 @@ internal class YahooSearchSuggestionProvider : SearchSuggestionProvider("UTF-8")
         query: String,
         language: String
     ): String = "https://search.yahoo.com/sugg/chrome?output=fxjson&command=$query"
-}
-
-internal class BaiduSearchSuggestionProvider : SearchSuggestionProvider("UTF-8") {
-    override fun createQueryUrl(
-        query: String,
-        language: String
-    ): String = "http://suggestion.baidu.com/su?ie=UTF-8&wd=$query&action=opensearch"
 }
