@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
-import com.singularitycoder.connectme.helpers.dummyFaceUrls2
+import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
 import com.singularitycoder.connectme.helpers.onSafeClick
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*

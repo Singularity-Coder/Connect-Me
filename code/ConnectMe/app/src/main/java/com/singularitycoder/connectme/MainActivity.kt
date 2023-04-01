@@ -11,7 +11,6 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -20,9 +19,10 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.databinding.ActivityMainBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.BroadcastKey
+import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.constants.IntentKey
 import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
-import com.singularitycoder.connectme.search.SearchFragment
-import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

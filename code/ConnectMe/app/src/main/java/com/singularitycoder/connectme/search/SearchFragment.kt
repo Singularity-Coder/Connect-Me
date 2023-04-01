@@ -1,9 +1,13 @@
 package com.singularitycoder.connectme.search
 
 import android.annotation.SuppressLint
+import android.app.ActionBar.LayoutParams
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -19,23 +23,29 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.chip.Chip
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.helpers.searchSuggestions.*
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
 import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
 import com.singularitycoder.flowlauncher.helper.quickActionView.Action
 import com.singularitycoder.flowlauncher.helper.quickActionView.QuickActionView
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
 
@@ -49,10 +59,18 @@ class SearchFragment : Fragment() {
         }
     }
 
+    @Inject
+    lateinit var preferences: SharedPreferences
+
     private lateinit var binding: FragmentSearchBinding
 
-    private var topicParam: String? = null
     private val topicTabsList = mutableListOf<String>()
+    private val searchViewModel: SearchViewModel by viewModels()
+    private val iconTextActionAdapter by lazy { IconTextActionAdapter() }
+
+    private var searchQuery: String = ""
+    private var topicParam: String? = null
+    private var isSearchSuggestionSelected: Boolean = false
 
     private val viewPager2PageChangeListener = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrollStateChanged(state: Int) {
@@ -86,6 +104,7 @@ class SearchFragment : Fragment() {
         binding.etSearch.setText("https://www.github.com")
         binding.setupUI()
         binding.setUpUserActionListeners()
+        binding.observeForData()
         binding.ibAddTab.performClick()
     }
 
@@ -97,8 +116,9 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setupUI() {
-        val selectedSearchEngine = Preferences.read(requireContext()).getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
+        val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
         ivSearchEngine.setImageResource(SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name).icon)
+        setupSearchSuggestionsRecyclerView()
         setUpViewPager()
         listOf("Copy", "Share", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
             .forEach { it: String ->
@@ -138,6 +158,13 @@ class SearchFragment : Fragment() {
                 }
                 chipGroupLinkTextActions.addView(chip)
             }
+    }
+
+    private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
+        rvSearchSuggestions.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = iconTextActionAdapter
+        }
     }
 
     private fun FragmentSearchBinding.setUpViewPager() {
@@ -187,7 +214,8 @@ class SearchFragment : Fragment() {
                 setAdapter(adapter)
                 setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
                     ivSearchEngine.setImageResource(SearchEngine.values()[position].icon)
-                    Preferences.write(requireContext()).putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.values()[position].name).apply()
+                    preferences.edit().putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.values()[position].name).apply()
+                    searchViewModel.getSearchSuggestions(searchQuery)
                     this.dismiss()
                 }
                 show()
@@ -242,6 +270,19 @@ class SearchFragment : Fragment() {
             }
         }
 
+        etSearch.doAfterTextChanged { it: Editable? ->
+            val query = it.toString().toLowCase().trim()
+            searchQuery = query
+            if (isSearchSuggestionSelected) {
+                rvSearchSuggestions.isVisible = false
+                etSearch.clearFocus()
+                doWhenSearchIsNotFocused()
+                etSearch.hideKeyboard()
+                return@doAfterTextChanged
+            }
+            searchViewModel.getSearchSuggestions(query)
+        }
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 showCloseAllTabsPopup()
@@ -256,10 +297,45 @@ class SearchFragment : Fragment() {
                 etSearch.requestFocus()
             }
         }
+
+        iconTextActionAdapter.setOnItemClickListener { iconTextAction: IconTextAction ->
+            isSearchSuggestionSelected = true
+            etSearch.clearFocus()
+            etSearch.setText(iconTextAction.title)
+        }
+    }
+
+    private fun FragmentSearchBinding.observeForData() {
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
+            if (searchSuggestionsList.isEmpty()) {
+                rvSearchSuggestions.isVisible = false
+                return@collectLatestLifecycleFlow
+            }
+            rvSearchSuggestions.isVisible = true
+            val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
+            root.getWindowVisibleDisplayFrame(rect)
+            val heightDiff: Int = root.rootView.height - (rect.bottom - rect.top)
+            if (searchSuggestionsList.size > 5) {
+                rvSearchSuggestions.layoutParams.height = heightDiff - 32.dpToPx().toInt()
+            } else {
+                rvSearchSuggestions.layoutParams.height = LayoutParams.WRAP_CONTENT
+            }
+            val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
+            val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
+            iconTextActionAdapter.setQuery(query = searchQuery)
+            iconTextActionAdapter.setList(searchSuggestionsList.map { searchSuggestion: String ->
+                IconTextAction(
+                    title = searchSuggestion,
+                    icon = searchEngine.icon,
+                    actionIcon = R.drawable.north_west_black_24dp
+                )
+            })
+        }
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsFocused() {
         clTabs.isVisible = false
+        isSearchSuggestionSelected = false
         chipGroupLinkTextActions.isVisible = true
         etSearch.setSelection(0, etSearch.text.length)
         etSearch.setSelectAllOnFocus(true)
@@ -279,9 +355,8 @@ class SearchFragment : Fragment() {
         btnVoiceSearch.isVisible = false
         ivWebappProfile.isVisible = true
         ivSearchEngine.isVisible = false
+        rvSearchSuggestions.isVisible = false
     }
-
-    fun isKeyboardShown(): Boolean = binding.etSearch.isKeyboardVisible
 
     private fun FragmentSearchBinding.showCloseAllTabsPopup() {
         requireContext().showAlertDialog(
@@ -551,19 +626,6 @@ class SearchFragment : Fragment() {
             }
             show()
         }
-    }
-
-    private suspend fun fetchSearchSuggestions(query: String) {
-        var linksList = mutableListOf<String>()
-        if (query.isBlank()) return
-        linksList = GoogleSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
-        if (linksList.isNotEmpty()) return
-        linksList = BingSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
-        if (linksList.isNotEmpty()) return
-        linksList = DuckSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
-        if (linksList.isNotEmpty()) return
-        linksList = YahooSearchSuggestionProvider().fetchSearchSuggestionResultsList(query).toMutableList()
-        if (linksList.isNotEmpty()) return
     }
 
     inner class SearchViewPagerAdapter(

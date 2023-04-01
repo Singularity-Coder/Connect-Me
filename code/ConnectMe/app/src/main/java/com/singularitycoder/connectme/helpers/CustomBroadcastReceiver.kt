@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import com.singularitycoder.connectme.helpers.constants.BroadcastKey
+import com.singularitycoder.connectme.helpers.constants.IntentKey
 
 class CustomBroadcastReceiver : BroadcastReceiver() {
 

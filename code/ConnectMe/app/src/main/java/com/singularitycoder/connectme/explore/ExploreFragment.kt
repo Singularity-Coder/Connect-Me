@@ -7,8 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentExploreBinding
-import com.singularitycoder.connectme.databinding.FragmentFeedBinding
-import com.singularitycoder.connectme.helpers.dummyImageUrls
+import com.singularitycoder.connectme.helpers.constants.dummyImageUrls
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"

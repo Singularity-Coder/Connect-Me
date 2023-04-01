@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
-import com.singularitycoder.connectme.helpers.dummyFaviconUrls
+import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 

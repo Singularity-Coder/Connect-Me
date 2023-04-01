@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemUserFollowingBinding
-import com.singularitycoder.connectme.helpers.UserProfile
+import com.singularitycoder.connectme.helpers.constants.UserProfile
 
 class UserFollowingAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 

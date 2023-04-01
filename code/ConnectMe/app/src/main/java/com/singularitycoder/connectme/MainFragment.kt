@@ -21,11 +21,12 @@ import com.singularitycoder.connectme.explore.ExploreFragment
 import com.singularitycoder.connectme.feed.FeedFragment
 import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.constants.Tab
 import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
 import com.singularitycoder.connectme.history.HistoryFragment
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
-import com.singularitycoder.treasurehunt.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject

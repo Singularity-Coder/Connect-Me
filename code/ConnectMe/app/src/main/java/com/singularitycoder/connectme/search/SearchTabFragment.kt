@@ -21,6 +21,7 @@ import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"

@@ -13,9 +13,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentUserProfileBinding
-import com.singularitycoder.connectme.feed.FeedFragment
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.history.HistoryFragment
+import com.singularitycoder.connectme.helpers.constants.UserProfile
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

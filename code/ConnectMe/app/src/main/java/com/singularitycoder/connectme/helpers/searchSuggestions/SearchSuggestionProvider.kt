@@ -18,6 +18,9 @@ package com.singularitycoder.connectme.helpers.searchSuggestions
 import android.text.TextUtils
 import android.util.Log
 import com.singularitycoder.connectme.helpers.readStringFromStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.io.BufferedInputStream
 import java.io.IOException
@@ -113,23 +116,26 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
         query: String,
         language: String
     ): String? = suspendCoroutine<String?> { continuation: Continuation<String?> ->
-        try {
-            val url = URL(createQueryUrl(query, language))
-            val urlConnection = url.openConnection() as HttpURLConnection
-            urlConnection.addRequestProperty(
-                "Cache-Control",
-                "max-age=$INTERVAL_DAY, max-stale=$INTERVAL_DAY"
-            )
-            urlConnection.addRequestProperty("Accept-Charset", encoding)
+        CoroutineScope(IO).launch {
             try {
-                BufferedInputStream(urlConnection.inputStream).use {
-                    continuation.resume(readStringFromStream(inputStream = it, encoding = getEncoding(urlConnection)))
+                val url = URL(createQueryUrl(query, language))
+                val urlConnection = url.openConnection() as HttpURLConnection
+                urlConnection.addRequestProperty(
+                    "Cache-Control",
+                    "max-age=$INTERVAL_DAY, max-stale=$INTERVAL_DAY"
+                )
+                urlConnection.addRequestProperty("Accept-Charset", encoding)
+                try {
+                    BufferedInputStream(urlConnection.inputStream).use {
+                        continuation.resume(readStringFromStream(inputStream = it, encoding = getEncoding(urlConnection)))
+                    }
+                } catch (_: Exception) {
+                } finally {
+                    urlConnection.disconnect()
                 }
-            } finally {
-                urlConnection.disconnect()
+            } catch (e: IOException) {
+                Log.e(TAG, "Problem getting search suggestions", e)
             }
-        } catch (e: IOException) {
-            Log.e(TAG, "Problem getting search suggestions", e)
         }
     }
 

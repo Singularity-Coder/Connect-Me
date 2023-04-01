@@ -8,9 +8,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
-import com.singularitycoder.connectme.helpers.UserProfile
-import com.singularitycoder.connectme.helpers.dummyFaceUrls
-import com.singularitycoder.connectme.helpers.dummyFaceUrls2
+import com.singularitycoder.connectme.helpers.constants.UserProfile
+import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 

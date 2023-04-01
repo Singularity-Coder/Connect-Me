@@ -1,8 +1,9 @@
-package com.singularitycoder.connectme.helpers
+package com.singularitycoder.connectme.helpers.constants
 
 import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.helpers.capFirstChar
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
 

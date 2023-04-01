@@ -11,6 +11,9 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.StyleSpan
 import android.view.*
 import android.view.animation.AlphaAnimation
 import android.view.animation.AnimationUtils
@@ -387,6 +390,24 @@ fun View.isKeyboardHidden(): Boolean {
     println("rect.height(): ${rect.height()}") // 2952, 1860
     println("root.rootView.height: ${this.rootView.height}") // 3120
     return this.rootView.height - rect.height() < 300
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun TextView?.highlightQueriedText(query: String, result: String): TextView? {
+    if (query.isBlank() || result.isBlank()) return this
+    val spannable = SpannableStringBuilder(result)
+    var queryTextPos = result.toLowCase().indexOf(string = query)
+    while (queryTextPos >= 0) {
+        spannable.setSpan(
+            /* what = */ StyleSpan(Typeface.BOLD),
+            /* start = */ queryTextPos,
+            /* end = */ queryTextPos + query.length,
+            /* flags = */ Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        queryTextPos = result.toLowCase().indexOf(string = query, startIndex = queryTextPos + query.length)
+    }
+    this?.text = spannable
+    return this
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.singularitycoder.treasurehunt
+package com.singularitycoder.connectme
 
 import android.content.ServiceConnection
 import androidx.lifecycle.ViewModel
