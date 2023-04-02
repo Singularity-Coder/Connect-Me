@@ -3,17 +3,21 @@ package com.singularitycoder.connectme.explore
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import com.singularitycoder.connectme.R
-import com.singularitycoder.connectme.databinding.ListItemFeedBinding
+import com.singularitycoder.connectme.databinding.ListItemExploreBinding
+import com.singularitycoder.connectme.helpers.color
+import com.singularitycoder.connectme.helpers.constants.exploreItemColorsList
+import com.singularitycoder.connectme.helpers.drawable
 
 class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var feedList = emptyList<Explore>()
     private var newsClickListener: (explore: Explore) -> Unit = {}
+    private var colorPosition: Int = 0
+    private var isListReversible: Boolean = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val itemBinding = ListItemFeedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val itemBinding = ListItemExploreBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NewsViewHolder(itemBinding)
     }
 
@@ -30,20 +34,36 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     inner class NewsViewHolder(
-        private val itemBinding: ListItemFeedBinding,
+        private val itemBinding: ListItemExploreBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(explore: Explore) {
             itemBinding.apply {
-                ivNewsImage.load(explore.imageUrl) {
-                    placeholder(R.color.black)
-                }
                 val source = if (explore.source.isNullOrBlank()) {
                     explore.link?.substringAfter("//")?.substringBefore("/")?.replace("www.", "")
                 } else {
                     explore.source
                 }
-                tvSource.text = "$source  \u2022  ${explore.time}"
-                tvTitle.text = explore.title
+                if (colorPosition == exploreItemColorsList.lastIndex) {
+                    isListReversible = true
+                }
+                if (colorPosition == 0) {
+                    isListReversible = false
+                }
+                if (isListReversible) {
+                    colorPosition--
+                } else {
+                    colorPosition++
+                }
+                val color = exploreItemColorsList.getOrNull(colorPosition)
+                tvSource.apply {
+                    text = "$source  \u2022  ${explore.time}"
+                    setTextColor(root.context.color(color?.textColor ?: R.color.purple_500))
+                }
+                tvTitle.apply {
+                    text = explore.title
+                    setTextColor(root.context.color(color?.textColor ?: R.color.purple_500))
+                }
+                clExplore.background = root.context.drawable(color?.gradientColor ?: R.drawable.gradient_default_light)
                 root.setOnClickListener {
                     newsClickListener.invoke(explore)
                 }

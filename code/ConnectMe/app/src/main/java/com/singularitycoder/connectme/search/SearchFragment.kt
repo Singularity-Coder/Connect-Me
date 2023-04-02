@@ -280,6 +280,10 @@ class SearchFragment : Fragment() {
                 etSearch.hideKeyboard()
                 return@doAfterTextChanged
             }
+            if (query.isBlank()) {
+                rvSearchSuggestions.isVisible = false
+                return@doAfterTextChanged
+            }
             searchViewModel.getSearchSuggestions(query)
         }
 
@@ -308,6 +312,10 @@ class SearchFragment : Fragment() {
     private fun FragmentSearchBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
             if (searchSuggestionsList.isEmpty()) {
+                rvSearchSuggestions.isVisible = false
+                return@collectLatestLifecycleFlow
+            }
+            if (searchQuery.isBlank()) {
                 rvSearchSuggestions.isVisible = false
                 return@collectLatestLifecycleFlow
             }
