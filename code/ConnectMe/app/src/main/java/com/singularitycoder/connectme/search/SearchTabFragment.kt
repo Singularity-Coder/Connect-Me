@@ -1,28 +1,30 @@
 package com.singularitycoder.connectme.search
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
+import android.content.SharedPreferences
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import androidx.appcompat.widget.ListPopupWindow
+import android.view.inputmethod.EditorInfo
+import android.webkit.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import coil.load
-import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
+import com.singularitycoder.connectme.helpers.constants.Preferences
+import com.singularitycoder.connectme.helpers.constants.SearchEngine
+import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.regex.Pattern
+import javax.inject.Inject
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
@@ -30,20 +32,32 @@ private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 class SearchTabFragment : Fragment() {
 
     companion object {
+        private const val DESKTOP_DEVICE = "X11; Linux x86_64"
+        private const val DESKTOP_USER_AGENT_FALLBACK = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
+        private const val HEADER_DNT = "DNT"
+
         @JvmStatic
         fun newInstance(screenType: String) = SearchTabFragment().apply {
             arguments = Bundle().apply { putString(ARG_PARAM_SCREEN_TYPE, screenType) }
         }
     }
 
+    @Inject
+    lateinit var preferences: SharedPreferences
     private lateinit var binding: FragmentSearchTabBinding
 
-    private var topicParam: String? = null
-
+    private val requestHeadersMap: MutableMap<String?, String?> = HashMap()
     private val hideProgressHandler by lazy {
         Handler(Looper.getMainLooper())
     }
+
     private var hideProgressRunnable = Runnable {}
+    private var topicParam: String? = null
+    private var mobileUserAgent: String? = null
+    private var desktopUserAgent: String? = null
+    private var isIncognito = false
+    private var lastLoadedUrl: String? = null
+    private var searchFragment: SearchFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,152 +78,195 @@ class SearchTabFragment : Fragment() {
     // https://guides.codepath.com/android/Working-with-the-WebView
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentSearchTabBinding.setupUI() {
-        layoutVpn.apply {
-            layoutIconText.tvText.text = "Enable VPN"
-//            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
-            layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_vpn_key_24))
-            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
-            layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-        }
-        layoutAdBlocker.apply {
-            layoutIconText.tvText.text = "Enable Ad Blocker"
-//            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
-            layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.outline_block_24))
-            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
-            layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-        }
-        layoutCollections.apply {
-            tvTitle.text = "Collections"
-            tvTitle.setTextColor(requireContext().color(R.color.purple_500))
-            ivDropdownArrow.isVisible = true
-        }
-        layoutFollowing.apply {
-            tvTitle.text = "Following"
-        }
-        listOf(layoutFollowing, layoutCollections).forEach {
-            it.apply {
-                layoutFollowingApp1.ivAppIcon.load(dummyFaviconUrls[0])
-                layoutFollowingApp1.tvAppName.text = "Doodle"
-                layoutFollowingApp2.ivAppIcon.load(dummyFaviconUrls[1])
-                layoutFollowingApp2.tvAppName.text = "Stupify"
-                layoutFollowingApp3.ivAppIcon.load(dummyFaviconUrls[2])
-                layoutFollowingApp3.tvAppName.text = "Hitgub"
-                layoutFollowingApp4.ivAppIcon.load(dummyFaviconUrls[3])
-                layoutFollowingApp4.tvAppName.text = "Coldstar"
-            }
-        }
-        layoutHistory.apply {
-            tvTitle.text = "History"
-        }
-        layoutDownloads.apply {
-            tvTitle.text = "Downloads"
-        }
-        val searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
+        searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
             it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
         } as? SearchFragment
-        webView.apply {
-            settings.apply {
-                loadsImagesAutomatically = true
-                javaScriptEnabled = true
-                useWideViewPort = true
-                loadWithOverviewMode = true
-                setSupportZoom(true)
-                builtInZoomControls = true // allow pinch to zooom
-                displayZoomControls = false // disable the default zoom controls on the page
-            }
-            scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
-            webChromeClient = object : WebChromeClient() {
-                override fun onProgressChanged(view: WebView, progress: Int) {
-                    searchFragment?.setLinearProgress(progress)
-                    if (progress == 100) {
-                        hideProgressRunnable = Runnable { searchFragment?.showLinearProgress(false) }
-                        hideProgressHandler.removeCallbacks(hideProgressRunnable)
-                        hideProgressHandler.postDelayed(hideProgressRunnable, 1.seconds())
-//                        doAfter(1.seconds()) {
-//                            searchFragment?.showLinearProgress(false)
-//                        }
-                    }
-                }
-            }
-            webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                    super.onPageStarted(view, url, favicon)
-                    searchFragment?.showLinearProgress(true)
-                }
-
-                override fun onPageCommitVisible(view: WebView, url: String) {
-                    super.onPageCommitVisible(view, url)
-                }
-
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                }
-            }
-            loadUrl("")
-        }
+        setupWebView()
     }
 
     private fun FragmentSearchTabBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
-        layoutCollections.apply {
-            viewDummyForDropdown.onSafeClick {
-                val collectionsList = listOf("Collection 1", "Collection 2", "Collection 3")
-                val adapter = ArrayAdapter(
-                    /* context = */ requireContext(),
-                    /* resource = */ android.R.layout.simple_list_item_1,
-                    /* objects = */ collectionsList
-                )
-                ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
-                    anchorView = it.first
-                    setAdapter(adapter)
-                    setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-                        layoutCollections.tvTitle.text = collectionsList[position]
-                        this.dismiss()
-                    }
-                    show()
+        var shouldAllowDownload = false
+        webView.setOnLongClickListener {
+            val result = webView.hitTestResult
+            result.extra ?: return@setOnLongClickListener false
+            when (result.type) {
+                WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    shouldAllowDownload = true
+//                    showSheetMenu(it, shouldAllowDownload)
+                    shouldAllowDownload = false
+                    return@setOnLongClickListener true
+                }
+                WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+//                    showSheetMenu(it, shouldAllowDownload)
+                    shouldAllowDownload = false
+                    return@setOnLongClickListener true
                 }
             }
-            tvTitle.setOnClickListener {
-                layoutCollections.viewDummyForDropdown.performClick()
-            }
-            ivDropdownArrow.setOnClickListener {
-                layoutCollections.tvTitle.performClick()
-            }
-            clShowMore.setOnClickListener {
-                layoutCollections.ivShowMore.performClick()
-            }
-            ivShowMore.onSafeClick {
-                requireContext().showToast("Show more")
-            }
+            false
         }
 
-        layoutVpn.apply {
-            root.onSafeClick { switchOnOff.performClick() }
-            switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
-                if (isChecked) {
-                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                } else {
-                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.white))
-                }
-            }
+        webView.setDownloadListener { url: String?, _, contentDisposition: String?, mimeType: String?, _ ->
+//            downloadFileAsk(url, contentDisposition, mimeType)
         }
 
-        layoutAdBlocker.apply {
-            root.onSafeClick { switchOnOff.performClick() }
-            switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
-                if (isChecked) {
-                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                } else {
-                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.white))
-                }
-            }
+        searchFragment?.getSearchInputField()?.onImeClick(imeAction = EditorInfo.IME_ACTION_SEARCH) {
+            loadUrl(url = searchFragment?.getSearchInputField()?.text.toString())
+            searchFragment?.getSearchInputField().hideKeyboard()
         }
     }
 
-    fun showWebView(isShow: Boolean) {
-        if (this::binding.isInitialized) {
-            binding.webView.isVisible = isShow
+    private fun loadUrl(url: String) {
+        lastLoadedUrl = url
+        followUrl(url)
+    }
+
+    private fun followUrl(url: String) {
+        var fixedUrl = smartUrlFilter(url)
+        if (fixedUrl != null) {
+            binding.webView.loadUrl(fixedUrl, requestHeadersMap)
+            return
         }
+        val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
+        val searchEngineEnum = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
+        fixedUrl = getFormattedUri(templateUri = searchEngineEnum.url, query = url)
+        binding.webView.loadUrl(fixedUrl, requestHeadersMap)
+    }
+
+    private fun FragmentSearchTabBinding.setupWebView() {
+        webView.webChromeClient = setupWebChromeClient(searchFragment)
+        webView.webViewClient = setupWebViewClient(searchFragment)
+        webView.settings.apply {
+            loadsImagesAutomatically = true
+            javaScriptEnabled = preferences.getBoolean(Preferences.KEY_ENABLE_JAVASCRIPT, true)
+            javaScriptCanOpenWindowsAutomatically = preferences.getBoolean(Preferences.KEY_ENABLE_JAVASCRIPT_OPEN_WINDOWS_AUTO, true)
+            setSupportMultipleWindows(true)
+//            useWideViewPort = true
+//            loadWithOverviewMode = true
+//            setSupportZoom(true)
+            builtInZoomControls = true // allow pinch to zooom
+            displayZoomControls = false  // disable the default zoom controls on the page
+            databaseEnabled = isIncognito.not()
+            domStorageEnabled = isIncognito.not()
+        }
+
+        // Mobile: Remove "wv" from the WebView's user agent. Some websites don't work
+        // properly if the browser reports itself as a simple WebView.
+        // Desktop: Generate the desktop user agent starting from the mobile one so that
+        // we always report the current engine version.
+        val pattern = Pattern.compile("([^)]+ \\()([^)]+)(\\) .*)")
+        val matcher = pattern.matcher(webView.settings.userAgentString)
+        if (matcher.matches()) {
+            val mobileDevice = matcher.group(2)?.toString()?.replace("; wv", "")
+            mobileUserAgent = matcher.group(1)?.toString() + mobileDevice + matcher.group(3)
+            desktopUserAgent = matcher.group(1)?.toString() + DESKTOP_DEVICE + matcher.group(3)?.replace(" Mobile ", " ")
+            webView.settings.userAgentString = mobileUserAgent
+        } else {
+            println("Couldn't parse the user agent")
+            mobileUserAgent = webView.settings.userAgentString
+            desktopUserAgent = DESKTOP_USER_AGENT_FALLBACK
+        }
+        if (preferences.getBoolean(Preferences.KEY_DO_NOT_TRACK, false)) {
+            requestHeadersMap[HEADER_DNT] = "1"
+        }
+
+        webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+    }
+
+    private fun setupWebChromeClient(searchFragment: SearchFragment?) = object : WebChromeClient() {
+        override fun onProgressChanged(view: WebView, progress: Int) {
+            searchFragment?.setLinearProgress(progress)
+            if (progress == 100) {
+                hideProgressHandler.removeCallbacks(hideProgressRunnable)
+                hideProgressRunnable = Runnable { searchFragment?.showLinearProgress(false) }
+                hideProgressHandler.postDelayed(hideProgressRunnable, 1.seconds())
+//                    doAfter(1.seconds()) {
+//                        searchFragment?.showLinearProgress(false)
+//                    }
+            }
+        }
+
+        override fun onReceivedTitle(view: WebView?, title: String?) {
+            super.onReceivedTitle(view, title)
+        }
+
+        override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
+            if (icon == null || icon.isRecycled) return
+            val favicon = icon.copy(icon.config, true)
+//            applyThemeColor(UiUtils.getColor(favicon, binding.webView.isIncognito))
+            if (icon.isRecycled.not()) icon.recycle()
+            searchFragment?.getFaviconImageView()?.setImageBitmap(favicon)
+//            super.onReceivedIcon(view, icon)
+        }
+
+        override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
+            return super.onShowFileChooser(webView, filePathCallback, fileChooserParams)
+        }
+
+        override fun onGeolocationPermissionsShowPrompt(origin: String?, callback: GeolocationPermissions.Callback?) {
+            super.onGeolocationPermissionsShowPrompt(origin, callback)
+        }
+
+        override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+            super.onShowCustomView(view, callback)
+        }
+
+        override fun onHideCustomView() {
+            super.onHideCustomView()
+        }
+
+        override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+            return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
+        }
+    }
+
+    private fun setupWebViewClient(searchFragment: SearchFragment?) = object : WebViewClient() {
+        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+            super.onPageStarted(view, url, favicon)
+            searchFragment?.showLinearProgress(true)
+        }
+
+        override fun onPageCommitVisible(view: WebView, url: String) {
+            super.onPageCommitVisible(view, url)
+        }
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            super.onPageFinished(view, url)
+        }
+
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            return super.shouldOverrideUrlLoading(view, request)
+        }
+
+        override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler?, host: String?, realm: String?) {
+            super.onReceivedHttpAuthRequest(view, handler, host, realm)
+        }
+    }
+
+    private fun setDesktopMode(isDesktopMode: Boolean) {
+        binding.webView.settings.apply {
+            userAgentString = if (isDesktopMode) desktopUserAgent else mobileUserAgent
+            useWideViewPort = isDesktopMode
+            loadWithOverviewMode = isDesktopMode
+        }
+        binding.webView.reload()
+    }
+
+    private fun getWebViewScreenshot(): Bitmap {
+        val webView = binding.webView
+        webView.measure(
+            View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        webView.layout(0, 0, webView.measuredWidth, webView.measuredHeight)
+        val size = if (webView.measuredWidth > webView.measuredHeight) webView.measuredHeight else webView.measuredWidth
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint()
+        val height = bitmap.height
+        canvas.drawBitmap(bitmap, 0f, height.toFloat(), paint)
+        webView.draw(canvas)
+        return bitmap
     }
 }

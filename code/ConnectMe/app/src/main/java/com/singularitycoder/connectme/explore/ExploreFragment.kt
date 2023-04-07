@@ -52,7 +52,7 @@ class ExploreFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
-        (0..30).forEach {
+        repeat((0..30).count()) {
             feedList.add(
                 Explore(
                     title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",

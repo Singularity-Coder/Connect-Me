@@ -1,11 +1,24 @@
 package com.singularitycoder.connectme.helpers
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.Bitmap
+import android.graphics.drawable.Icon
+import android.net.Uri
+import android.os.Build
 import android.util.Patterns
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.webkit.URLUtil
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
+import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -349,7 +362,7 @@ fun smartUrlFilter(url: String): String? {
     if (matcher.matches()) {
         // force scheme to lowercase
         val scheme = matcher.group(1)
-        val lcScheme = scheme!!.toLowCase()
+        val lcScheme = scheme?.toLowCase()
         if (lcScheme != scheme) {
             inUrl = lcScheme + matcher.group(2)
         }
@@ -358,7 +371,7 @@ fun smartUrlFilter(url: String): String? {
         }
         return inUrl
     }
-    return if (!hasSpace && Patterns.WEB_URL.matcher(inUrl).matches()) {
+    return if (hasSpace.not() && Patterns.WEB_URL.matcher(inUrl).matches()) {
         URLUtil.guessUrl(inUrl)
     } else null
 }
@@ -368,6 +381,81 @@ fun smartUrlFilter(url: String): String? {
  * actual values.
  */
 // https://github.com/LineageOS/android_packages_apps_Jelly
-fun getFormattedUri(templateUri: String?, query: String?): String {
-    return URLUtil.composeSearchUrl(query, templateUri, "{searchTerms}")
+fun getFormattedUri(
+    templateUri: String?,
+    query: String?
+): String = URLUtil.composeSearchUrl(
+    /* inQuery = */ query,
+    /* template = */ templateUri,
+    /* queryPlaceHolder = */ "{searchTerms}"
+)
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun openInNewTab(context: Context, url: String?, incognito: Boolean) {
+    val intent = Intent(context, MainActivity::class.java)
+    if (url != null && url.isNotEmpty()) {
+        intent.data = Uri.parse(url)
+    }
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+    intent.putExtra("extra_incognito", incognito)
+    context.startActivity(intent)
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Context.addShortcut(
+    webView: WebView,
+    favicon: Bitmap?,
+    themeColorWithFallback: Int
+) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.data = Uri.parse(webView.url)
+        intent.action = Intent.ACTION_MAIN
+        val launcherIcon: Icon = if (favicon != null) {
+            Icon.createWithBitmap(
+                getShortcutIcon(favicon, themeColorWithFallback)
+            )
+        } else {
+            Icon.createWithResource(this, R.mipmap.ic_launcher)
+        }
+        val title = webView.title.toString()
+        val shortcutInfo = ShortcutInfo.Builder(this, title)
+            .setShortLabel(title)
+            .setIcon(launcherIcon)
+            .setIntent(intent)
+            .build()
+        getSystemService(ShortcutManager::class.java).requestPinShortcut(shortcutInfo, null)
+    }
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Activity.setImmersiveMode(enable: Boolean) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        window.setDecorFitsSystemWindows(!enable)
+        window.insetsController?.let {
+            val flags = WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
+            val behavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            if (enable) {
+                it.hide(flags)
+                it.systemBarsBehavior = behavior
+            } else {
+                it.show(flags)
+                it.systemBarsBehavior = behavior.inv()
+            }
+        }
+    } else {
+        var flags = window.decorView.systemUiVisibility
+        val immersiveModeFlags = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+        flags = if (enable) {
+            flags or immersiveModeFlags
+        } else {
+            flags and immersiveModeFlags.inv()
+        }
+        window.decorView.systemUiVisibility = flags
+    }
 }

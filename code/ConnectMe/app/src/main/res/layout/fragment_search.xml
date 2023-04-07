@@ -18,6 +18,76 @@
         app:layout_constraintVertical_bias="1.0"
         tools:layout_editor_absoluteX="51dp" />
 
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view_new_tab_options"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/cl_header"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/purple_700"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/layout_vpn"
+                layout="@layout/layout_icon_text_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <include
+                android:id="@+id/layout_ad_blocker"
+                layout="@layout/layout_icon_text_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <include
+                android:id="@+id/layout_following"
+                layout="@layout/list_item_collection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <include
+                android:id="@+id/layout_collections"
+                layout="@layout/list_item_collection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <include
+                android:id="@+id/layout_history"
+                layout="@layout/layout_3_web_links"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <include
+                android:id="@+id/layout_downloads"
+                layout="@layout/layout_3_web_links"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.core.widget.NestedScrollView>
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_search_suggestions"
         android:layout_width="match_parent"
@@ -149,7 +219,7 @@
                 android:layout_height="0dp"
                 android:indeterminate="false"
                 android:max="100"
-                android:progress="50"
+                android:progress="0"
                 android:visibility="visible"
                 app:indicatorColor="@color/black_50"
                 app:layout_constraintBottom_toBottomOf="@+id/et_search"
@@ -211,7 +281,7 @@
                 android:elevation="4dp"
                 android:ellipsize="end"
                 android:hint="Search the web"
-                android:imeOptions="actionDone"
+                android:imeOptions="actionSearch"
                 android:inputType="text"
                 android:maxLines="1"
                 android:padding="0dp"

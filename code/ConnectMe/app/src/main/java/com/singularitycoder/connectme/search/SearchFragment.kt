@@ -12,8 +12,10 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
@@ -31,7 +33,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import coil.load
 import com.google.android.material.chip.Chip
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.MainActivity
@@ -94,14 +98,13 @@ class SearchFragment : Fragment() {
         topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.etSearch.setText("https://www.github.com")
         binding.setupUI()
         binding.setUpUserActionListeners()
         binding.observeForData()
@@ -116,79 +119,110 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setupUI() {
+        binding.etSearch.setText("https://www.github.com")
         val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
         ivSearchEngine.setImageResource(SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name).icon)
+        layoutVpn.apply {
+            layoutIconText.tvText.text = "Enable VPN"
+//            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
+            layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_vpn_key_24))
+            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
+            layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+        }
+        layoutAdBlocker.apply {
+            layoutIconText.tvText.text = "Enable Ad Blocker"
+//            layoutIconText.tvText.setTypeface(tvText.typeface, Typeface.BOLD)
+            layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.outline_block_24))
+            layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
+            layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+        }
+        layoutCollections.apply {
+            tvTitle.text = "Collections"
+            tvTitle.setTextColor(requireContext().color(R.color.purple_500))
+            ivDropdownArrow.isVisible = true
+        }
+        layoutFollowing.apply {
+            tvTitle.text = "Following"
+        }
+        listOf(layoutFollowing, layoutCollections).forEach {
+            it.apply {
+                layoutFollowingApp1.ivAppIcon.load(dummyFaviconUrls[0])
+                layoutFollowingApp1.tvAppName.text = "Doodle"
+                layoutFollowingApp2.ivAppIcon.load(dummyFaviconUrls[1])
+                layoutFollowingApp2.tvAppName.text = "Stupify"
+                layoutFollowingApp3.ivAppIcon.load(dummyFaviconUrls[2])
+                layoutFollowingApp3.tvAppName.text = "Hitgub"
+                layoutFollowingApp4.ivAppIcon.load(dummyFaviconUrls[3])
+                layoutFollowingApp4.tvAppName.text = "Coldstar"
+            }
+        }
+        layoutHistory.apply {
+            tvTitle.text = "History"
+        }
+        layoutDownloads.apply {
+            tvTitle.text = "Downloads"
+        }
         setupSearchSuggestionsRecyclerView()
         setUpViewPager()
-        listOf("Copy", "Share", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
-            .forEach { it: String ->
-                val chip = Chip(requireContext()).apply {
-                    text = it
-                    isCheckable = false
-                    isClickable = false
-                    when (it) {
-                        "Copy" -> {
-                            setTextColor(requireContext().color(R.color.purple_500))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.baseline_content_copy_24)
-                            chipIconSize = 16.dpToPx()
-                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                            iconStartPadding = 6.dpToPx()
-                        }
-                        "Share" -> {
-                            setTextColor(requireContext().color(R.color.purple_500))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.round_share_24)
-                            chipIconSize = 16.dpToPx()
-                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                            iconStartPadding = 6.dpToPx()
-                        }
-                        "" -> {
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.transparent_white_50))
-                        }
-                        else -> {
-                            setTextColor(requireContext().color(R.color.title_color))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.black_50))
-                        }
-                    }
-                    textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    elevation = 0f
-                    onSafeClick {
-                    }
-                }
-                chipGroupLinkTextActions.addView(chip)
-            }
-    }
-
-    private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
-        rvSearchSuggestions.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = iconTextActionAdapter
-        }
-    }
-
-    private fun FragmentSearchBinding.setUpViewPager() {
-        viewpagerReminders.apply {
-            isUserInputEnabled = false
-            adapter = SearchViewPagerAdapter(
-                fragmentManager = requireActivity().supportFragmentManager,
-                lifecycle = lifecycle
-            )
-            registerOnPageChangeCallback(viewPager2PageChangeListener)
-        }
-        TabLayoutMediator(tabLayoutTabs, viewpagerReminders) { tab, position ->
-            tab.text = topicTabsList[position]
-            tab.icon = when (topicTabsList[position]) {
-                NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
-                NewTabType.NEW_PRIVATE_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
-                NewTabType.NEW_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_timer_24)
-                else -> null
-            }
-        }.attach()
+        setupLinkEditingFeatures()
     }
 
     private fun FragmentSearchBinding.setUpUserActionListeners() {
         root.setOnClickListener { }
+
+        layoutCollections.apply {
+            viewDummyForDropdown.onSafeClick {
+                val collectionsList = listOf("Collection 1", "Collection 2", "Collection 3")
+                val adapter = ArrayAdapter(
+                    /* context = */ requireContext(),
+                    /* resource = */ android.R.layout.simple_list_item_1,
+                    /* objects = */ collectionsList
+                )
+                ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
+                    anchorView = it.first
+                    setAdapter(adapter)
+                    setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+                        layoutCollections.tvTitle.text = collectionsList[position]
+                        this.dismiss()
+                    }
+                    show()
+                }
+            }
+            tvTitle.setOnClickListener {
+                layoutCollections.viewDummyForDropdown.performClick()
+            }
+            ivDropdownArrow.setOnClickListener {
+                layoutCollections.tvTitle.performClick()
+            }
+            clShowMore.setOnClickListener {
+                layoutCollections.ivShowMore.performClick()
+            }
+            ivShowMore.onSafeClick {
+                requireContext().showToast("Show more")
+            }
+        }
+
+        layoutVpn.apply {
+            root.onSafeClick { switchOnOff.performClick() }
+            switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
+                if (isChecked) {
+                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                } else {
+                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.white))
+                }
+            }
+        }
+
+        layoutAdBlocker.apply {
+            root.onSafeClick { switchOnOff.performClick() }
+            switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
+                if (isChecked) {
+                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                } else {
+                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.white))
+                }
+            }
+        }
 
         setTabMenuTouchOptions()
 
@@ -251,22 +285,16 @@ class SearchFragment : Fragment() {
             requireContext().showToast("QR Scan")
         }
 
-        etSearch.onImeClick {
+        etSearch.onImeClick(imeAction = EditorInfo.IME_ACTION_SEARCH) {
             etSearch.hideKeyboard()
         }
 
         etSearch.setOnFocusChangeListener { view, isFocused ->
+            scrollViewNewTabOptions.isVisible = isFocused
             if (isFocused) {
                 doWhenSearchIsFocused()
             } else {
                 doWhenSearchIsNotFocused()
-            }
-            try {
-                val searchTabFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
-                    it.javaClass.simpleName == SearchTabFragment.newInstance(/*topicTabsList[binding.tabLayoutTabs.selectedTabPosition]*/"").javaClass.simpleName
-                } as? SearchTabFragment
-                searchTabFragment?.showWebView(isFocused.not())
-            } catch (_: Exception) {
             }
         }
 
@@ -341,29 +369,97 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
+        rvSearchSuggestions.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = iconTextActionAdapter
+        }
+    }
+
+    private fun FragmentSearchBinding.setUpViewPager() {
+        viewpagerReminders.apply {
+            isUserInputEnabled = false
+            adapter = SearchViewPagerAdapter(
+                fragmentManager = requireActivity().supportFragmentManager,
+                lifecycle = lifecycle
+            )
+            registerOnPageChangeCallback(viewPager2PageChangeListener)
+        }
+        TabLayoutMediator(tabLayoutTabs, viewpagerReminders) { tab, position ->
+            tab.text = topicTabsList[position]
+            tab.icon = when (topicTabsList[position]) {
+                NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
+                NewTabType.NEW_PRIVATE_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
+                NewTabType.NEW_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_timer_24)
+                else -> null
+            }
+        }.attach()
+    }
+
+    private fun FragmentSearchBinding.setupLinkEditingFeatures() {
+        listOf("Copy", "Share", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
+            .forEach { it: String ->
+                val chip = Chip(requireContext()).apply {
+                    text = it
+                    isCheckable = false
+                    isClickable = false
+                    when (it) {
+                        "Copy" -> {
+                            setTextColor(requireContext().color(R.color.purple_500))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
+                            chipIcon = requireContext().drawable(R.drawable.baseline_content_copy_24)
+                            chipIconSize = 16.dpToPx()
+                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                            iconStartPadding = 6.dpToPx()
+                        }
+                        "Share" -> {
+                            setTextColor(requireContext().color(R.color.purple_500))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
+                            chipIcon = requireContext().drawable(R.drawable.round_share_24)
+                            chipIconSize = 16.dpToPx()
+                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                            iconStartPadding = 6.dpToPx()
+                        }
+                        "" -> {
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.transparent_white_50))
+                        }
+                        else -> {
+                            setTextColor(requireContext().color(R.color.title_color))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.black_50))
+                        }
+                    }
+                    textAlignment = View.TEXT_ALIGNMENT_CENTER
+                    elevation = 0f
+                    onSafeClick {
+                    }
+                }
+                chipGroupLinkTextActions.addView(chip)
+            }
+    }
+
     private fun FragmentSearchBinding.doWhenSearchIsFocused() {
-        clTabs.isVisible = false
-        isSearchSuggestionSelected = false
-        chipGroupLinkTextActions.isVisible = true
-        etSearch.setSelection(0, etSearch.text.length)
-        etSearch.setSelectAllOnFocus(true)
-        btnWebsiteQuickActions.isVisible = false
-        btnQrScan.isVisible = true
-        btnVoiceSearch.isVisible = true
-        ivWebappProfile.isVisible = false
-        ivSearchEngine.isVisible = true
+            clTabs.isVisible = false
+            isSearchSuggestionSelected = false
+            chipGroupLinkTextActions.isVisible = true
+            etSearch.setSelection(0, etSearch.text.length)
+            etSearch.setSelectAllOnFocus(true)
+            btnWebsiteQuickActions.isVisible = false
+            btnQrScan.isVisible = true
+            btnVoiceSearch.isVisible = true
+            ivWebappProfile.isVisible = false
+            ivSearchEngine.isVisible = true
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsNotFocused() {
-        clTabs.isVisible = true
-        chipGroupLinkTextActions.isVisible = false
-        etSearch.clearFocus()
-        btnWebsiteQuickActions.isVisible = true
-        btnQrScan.isVisible = false
-        btnVoiceSearch.isVisible = false
-        ivWebappProfile.isVisible = true
-        ivSearchEngine.isVisible = false
-        rvSearchSuggestions.isVisible = false
+            clTabs.isVisible = true
+            chipGroupLinkTextActions.isVisible = false
+            etSearch.clearFocus()
+            btnWebsiteQuickActions.isVisible = true
+            btnQrScan.isVisible = false
+            btnVoiceSearch.isVisible = false
+            ivWebappProfile.isVisible = true
+            ivSearchEngine.isVisible = false
+            rvSearchSuggestions.isVisible = false
     }
 
     private fun FragmentSearchBinding.showCloseAllTabsPopup() {
@@ -470,11 +566,11 @@ class SearchFragment : Fragment() {
             true
         }
         tabLayoutTabs.getTabAt(currentTabPosition)?.view?.onSafeClick {
-            root.showSnackBar(
-                message = tabLayoutTabs.getTabAt(currentTabPosition)?.text.toString(),
-                anchorView = tabLayoutTabs,
-                isAnimated = false
-            )
+//            root.showSnackBar(
+//                message = tabLayoutTabs.getTabAt(currentTabPosition)?.text.toString(),
+//                anchorView = tabLayoutTabs,
+//                isAnimated = false
+//            )
         }
         viewpagerReminders.adapter?.notifyDataSetChanged()
     }
@@ -635,6 +731,10 @@ class SearchFragment : Fragment() {
             show()
         }
     }
+
+    fun getSearchInputField(): EditText = binding.etSearch
+
+    fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile
 
     inner class SearchViewPagerAdapter(
         fragmentManager: FragmentManager,

@@ -6,8 +6,10 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.*
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.TransitionDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
@@ -19,16 +21,16 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.annotation.AnimRes
-import androidx.annotation.AnyRes
-import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
+import androidx.annotation.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -72,11 +74,6 @@ fun gradientDrawable(): GradientDrawable {
         gradientType = GradientDrawable.SWEEP_GRADIENT
         shape = GradientDrawable.RECTANGLE
     }
-}
-
-// https://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
-fun Activity.setStatusBarColor(@ColorRes color: Int) {
-    window.statusBarColor = ContextCompat.getColor(this, color)
 }
 
 fun MainActivity.showScreen(
@@ -408,6 +405,180 @@ fun TextView?.highlightQueriedText(query: String, result: String): TextView? {
     }
     this?.text = spannable
     return this
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun isColorLight(color: Int): Boolean {
+    val red = Color.red(color)
+    val green = Color.green(color)
+    val blue = Color.blue(color)
+    val hsl = FloatArray(3)
+    ColorUtils.RGBToHSL(red, green, blue, hsl)
+    return hsl[2] > 0.5f
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun getColor(bitmap: Bitmap?, incognito: Boolean): Int {
+    val palette = Palette.from(bitmap!!).generate()
+    val fallback = Color.TRANSPARENT
+    return if (incognito) palette.getMutedColor(fallback) else palette.getVibrantColor(fallback)
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun getShortcutIcon(bitmap: Bitmap, themeColor: Int): Bitmap {
+    val out = Bitmap.createBitmap(
+        bitmap.width, bitmap.width,
+        Bitmap.Config.ARGB_8888
+    )
+    val canvas = Canvas(out)
+    val paint = Paint()
+    val rect = Rect(0, 0, bitmap.width, bitmap.width)
+    val radius = bitmap.width / 2.toFloat()
+    paint.isAntiAlias = true
+    paint.color = themeColor
+    canvas.drawARGB(0, 0, 0, 0)
+    canvas.drawCircle(radius, radius, radius, paint)
+    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+    canvas.drawBitmap(bitmap, rect, rect, paint)
+    return Bitmap.createScaledBitmap(out, 192, 192, true)
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun getPositionInTime(timeMilliSec: Long): Int {
+    val diff = System.currentTimeMillis() - timeMilliSec
+    val hour = 1000 * 60 * 60.toLong()
+    val day = hour * 24
+    val week = day * 7
+    val month = day * 30
+    return if (hour > diff) 0 else {
+        when {
+            day > diff -> 1
+            week > diff -> 2
+            month > diff -> 3
+            else -> 4
+        }
+    }
+}
+
+/**
+ * Shows the software keyboard.
+ *
+ * @param view The currently focused [View], which would receive soft keyboard input.
+ */
+// https://github.com/LineageOS/android_packages_apps_Jelly
+@RequiresApi(Build.VERSION_CODES.M)
+fun showKeyboard(view: View) {
+    val imm = view.context.getSystemService(InputMethodManager::class.java)
+    imm.showSoftInput(view, 0)
+}
+
+/**
+ * Hides the keyboard.
+ *
+ * @param view The [View] that is currently accepting input.
+ */
+// https://github.com/LineageOS/android_packages_apps_Jelly
+@RequiresApi(Build.VERSION_CODES.M)
+fun hideKeyboard(view: View) {
+    val imm = view.context.getSystemService(InputMethodManager::class.java)
+    imm.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
+/**
+ * Sets the specified image button to the given state, while modifying or
+ * "graying-out" the icon as well
+ *
+ * @param enabled The state of the menu item
+ * @param button  The menu item to modify
+ */
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun ImageButton.setImageButtonEnabled(isEnabled: Boolean) {
+    this.isEnabled = isEnabled
+    alpha = if (isEnabled) 1.0f else 0.4f
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun getDimenAttr(context: Context, @StyleRes style: Int, @AttrRes dimen: Int): Float {
+    val args = intArrayOf(dimen)
+    val array = context.obtainStyledAttributes(style, args)
+    val result = array.getDimension(0, 0f)
+    array.recycle()
+    return result
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Activity.setNavigationBarColor(@ColorRes color: Int) {
+    window.navigationBarColor = this.color(color)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (isColorLight(this.color(color))) {
+            window.insetsController?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            )
+        } else {
+            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
+        }
+    } else {
+        var flags = window.decorView.systemUiVisibility
+        flags = if (isColorLight(this.color(color))) {
+            flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        } else {
+            flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+        }
+        window.decorView.systemUiVisibility = flags
+    }
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Activity.setStatusBarColor(@ColorRes color: Int) {
+    window.statusBarColor = this.color(color)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (isColorLight(this.color(color))) {
+            window.insetsController?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+        } else {
+            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+        }
+    } else {
+        var flags = window.decorView.systemUiVisibility
+        flags = if (isColorLight(this.color(color))) {
+            flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        } else {
+            flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        }
+        window.decorView.systemUiVisibility = flags
+    }
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Activity.resetSystemUIColor(@ColorRes color: Int) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        window.insetsController?.let {
+            it.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
+            it.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+        }
+    } else {
+        var flags = window.decorView.systemUiVisibility
+        flags = flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        flags = flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+        window.decorView.systemUiVisibility = flags
+    }
+    window.statusBarColor = this.color(color)
+    window.navigationBarColor = this.color(color)
+}
+
+fun Context.colorDrawable(@ColorRes color: Int) {
+    ColorDrawable(this.color(color))
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Context.getDrawableTransition(drawableList: Array<Drawable>): Drawable {
+    return TransitionDrawable(drawableList).apply {
+        isCrossFadeEnabled = true
+        startTransition(200)
+    }
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

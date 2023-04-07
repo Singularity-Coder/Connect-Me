@@ -126,9 +126,29 @@ enum class NewTabType(val value: String) {
     NEW_PRIVATE_DISAPPEARING_TAB(value = "New Private Disappearing Tab".capFirstChar())
 }
 
-enum class SearchEngine(val value: String, @DrawableRes val icon: Int) {
-    GOOGLE(value = "Google", icon = R.drawable.google),
-    BING(value = "Bing", icon = R.drawable.bing),
-    DUCK(value = "DuckDuckGo", icon = R.drawable.duckduckgo),
-    YAHOO(value = "Yahoo", icon = R.drawable.yahoo),
+enum class SearchEngine(
+    val value: String,
+    @DrawableRes val icon: Int,
+    val url: String
+) {
+    GOOGLE(
+        value = "Google",
+        icon = R.drawable.google,
+        url = "https://google.com/search?ie=UTF-8&source=android-browser&q={searchTerms}"
+    ),
+    BING(
+        value = "Bing",
+        icon = R.drawable.bing,
+        url = "https://www.bing.com/search?ie=UTF-8&source=android-browser&q={searchTerms}"
+    ),
+    DUCK(
+        value = "DuckDuckGo",
+        icon = R.drawable.duckduckgo,
+        url = "https://duckduckgo.com/?va=u&t=hf&q={searchTerms}&ia=web"
+    ),
+    YAHOO(
+        value = "Yahoo",
+        icon = R.drawable.yahoo,
+        url = "https://search.yahoo.com/search?p={searchTerms}&fr=yfp-hrmob-s&fr2=p%3Afp%2Cm%3Asa&.tsrc=yfp-hrmob-s&fp=1&toggle=1&cop=mss&ei=UTF-8"
+    ),
 }

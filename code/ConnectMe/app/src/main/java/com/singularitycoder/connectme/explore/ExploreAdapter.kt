@@ -13,7 +13,7 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var feedList = emptyList<Explore>()
     private var newsClickListener: (explore: Explore) -> Unit = {}
-    private var colorPosition: Int = 0
+    private var colorPosition: Int = -1
     private var isListReversible: Boolean = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -46,7 +46,7 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 if (colorPosition == exploreItemColorsList.lastIndex) {
                     isListReversible = true
                 }
-                if (colorPosition == 0) {
+                if (colorPosition <= 0) {
                     isListReversible = false
                 }
                 if (isListReversible) {

@@ -1,82 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".search.SearchTabFragment">
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/purple_700"
-            android:orientation="vertical">
-
-            <include
-                android:id="@+id/layout_vpn"
-                layout="@layout/layout_icon_text_switch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <include
-                android:id="@+id/layout_ad_blocker"
-                layout="@layout/layout_icon_text_switch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <include
-                android:id="@+id/layout_following"
-                layout="@layout/list_item_collection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <include
-                android:id="@+id/layout_collections"
-                layout="@layout/list_item_collection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <include
-                android:id="@+id/layout_history"
-                layout="@layout/layout_3_web_links"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <include
-                android:id="@+id/layout_downloads"
-                layout="@layout/layout_3_web_links"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp" />
-        </androidx.appcompat.widget.LinearLayoutCompat>
-    </androidx.core.widget.NestedScrollView>
-
     <WebView
         android:id="@+id/web_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

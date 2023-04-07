@@ -49,6 +49,7 @@ dependencies {
     implementation "androidx.activity:activity-ktx:1.6.1"
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
     implementation 'com.r0adkll:slidableactivity:2.1.0'
+    implementation 'androidx.palette:palette-ktx:1.0.0'
 
     // Web scraping stuff
     implementation "org.jsoup:jsoup:1.15.3"
