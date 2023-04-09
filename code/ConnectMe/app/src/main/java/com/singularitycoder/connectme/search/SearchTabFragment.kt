@@ -13,20 +13,17 @@ import android.os.Message
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.webkit.*
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
-import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.regex.Pattern
 import javax.inject.Inject
 
-private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
+//private const val ARG_PARAM_TAB = "ARG_PARAM_TAB"
 
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
@@ -37,8 +34,8 @@ class SearchTabFragment : Fragment() {
         private const val HEADER_DNT = "DNT"
 
         @JvmStatic
-        fun newInstance(screenType: String) = SearchTabFragment().apply {
-            arguments = Bundle().apply { putString(ARG_PARAM_SCREEN_TYPE, screenType) }
+        fun newInstance(paramTab: String) = SearchTabFragment().apply {
+//            arguments = Bundle().apply { putString(ARG_PARAM_TAB, paramTab) }
         }
     }
 
@@ -52,7 +49,7 @@ class SearchTabFragment : Fragment() {
     }
 
     private var hideProgressRunnable = Runnable {}
-    private var topicParam: String? = null
+//    private var paramTab: String? = null
     private var mobileUserAgent: String? = null
     private var desktopUserAgent: String? = null
     private var isIncognito = false
@@ -61,7 +58,7 @@ class SearchTabFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
+//        paramTab = arguments?.getString(ARG_PARAM_TAB)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -78,6 +75,7 @@ class SearchTabFragment : Fragment() {
     // https://guides.codepath.com/android/Working-with-the-WebView
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentSearchTabBinding.setupUI() {
+        ConnectMeUtils.webpageIdList.add(tag)
         searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
             it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
         } as? SearchFragment
@@ -110,14 +108,9 @@ class SearchTabFragment : Fragment() {
         webView.setDownloadListener { url: String?, _, contentDisposition: String?, mimeType: String?, _ ->
 //            downloadFileAsk(url, contentDisposition, mimeType)
         }
-
-        searchFragment?.getSearchInputField()?.onImeClick(imeAction = EditorInfo.IME_ACTION_SEARCH) {
-            loadUrl(url = searchFragment?.getSearchInputField()?.text.toString())
-            searchFragment?.getSearchInputField().hideKeyboard()
-        }
     }
 
-    private fun loadUrl(url: String) {
+    fun loadUrl(url: String) {
         lastLoadedUrl = url
         followUrl(url)
     }
@@ -253,20 +246,9 @@ class SearchTabFragment : Fragment() {
         binding.webView.reload()
     }
 
-    private fun getWebViewScreenshot(): Bitmap {
-        val webView = binding.webView
-        webView.measure(
-            View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED),
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        )
-        webView.layout(0, 0, webView.measuredWidth, webView.measuredHeight)
-        val size = if (webView.measuredWidth > webView.measuredHeight) webView.measuredHeight else webView.measuredWidth
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint()
-        val height = bitmap.height
-        canvas.drawBitmap(bitmap, 0f, height.toFloat(), paint)
-        webView.draw(canvas)
-        return bitmap
+    fun getWebView(): WebView = binding.webView
+
+    fun refreshWebpage() {
+        binding.webView.reload()
     }
 }

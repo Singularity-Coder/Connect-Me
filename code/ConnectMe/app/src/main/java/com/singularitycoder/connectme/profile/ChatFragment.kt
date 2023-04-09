@@ -7,37 +7,34 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
-import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.UserProfile
 import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
-import com.singularitycoder.connectme.helpers.showScreen
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
-const val ARG_PARAM_USER_PROFILE_SCREEN_TYPE = "ARG_PARAM_USER_PROFILE_SCREEN_TYPE"
+const val ARG_PARAM_CHAT_SCREEN_TYPE: String = "ARG_PARAM_CHAT_SCREEN_TYPE"
 
 @AndroidEntryPoint
-class UserFollowingFragment : Fragment() {
+class ChatFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(screenType: String) = UserFollowingFragment().apply {
-            arguments = Bundle().apply { putString(ARG_PARAM_USER_PROFILE_SCREEN_TYPE, screenType) }
+        fun newInstance(screenType: String) = ChatFragment().apply {
+            arguments = Bundle().apply { putString(ARG_PARAM_CHAT_SCREEN_TYPE, screenType) }
         }
     }
 
     private lateinit var binding: FragmentFollowingBinding
 
-    private val followingAdapter = UserFollowingAdapter()
+    private val followingAdapter = ChatAdapter()
     private val followingList = mutableListOf<UserFollowing>()
 
     private var profileScreenType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        profileScreenType = arguments?.getString(ARG_PARAM_USER_PROFILE_SCREEN_TYPE)
+        profileScreenType = arguments?.getString(ARG_PARAM_CHAT_SCREEN_TYPE)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -53,17 +50,6 @@ class UserFollowingFragment : Fragment() {
     }
 
     private fun FragmentFollowingBinding.setupUI() {
-        when (profileScreenType) {
-            UserProfile.FOLLOW.value -> {
-                cardSearch.isVisible = false
-            }
-            UserProfile.FOLLOWING.value -> {
-            }
-            UserProfile.FOLLOWERS.value -> {}
-            UserProfile.FOLLOW_REQUESTS.value -> {
-                cardSearch.isVisible = false
-            }
-        }
         rvFollowing.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = followingAdapter
@@ -88,7 +74,6 @@ class UserFollowingFragment : Fragment() {
         root.setOnClickListener { }
 
         followingAdapter.setOnClickListener { it: UserFollowing ->
-            (requireActivity() as MainActivity).showScreen(UserProfileFragment.newInstance(isSelfProfile = false), FragmentsTag.USER_PROFILE, isAdd = true)
         }
     }
 

@@ -18,6 +18,7 @@
             android:id="@+id/card_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="-16dp"
             android:backgroundTint="@color/white"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
@@ -26,7 +27,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="32dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_profile_image"
@@ -83,26 +84,33 @@
                     app:layout_constraintStart_toStartOf="@+id/tv_site_name"
                     app:layout_constraintTop_toBottomOf="@+id/tv_site_name" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_follow"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_follow_buttons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="16dp"
-                    android:elevation="0dp"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    android:text="Follow"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    app:cornerRadius="24dp"
-                    app:elevation="0dp"
-                    app:layout_constraintTop_toBottomOf="@+id/card_profile_image"
-                    app:strokeColor="@color/purple_500" />
+                    android:orientation="vertical"
+                    app:layout_constraintTop_toBottomOf="@+id/card_profile_image">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_follow"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:elevation="0dp"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Follow"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        app:cornerRadius="24dp"
+                        app:elevation="0dp"
+                        app:strokeColor="@color/purple_500" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_menu"
@@ -123,13 +131,13 @@
                     android:layout_marginTop="8dp"
                     android:background="@color/white"
                     android:elevation="0dp"
-                    app:layout_constraintTop_toBottomOf="@+id/btn_follow"
+                    app:layout_constraintTop_toBottomOf="@+id/ll_follow_buttons"
                     app:tabBackground="@color/white"
                     app:tabGravity="fill"
                     app:tabIndicator="@drawable/bg_tab_indicator_top_rounded"
                     app:tabIndicatorColor="@color/purple_500"
                     app:tabIndicatorHeight="4dp"
-                    app:tabMode="fixed"
+                    app:tabMode="scrollable"
                     app:tabSelectedTextColor="@color/purple_500"
                     app:tabTextAppearance="@style/CustomTextAppearanceTab"
                     app:tabTextColor="@android:color/darker_gray" />

@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
@@ -458,4 +460,21 @@ fun Activity.setImmersiveMode(enable: Boolean) {
         }
         window.decorView.systemUiVisibility = flags
     }
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun WebView.screenshot(): Bitmap {
+    this.measure(
+        View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED),
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+    )
+    this.layout(0, 0, this.measuredWidth, this.measuredHeight)
+    val size = if (this.measuredWidth > this.measuredHeight) this.measuredHeight else this.measuredWidth
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint()
+    val height = bitmap.height
+    canvas.drawBitmap(bitmap, 0f, height.toFloat(), paint)
+    this.draw(canvas)
+    return bitmap
 }

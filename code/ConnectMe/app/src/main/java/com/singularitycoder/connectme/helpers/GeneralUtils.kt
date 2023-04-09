@@ -18,15 +18,18 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.text.Spanned
+import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebView
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.text.HtmlCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
@@ -38,11 +41,16 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.apache.commons.net.ftp.FTPSClient.PROVIDER
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.lang.reflect.Method
 import java.util.*
 
@@ -331,4 +339,31 @@ fun Menu.invokeSetMenuIconMethod() {
 
 fun getHtmlFormattedTime(html: String): Spanned {
     return HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
+}
+
+fun Context.shareUrl(url: String?, webView: WebView?) {
+    if (url == null) return
+    val intent = Intent(Intent.ACTION_SEND)
+    intent.putExtra(Intent.EXTRA_TEXT, url)
+    if (url == webView?.url) {
+        val file = File(cacheDir, "$timeNow.png")
+        try {
+            FileOutputStream(file).use { out ->
+                val bm = webView.screenshot()
+                bm.compress(Bitmap.CompressFormat.PNG, 70, out)
+                out.flush()
+                out.close()
+                intent.putExtra(
+                    Intent.EXTRA_STREAM,
+                    FileProvider.getUriForFile(this, FILE_PROVIDER, file)
+                )
+                intent.type = "image/png"
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        } catch (_: IOException) {
+        }
+    } else {
+        intent.type = "text/plain"
+    }
+    startActivity(Intent.createChooser(intent, "Send to"))
 }

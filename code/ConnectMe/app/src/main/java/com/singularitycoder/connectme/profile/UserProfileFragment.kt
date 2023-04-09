@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -13,19 +14,28 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentUserProfileBinding
+import com.singularitycoder.connectme.downloads.DownloadsFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.UserProfile
 import dagger.hilt.android.AndroidEntryPoint
+
+private const val IS_SELF_PROFILE = "IS_SELF_PROFILE"
 
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance() = UserProfileFragment()
+        fun newInstance(isSelfProfile: Boolean) = UserProfileFragment().apply {
+            arguments = Bundle().apply {
+                putBoolean(IS_SELF_PROFILE, isSelfProfile)
+            }
+        }
     }
 
     private lateinit var binding: FragmentUserProfileBinding
+
+    private var isSelfProfile = false
 
     private val viewPager2PageChangeListener = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrollStateChanged(state: Int) {
@@ -44,6 +54,11 @@ class UserProfileFragment : Fragment() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isSelfProfile = arguments?.getBoolean(IS_SELF_PROFILE) ?: false
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentUserProfileBinding.inflate(inflater, container, false)
         return binding.root
@@ -57,6 +72,11 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun FragmentUserProfileBinding.setupUI() {
+        llFollowButtons.isVisible = isSelfProfile.not()
+        if (isSelfProfile.not()) {
+            btnFollow.setMargins(start = 0, top = 0, end = 0, bottom = 16.dpToPx().toInt())
+        }
+        tabLayoutUserProfile.isVisible = isSelfProfile
         setUpViewPager()
         ivProfileImage.setImageDrawable(requireContext().drawable(R.drawable.hithesh))
     }
@@ -100,12 +120,24 @@ class UserProfileFragment : Fragment() {
     }
 
     inner class UserProfileViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = UserProfile.values().size
-        override fun createFragment(position: Int): Fragment = when (position) {
-            UserProfile.FOLLOW.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOW.value)
-            UserProfile.FOLLOWING.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOWING.value)
-            UserProfile.FOLLOWERS.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOWERS.value)
-            else -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOW_REQUESTS.value)
+        override fun getItemCount(): Int {
+            return if (isSelfProfile) {
+                UserProfile.values().size
+            } else 1
+        }
+        override fun createFragment(position: Int): Fragment {
+            return if (isSelfProfile) {
+                when (position) {
+                    UserProfile.CHAT.ordinal -> ChatFragment.newInstance(screenType = UserProfile.FOLLOW.value)
+                    UserProfile.DOWNLOADS.ordinal -> DownloadsFragment.newInstance(screenType = UserProfile.FOLLOW.value, isSelfProfile = true)
+                    UserProfile.FOLLOW.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOW.value)
+                    UserProfile.FOLLOWING.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOWING.value)
+                    UserProfile.FOLLOWERS.ordinal -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOWERS.value)
+                    else -> UserFollowingFragment.newInstance(screenType = UserProfile.FOLLOW_REQUESTS.value)
+                }
+            } else {
+                DownloadsFragment.newInstance(screenType = UserProfile.DOWNLOADS.value, isSelfProfile = false)
+            }
         }
     }
 }

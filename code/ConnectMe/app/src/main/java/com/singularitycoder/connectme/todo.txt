@@ -1,11 +1,9 @@
 TODAY
-2. Close other tabs
-4. Downloads UI
-5. History UI
-6. Following UI
-7. Collections UI
-8. Explore UI - need to think
-9. Webview Functionality
+Link editing feats
+On tab switch change link in search bar
+Forward n back nav webpage
+DB integration
+Close other tabs
 
 
 Search
@@ -72,3 +70,7 @@ Use queue to add urls navigating from the tab forward and backward
 RSS Reader
 https://code.google.com/archive/p/android-rss/source/default/source
 https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-android
+
+
+P2P Comm
+https://github.com/briar/briar

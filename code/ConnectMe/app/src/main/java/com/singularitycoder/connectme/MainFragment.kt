@@ -122,7 +122,7 @@ class MainFragment : Fragment() {
         }
 
         cardProfileImage.onSafeClick {
-            (requireActivity() as MainActivity).showScreen(UserProfileFragment.newInstance(), FragmentsTag.USER_PROFILE, isAdd = true)
+            (requireActivity() as MainActivity).showScreen(UserProfileFragment.newInstance(isSelfProfile = true), FragmentsTag.USER_PROFILE, isAdd = true)
         }
     }
 
@@ -196,7 +196,7 @@ class MainFragment : Fragment() {
 //            Tab.NOTES.ordinal -> FeedFragment.newInstance(screenType = Tab.NOTES.value)
             Tab.FOLLOWING.ordinal -> FollowingFragment.newInstance(screenType = Tab.FOLLOWING.value)
             Tab.HISTORY.ordinal -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
-            else -> DownloadsFragment.newInstance(screenType = Tab.DOWNLOADS.value)
+            else -> DownloadsFragment.newInstance(screenType = Tab.DOWNLOADS.value, isSelfProfile = true)
         }
     }
 }

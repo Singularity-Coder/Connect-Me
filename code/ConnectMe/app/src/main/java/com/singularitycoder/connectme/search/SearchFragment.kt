@@ -7,6 +7,8 @@ import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -15,7 +17,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
@@ -52,6 +53,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
+private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -93,6 +95,12 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private val tabSelectedListener = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) = Unit
+        override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
+        override fun onTabReselected(tab: TabLayout.Tab?) = Unit
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
@@ -116,6 +124,11 @@ class SearchFragment : Fragment() {
         if (topicTabsList.size == 1 && binding.etSearch.text.isBlank()) {
             binding.etSearch.showKeyboard()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        ConnectMeUtils.webpageIdList.clear()
     }
 
     private fun FragmentSearchBinding.setupUI() {
@@ -162,6 +175,7 @@ class SearchFragment : Fragment() {
         layoutDownloads.apply {
             tvTitle.text = "Downloads"
         }
+        tabLayoutTabs.addOnTabSelectedListener(tabSelectedListener)
         setupSearchSuggestionsRecyclerView()
         setUpViewPager()
         setupLinkEditingFeatures()
@@ -285,7 +299,12 @@ class SearchFragment : Fragment() {
             requireContext().showToast("QR Scan")
         }
 
+        /** The webpage loads in [SearchTabFragment] */
         etSearch.onImeClick(imeAction = EditorInfo.IME_ACTION_SEARCH) {
+            println("printingggggg webpageIdListttt: ${ConnectMeUtils.webpageIdList}")
+            println("printingggggg tabLayoutTabs.selectedTabPosition: ${tabLayoutTabs.selectedTabPosition}")
+            val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+            selectedWebpage?.loadUrl(url = etSearch.text.toString().trim())
             etSearch.hideKeyboard()
         }
 
@@ -334,16 +353,14 @@ class SearchFragment : Fragment() {
             isSearchSuggestionSelected = true
             etSearch.clearFocus()
             etSearch.setText(iconTextAction.title)
+            val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+            selectedWebpage?.loadUrl(url = iconTextAction.title)
         }
     }
 
     private fun FragmentSearchBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
-            if (searchSuggestionsList.isEmpty()) {
-                rvSearchSuggestions.isVisible = false
-                return@collectLatestLifecycleFlow
-            }
-            if (searchQuery.isBlank()) {
+            if (searchSuggestionsList.isEmpty() || searchQuery.isBlank()) {
                 rvSearchSuggestions.isVisible = false
                 return@collectLatestLifecycleFlow
             }
@@ -377,7 +394,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setUpViewPager() {
-        viewpagerReminders.apply {
+        viewpagerTabs.apply {
             isUserInputEnabled = false
             adapter = SearchViewPagerAdapter(
                 fragmentManager = requireActivity().supportFragmentManager,
@@ -385,7 +402,7 @@ class SearchFragment : Fragment() {
             )
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
-        TabLayoutMediator(tabLayoutTabs, viewpagerReminders) { tab, position ->
+        TabLayoutMediator(tabLayoutTabs, viewpagerTabs) { tab, position ->
             tab.text = topicTabsList[position]
             tab.icon = when (topicTabsList[position]) {
                 NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
@@ -398,12 +415,12 @@ class SearchFragment : Fragment() {
 
     private fun FragmentSearchBinding.setupLinkEditingFeatures() {
         listOf("Copy", "Share", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
-            .forEach { it: String ->
+            .forEach { action: String ->
                 val chip = Chip(requireContext()).apply {
-                    text = it
+                    text = action
                     isCheckable = false
                     isClickable = false
-                    when (it) {
+                    when (action) {
                         "Copy" -> {
                             setTextColor(requireContext().color(R.color.purple_500))
                             chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
@@ -431,6 +448,43 @@ class SearchFragment : Fragment() {
                     textAlignment = View.TEXT_ALIGNMENT_CENTER
                     elevation = 0f
                     onSafeClick {
+                        when (action.trim()) {
+                            "Copy" -> {
+                                requireContext().clipboard()?.text = etSearch.text
+                                binding.root.showSnackBar("Copied link: ${requireContext().clipboard()?.text}")
+                            }
+                            "Share" -> {
+                                val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                                // Delay a bit to allow popup menu hide animation to play
+                                doAfter(300) {
+                                    requireContext().shareUrl(
+                                        url = etSearch.text.toString(),
+                                        webView = selectedWebpage?.getWebView()
+                                    )
+                                }
+                            }
+                            "/" -> {
+                                etSearch.text.insert(etSearch.selectionStart, "/")
+                            }
+                            "." -> {
+                                etSearch.text.insert(etSearch.selectionStart, ".")
+                            }
+                            ".com" -> {
+                                etSearch.text.insert(etSearch.selectionStart, ".com")
+                            }
+                            ".in" -> {
+                                etSearch.text.insert(etSearch.selectionStart, ".in")
+                            }
+                            "www." -> {
+                                etSearch.text.insert(etSearch.selectionStart, "www.")
+                            }
+                            "https://" -> {
+                                etSearch.text.insert(etSearch.selectionStart, "https://")
+                            }
+                            "http://" -> {
+                                etSearch.text.insert(etSearch.selectionStart, "http://")
+                            }
+                        }
                     }
                 }
                 chipGroupLinkTextActions.addView(chip)
@@ -438,28 +492,28 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsFocused() {
-            clTabs.isVisible = false
-            isSearchSuggestionSelected = false
-            chipGroupLinkTextActions.isVisible = true
-            etSearch.setSelection(0, etSearch.text.length)
-            etSearch.setSelectAllOnFocus(true)
-            btnWebsiteQuickActions.isVisible = false
-            btnQrScan.isVisible = true
-            btnVoiceSearch.isVisible = true
-            ivWebappProfile.isVisible = false
-            ivSearchEngine.isVisible = true
+        clTabs.isVisible = false
+        isSearchSuggestionSelected = false
+        chipGroupLinkTextActions.isVisible = true
+        etSearch.setSelection(0, etSearch.text.length)
+        etSearch.setSelectAllOnFocus(true)
+        btnWebsiteQuickActions.isVisible = false
+        btnQrScan.isVisible = true
+        btnVoiceSearch.isVisible = true
+        ivWebappProfile.isVisible = false
+        ivSearchEngine.isVisible = true
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsNotFocused() {
-            clTabs.isVisible = true
-            chipGroupLinkTextActions.isVisible = false
-            etSearch.clearFocus()
-            btnWebsiteQuickActions.isVisible = true
-            btnQrScan.isVisible = false
-            btnVoiceSearch.isVisible = false
-            ivWebappProfile.isVisible = true
-            ivSearchEngine.isVisible = false
-            rvSearchSuggestions.isVisible = false
+        clTabs.isVisible = true
+        chipGroupLinkTextActions.isVisible = false
+        etSearch.clearFocus()
+        btnWebsiteQuickActions.isVisible = true
+        btnQrScan.isVisible = false
+        btnVoiceSearch.isVisible = false
+        ivWebappProfile.isVisible = true
+        ivSearchEngine.isVisible = false
+        rvSearchSuggestions.isVisible = false
     }
 
     private fun FragmentSearchBinding.showCloseAllTabsPopup() {
@@ -509,6 +563,7 @@ class SearchFragment : Fragment() {
                     for (position: Int in 0 until tabLayoutTabs.tabCount) {
                         if (position == currentTabPosition) continue
                         topicTabsList.removeAt(position)
+                        ConnectMeUtils.webpageIdList.removeAt(position)
                         tabLayoutTabs.removeTabAt(position)
                     }
                 } catch (_: Exception) {
@@ -519,9 +574,10 @@ class SearchFragment : Fragment() {
                 if (topicTabsList.size == 1) {
                     requireActivity().supportFragmentManager.popBackStackImmediate()
                 } else {
-                    topicTabsList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
-                    binding.tabLayoutTabs.removeTabAt(binding.tabLayoutTabs.selectedTabPosition)
-                    binding.viewpagerReminders.adapter?.notifyDataSetChanged()
+                    topicTabsList.removeAt(tabLayoutTabs.selectedTabPosition)
+                    ConnectMeUtils.webpageIdList.removeAt(tabLayoutTabs.selectedTabPosition)
+                    tabLayoutTabs.removeTabAt(tabLayoutTabs.selectedTabPosition)
+                    viewpagerTabs.adapter?.notifyDataSetChanged()
                 }
             }
 
@@ -572,7 +628,7 @@ class SearchFragment : Fragment() {
 //                isAnimated = false
 //            )
         }
-        viewpagerReminders.adapter?.notifyDataSetChanged()
+        viewpagerTabs.adapter?.notifyDataSetChanged()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -665,7 +721,10 @@ class SearchFragment : Fragment() {
                 QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
                     binding.showCloseAllTabsPopup()
                 }
-                QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {}
+                QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {
+                    val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    selectedWebpage?.refreshWebpage()
+                }
 //                QuickActionTabMenu.SHARE_LINK.ordinal -> {}
             }
         }
@@ -732,8 +791,6 @@ class SearchFragment : Fragment() {
         }
     }
 
-    fun getSearchInputField(): EditText = binding.etSearch
-
     fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile
 
     inner class SearchViewPagerAdapter(
@@ -742,9 +799,7 @@ class SearchFragment : Fragment() {
     ) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount(): Int = topicTabsList.size
         override fun createFragment(position: Int): Fragment {
-            return SearchTabFragment.newInstance(topicTabsList[position])
+            return SearchTabFragment.newInstance(paramTab = topicTabsList[position])
         }
     }
 }
-
-private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"

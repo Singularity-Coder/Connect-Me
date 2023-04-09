@@ -7,6 +7,8 @@ import com.singularitycoder.connectme.helpers.capFirstChar
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
 
+const val FILE_PROVIDER = "com.singularitycoder.connectme.fileprovider"
+
 val dummyImageUrls = listOf(
     "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/167587/pexels-photo-167587.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -113,6 +115,8 @@ enum class Tab(val value: String) {
 }
 
 enum class UserProfile(val value: String) {
+    CHAT(value = "Chat"),
+    DOWNLOADS(value = "Downloads"),
     FOLLOW(value = "Follow"),
     FOLLOWING(value = "Following"),
     FOLLOWERS(value = "Followers"),
@@ -120,10 +124,10 @@ enum class UserProfile(val value: String) {
 }
 
 enum class NewTabType(val value: String) {
-    NEW_TAB(value = "New Tab".capFirstChar()),
-    NEW_PRIVATE_TAB(value = "New Private Tab".capFirstChar()),
-    NEW_DISAPPEARING_TAB(value = "New Disappearing Tab".capFirstChar()),
-    NEW_PRIVATE_DISAPPEARING_TAB(value = "New Private Disappearing Tab".capFirstChar())
+    NEW_TAB(value = "New Tab"),
+    NEW_PRIVATE_TAB(value = "New Private Tab"),
+    NEW_DISAPPEARING_TAB(value = "New Disappearing Tab"),
+    NEW_PRIVATE_DISAPPEARING_TAB(value = "New Private Disappearing Tab")
 }
 
 enum class SearchEngine(

@@ -11,4 +11,5 @@ data class WebApp(
     val source: String? = "",
     val time: String? = "",
     val link: String? = "",
+    val tabTag: String? = "",
 ) : Parcelable

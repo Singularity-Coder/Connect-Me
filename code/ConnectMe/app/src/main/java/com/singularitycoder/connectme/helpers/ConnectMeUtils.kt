@@ -4,4 +4,5 @@ import android.util.TypedValue
 
 object ConnectMeUtils {
     val typedValue = TypedValue()
+    val webpageIdList = mutableListOf<String?>()
 }

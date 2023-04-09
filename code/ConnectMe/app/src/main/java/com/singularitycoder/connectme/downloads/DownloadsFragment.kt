@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
@@ -13,14 +14,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
+private const val ARG_PARAM_IS_SELF_PROFILE = "ARG_PARAM_IS_SELF_PROFILE"
 
 @AndroidEntryPoint
 class DownloadsFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(screenType: String) = DownloadsFragment().apply {
-            arguments = Bundle().apply { putString(ARG_PARAM_SCREEN_TYPE, screenType) }
+        fun newInstance(screenType: String, isSelfProfile: Boolean) = DownloadsFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_PARAM_SCREEN_TYPE, screenType)
+                putBoolean(ARG_PARAM_IS_SELF_PROFILE, isSelfProfile)
+            }
         }
     }
 
@@ -30,10 +35,12 @@ class DownloadsFragment : Fragment() {
     private val feedList = mutableListOf<Download>()
 
     private var topicParam: String? = null
+    private var isSelfProfile: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
+        isSelfProfile = arguments?.getBoolean(ARG_PARAM_IS_SELF_PROFILE) ?: false
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -49,6 +56,8 @@ class DownloadsFragment : Fragment() {
     }
 
     private fun FragmentDownloadsBinding.setupUI() {
+        cardSearch.isVisible = isSelfProfile
+        btnDeleteAllHistory.isVisible = isSelfProfile
         rvDownloads.apply {
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = feedAdapter
@@ -59,7 +68,7 @@ class DownloadsFragment : Fragment() {
                     imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
                     title = "Cringe Lord lords it over and gives it back to others $it",
                     source = "Cringe Lord lords it over and gives it back to others $it",
-                    time = "58 Mb * 5 hr ago",
+                    time = if (isSelfProfile) "58 Mb * 5 hr ago" else "58 Mb",
                     link = "",
                 )
             )

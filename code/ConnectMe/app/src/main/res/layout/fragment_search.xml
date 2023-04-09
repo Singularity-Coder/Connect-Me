@@ -8,7 +8,7 @@
     tools:context=".search.SearchFragment">
 
     <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewpager_reminders"
+        android:id="@+id/viewpager_tabs"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/white"
@@ -268,7 +268,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:rippleColor="@color/purple_200" />
+                    app:rippleColor="@color/purple_200"
+                    app:strokeColor="@color/black_50"
+                    app:strokeWidth="1dp" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <EditText
