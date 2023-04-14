@@ -88,6 +88,15 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
 
+    <View
+        android:id="@+id/view_search_suggestions_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        android:alpha="0.7"
+        app:layout_constraintBottom_toTopOf="@+id/cl_header"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_search_suggestions"
         android:layout_width="match_parent"
@@ -221,7 +230,7 @@
                 android:max="100"
                 android:progress="0"
                 android:visibility="visible"
-                app:indicatorColor="@color/black_50"
+                app:indicatorColor="@color/purple_50"
                 app:layout_constraintBottom_toBottomOf="@+id/et_search"
                 app:layout_constraintTop_toTopOf="@+id/et_search"
                 app:trackColor="@color/white"
@@ -229,12 +238,13 @@
                 app:trackThickness="50dp" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cl_search_engine"
+                android:id="@+id/cl_website_profile"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="@+id/et_search"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/et_search">
@@ -293,7 +303,7 @@
                 android:textColor="@color/black"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/ll_tab_action_buttons"
-                app:layout_constraintStart_toEndOf="@+id/cl_search_engine" />
+                app:layout_constraintStart_toEndOf="@+id/cl_website_profile" />
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/ll_tab_action_buttons"

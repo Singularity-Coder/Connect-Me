@@ -79,4 +79,10 @@
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="android:padding">0dp</item>
     </style>
+
+    <!--https://stackoverflow.com/questions/53768913/how-to-apply-styles-from-styles-xml-to-span-->
+    <style name="url_highlight">
+        <item name="android:textColor">@color/light_gray</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
 </resources>

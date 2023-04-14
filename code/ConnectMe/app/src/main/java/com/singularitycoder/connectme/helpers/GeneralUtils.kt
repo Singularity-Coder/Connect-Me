@@ -18,7 +18,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.text.Spanned
-import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -47,7 +46,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.apache.commons.net.ftp.FTPSClient.PROVIDER
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -341,6 +339,7 @@ fun getHtmlFormattedTime(html: String): Spanned {
     return HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 }
 
+// https://github.com/LineageOS/android_packages_apps_Jelly
 fun Context.shareUrl(url: String?, webView: WebView?) {
     if (url == null) return
     val intent = Intent(Intent.ACTION_SEND)
@@ -366,4 +365,25 @@ fun Context.shareUrl(url: String?, webView: WebView?) {
         intent.type = "text/plain"
     }
     startActivity(Intent.createChooser(intent, "Send to"))
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun WebView.setDesktopMode(
+    isDesktopMode: Boolean,
+    desktopUserAgent: String?,
+    mobileUserAgent: String?
+) {
+    this.settings.apply {
+        userAgentString = if (isDesktopMode) desktopUserAgent else mobileUserAgent
+        useWideViewPort = isDesktopMode
+        loadWithOverviewMode = isDesktopMode
+    }
+    this.reload()
+}
+
+fun String?.simplifyUrl(): String? {
+    return this?.replace(oldValue = "https://www.", newValue = "")
+        ?.replace(oldValue = "http://www.", newValue = "")
+        ?.replace(oldValue = "http://", newValue = "")
+        ?.replace(oldValue = "https://", newValue = "")
 }

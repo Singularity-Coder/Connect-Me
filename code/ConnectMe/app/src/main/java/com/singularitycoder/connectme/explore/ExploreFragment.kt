@@ -8,8 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentExploreBinding
 import com.singularitycoder.connectme.helpers.constants.dummyImageUrls
+import com.singularitycoder.connectme.helpers.constants.typefaceList
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
+import kotlin.random.Random
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
@@ -62,6 +64,7 @@ class ExploreFragment : Fragment() {
                 )
             )
         }
+        feedAdapter.setTypefacePosition(Random.nextInt(typefaceList.size))
         feedAdapter.feedList = feedList
     }
 

@@ -1,18 +1,19 @@
 TODAY
 Link editing feats
 On tab switch change link in search bar
-Forward n back nav webpage
 DB integration
 Close other tabs
-
+FIXME: If u r filling form in website then u should not show apps on keyboard visible
 
 Search
 TODO when in focus show copy, special edit options - www, .com, ., /, letter navigation using sliders, slider will show on another tap
 TODO on focus show recent searches
 
+
 History
 TODO need date strip
 TODO need delete all and some filters
+
 
 Downloads
 TODO handle gif, image, audio, video, file
@@ -62,6 +63,7 @@ Basic WebApp Collections
 5. Directions: Maps,
 6. Tools: Drive, Dropbox,
 7. Education:
+8. Do anything/everything: ChatGPT
 
 
 Use queue to add urls navigating from the tab forward and backward

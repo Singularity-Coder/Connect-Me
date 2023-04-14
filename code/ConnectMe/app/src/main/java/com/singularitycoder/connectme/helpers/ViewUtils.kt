@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.SystemClock
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.MetricAffectingSpan
 import android.text.style.StyleSpan
 import android.view.*
 import android.view.animation.AlphaAnimation
@@ -26,8 +27,10 @@ import android.widget.*
 import androidx.annotation.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.palette.graphics.Palette
@@ -390,13 +393,17 @@ fun View.isKeyboardHidden(): Boolean {
 }
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
-fun TextView?.highlightQueriedText(query: String, result: String): TextView? {
+fun TextView?.highlightQueriedText(
+    query: String,
+    result: String,
+    styleSpan: MetricAffectingSpan = StyleSpan(Typeface.BOLD)
+): TextView? {
     if (query.isBlank() || result.isBlank()) return this
     val spannable = SpannableStringBuilder(result)
     var queryTextPos = result.toLowCase().indexOf(string = query)
     while (queryTextPos >= 0) {
         spannable.setSpan(
-            /* what = */ StyleSpan(Typeface.BOLD),
+            /* what = */ styleSpan,
             /* start = */ queryTextPos,
             /* end = */ queryTextPos + query.length,
             /* flags = */ Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -579,6 +586,24 @@ fun Context.getDrawableTransition(drawableList: Array<Drawable>): Drawable {
         isCrossFadeEnabled = true
         startTransition(200)
     }
+}
+
+// https://stackoverflow.com/questions/32777597/handle-a-view-visibility-change-without-overriding-the-view
+fun View.setOnVisibilityChangedListener(action: (isVisible: Boolean) -> Unit) {
+    this.viewTreeObserver.addOnGlobalLayoutListener {
+        val newVis: Int = this.visibility
+        if (this.tag as Int? != newVis) {
+            this.tag = this.visibility
+            // visibility has changed
+            action(this.isVisible)
+        }
+    }
+}
+
+// https://stackoverflow.com/questions/12128331/how-to-change-fontfamily-of-textview-in-android
+fun TextView.setTypeface(context: Context, @FontRes typefaceRes: Int) {
+    val typeface = ResourcesCompat.getFont(context, typefaceRes)
+    setTypeface(typeface)
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

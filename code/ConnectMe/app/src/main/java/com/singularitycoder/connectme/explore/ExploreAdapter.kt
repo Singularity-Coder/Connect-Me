@@ -7,7 +7,10 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemExploreBinding
 import com.singularitycoder.connectme.helpers.color
 import com.singularitycoder.connectme.helpers.constants.exploreItemColorsList
+import com.singularitycoder.connectme.helpers.constants.typefaceList
 import com.singularitycoder.connectme.helpers.drawable
+import com.singularitycoder.connectme.helpers.setTypeface
+import kotlin.random.Random
 
 class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -15,6 +18,7 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var newsClickListener: (explore: Explore) -> Unit = {}
     private var colorPosition: Int = -1
     private var isListReversible: Boolean = false
+    private var typefacePosition = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemExploreBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -31,6 +35,10 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun setOnNewsClickListener(listener: (explore: Explore) -> Unit) {
         newsClickListener = listener
+    }
+
+    fun setTypefacePosition(typefacePosition: Int) {
+        this.typefacePosition = typefacePosition
     }
 
     inner class NewsViewHolder(
@@ -62,6 +70,7 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 tvTitle.apply {
                     text = explore.title
                     setTextColor(root.context.color(color?.textColor ?: R.color.purple_500))
+                    setTypeface(root.context, typefaceList.getOrNull(typefacePosition) ?: R.font.milkshake)
                 }
                 clExplore.background = root.context.drawable(color?.gradientColor ?: R.drawable.gradient_default_light)
                 root.setOnClickListener {

@@ -3,8 +3,6 @@ package com.singularitycoder.connectme.search
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -49,12 +47,16 @@ class SearchTabFragment : Fragment() {
     }
 
     private var hideProgressRunnable = Runnable {}
-//    private var paramTab: String? = null
+
+    //    private var paramTab: String? = null
     private var mobileUserAgent: String? = null
     private var desktopUserAgent: String? = null
     private var isIncognito = false
     private var lastLoadedUrl: String? = null
     private var searchFragment: SearchFragment? = null
+    private var favicon: Bitmap? = null
+
+    var isWebpageLoadedAtLeastOnce = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,12 +173,12 @@ class SearchTabFragment : Fragment() {
         override fun onProgressChanged(view: WebView, progress: Int) {
             searchFragment?.setLinearProgress(progress)
             if (progress == 100) {
+                isWebpageLoadedAtLeastOnce = true
+                searchFragment?.doOnWebPageLoaded()
+
                 hideProgressHandler.removeCallbacks(hideProgressRunnable)
                 hideProgressRunnable = Runnable { searchFragment?.showLinearProgress(false) }
                 hideProgressHandler.postDelayed(hideProgressRunnable, 1.seconds())
-//                    doAfter(1.seconds()) {
-//                        searchFragment?.showLinearProgress(false)
-//                    }
             }
         }
 
@@ -186,11 +188,10 @@ class SearchTabFragment : Fragment() {
 
         override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
             if (icon == null || icon.isRecycled) return
-            val favicon = icon.copy(icon.config, true)
+            favicon = icon.copy(icon.config, true)
 //            applyThemeColor(UiUtils.getColor(favicon, binding.webView.isIncognito))
             if (icon.isRecycled.not()) icon.recycle()
             searchFragment?.getFaviconImageView()?.setImageBitmap(favicon)
-//            super.onReceivedIcon(view, icon)
         }
 
         override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
@@ -237,16 +238,9 @@ class SearchTabFragment : Fragment() {
         }
     }
 
-    private fun setDesktopMode(isDesktopMode: Boolean) {
-        binding.webView.settings.apply {
-            userAgentString = if (isDesktopMode) desktopUserAgent else mobileUserAgent
-            useWideViewPort = isDesktopMode
-            loadWithOverviewMode = isDesktopMode
-        }
-        binding.webView.reload()
-    }
-
     fun getWebView(): WebView = binding.webView
+
+    fun getFavicon(): Bitmap? = favicon
 
     fun refreshWebpage() {
         binding.webView.reload()
