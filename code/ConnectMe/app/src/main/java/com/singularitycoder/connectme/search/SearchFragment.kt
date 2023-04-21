@@ -8,10 +8,7 @@ import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -701,17 +698,6 @@ class SearchFragment : Fragment() {
 
         }
 
-        fun closeTab() {
-            if (topicTabsList.size == 1) {
-                requireActivity().supportFragmentManager.popBackStackImmediate()
-            } else {
-                topicTabsList.removeAt(tabLayoutTabs.selectedTabPosition)
-                ConnectMeUtils.webpageIdList.removeAt(tabLayoutTabs.selectedTabPosition)
-                tabLayoutTabs.removeTabAt(tabLayoutTabs.selectedTabPosition)
-                viewpagerTabs.adapter?.notifyDataSetChanged()
-            }
-        }
-
         fun duplicateTab() {
             addTab(NewTabType.NEW_TAB.value)
         }
@@ -756,6 +742,18 @@ class SearchFragment : Fragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    private fun closeTab() {
+        if (topicTabsList.size == 1) {
+            requireActivity().supportFragmentManager.popBackStackImmediate()
+        } else {
+            topicTabsList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
+            ConnectMeUtils.webpageIdList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
+            binding.tabLayoutTabs.removeTabAt(binding.tabLayoutTabs.selectedTabPosition)
+            binding.viewpagerTabs.adapter?.notifyDataSetChanged()
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setTabMenuTouchOptions2() {
         fun createChildView(
@@ -776,7 +774,7 @@ class SearchFragment : Fragment() {
             createChildView(R.drawable.other_houses_black_24dp, QuickActionTabMenu.HOME.value, R.color.purple_50),
             createChildView(R.drawable.round_close_24, QuickActionTabMenu.CLOSE_ALL_TABS.value, R.color.purple_50),
             createChildView(R.drawable.round_refresh_24, QuickActionTabMenu.REFRESH_WEBSITE.value, R.color.purple_50),
-            createChildView(R.drawable.round_share_24, QuickActionTabMenu.SHARE_LINK.value, R.color.purple_50),
+            createChildView(R.drawable.round_share_24, QuickActionTabMenu.GET_INSIGHT.value, R.color.purple_50),
         )
         binding.pinterestView.setPinClickListener(object : PinterestView.PinMenuClickListener {
             override fun onMenuItemClick(checkedView: View?, clickItemPos: Int) {
@@ -804,8 +802,8 @@ class SearchFragment : Fragment() {
         val icon2dot5 = requireContext().drawable(R.drawable.outline_library_add_24)?.changeColor(requireContext(), R.color.purple_500)
         val action2dot5 = Action(id = QuickActionTabMenu.COLLECT_ALL_TABS.ordinal, icon = icon2dot5!!, title = QuickActionTabMenu.COLLECT_ALL_TABS.value)
 
-//        val icon3 = requireContext().drawable(R.drawable.round_share_24)?.changeColor(requireContext(), R.color.purple_500)
-//        val action3 = Action(id = QuickActionTabMenu.SHARE_LINK.ordinal, icon = icon3!!, title = QuickActionTabMenu.SHARE_LINK.value)
+        val icon3 = requireContext().drawable(R.drawable.baseline_auto_fix_high_24)?.changeColor(requireContext(), R.color.purple_500)
+        val action3 = Action(id = QuickActionTabMenu.GET_INSIGHT.ordinal, icon = icon3!!, title = QuickActionTabMenu.GET_INSIGHT.value)
 
         val icon4 = requireContext().drawable(R.drawable.round_close_24)?.changeColor(requireContext(), R.color.purple_500)
         val action4 = Action(id = QuickActionTabMenu.CLOSE_ALL_TABS.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_ALL_TABS.value)
@@ -820,7 +818,7 @@ class SearchFragment : Fragment() {
             addAction(action1)
             addAction(action2)
             addAction(action2dot5)
-//            addAction(action3)
+            addAction(action3)
             addAction(action4)
             addAction(action5)
             addAction(action6)
@@ -850,6 +848,8 @@ class SearchFragment : Fragment() {
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.canGoForward() == true) {
                         selectedWebpage.getWebView().goForward()
+                    } else {
+                        closeTab()
                     }
                 }
                 QuickActionTabMenu.HOME.ordinal -> {
@@ -866,7 +866,14 @@ class SearchFragment : Fragment() {
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                     selectedWebpage?.refreshWebpage()
                 }
-//                QuickActionTabMenu.SHARE_LINK.ordinal -> {}
+                QuickActionTabMenu.GET_INSIGHT.ordinal -> {
+                    val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "")
+                    if (encryptedApiSecret.isNullOrBlank().not()) {
+                        GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
+                    } else {
+                        AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
+                    }
+                }
             }
         }
     }
@@ -933,6 +940,50 @@ class SearchFragment : Fragment() {
     }
 
     fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile
+
+    fun getTabsTabLayout(): TabLayout = binding.tabLayoutTabs
+
+    // https://stackoverflow.com/questions/19765938/show-and-hide-a-view-with-a-slide-up-down-animation
+    // https://developer.android.com/develop/ui/views/animations/reveal-or-hide-view
+    fun showUrlSearchBar(isVisible: Boolean) {
+//        val bottomTransition: Transition = Slide(Gravity.BOTTOM).apply {
+//            duration = 300
+//            addTarget(binding.clUrlSearchHeader)
+//        }
+//        TransitionManager.beginDelayedTransition(binding.clUrlSearchHeader.parent as ViewGroup, bottomTransition)
+
+
+//        var cof = -1
+//        var vis = if (isVisible) View.VISIBLE else View.GONE
+//        var alpha = 0F
+//        if (binding.clUrlSearchHeader.visibility == View.GONE) {
+//            cof = 0
+//            vis = View.VISIBLE
+//            alpha = 1F
+//        }
+//        binding.clUrlSearchHeader.animate()
+//            .translationY(binding.clUrlSearchHeader.height.toFloat() * cof)
+//            .alpha(alpha)
+//            .withStartAction {//in case showing the recyclerview show it at the beginning.
+//                if (vis == View.VISIBLE)
+//                    binding.clUrlSearchHeader.visibility = View.VISIBLE
+//            }
+//            .withEndAction {//in case hiding the recyclerview hide it at the end.
+//                if (vis == View.GONE)
+//                    binding.clUrlSearchHeader.visibility = View.GONE
+//            }
+//            .start()
+
+
+//        if (isVisible) {
+//            binding.clUrlSearchHeader.slideAnimation(SlideDirection.UP, SlideType.SHOW)//to make it reappear from bottom of the screen
+//        } else {
+//            binding.clUrlSearchHeader.slideAnimation(SlideDirection.DOWN, SlideType.HIDE)//to make it disappear through bottom of the screen
+//        }
+
+
+        binding.clUrlSearchHeader.isVisible = isVisible
+    }
 
     inner class SearchViewPagerAdapter(
         fragmentManager: FragmentManager,

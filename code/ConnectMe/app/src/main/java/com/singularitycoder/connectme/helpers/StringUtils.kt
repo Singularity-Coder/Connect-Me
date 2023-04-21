@@ -100,3 +100,18 @@ fun JSONArray.toList(): List<Any> = try {
 } catch (_: Exception) {
     emptyList<Any>()
 }
+
+fun getAssetsResourcePath(directory: String, resourceNameWithExtension: String): String {
+    return "file:///android_asset/$directory/$resourceNameWithExtension"
+}
+
+fun getRawResourcePath(resourceNameWithExtension: String): String {
+    return "file:///android_res/raw/$resourceNameWithExtension"
+}
+
+fun String?.simplifyUrl(): String? {
+    return this?.replace(oldValue = "https://www.", newValue = "")
+        ?.replace(oldValue = "http://www.", newValue = "")
+        ?.replace(oldValue = "http://", newValue = "")
+        ?.replace(oldValue = "https://", newValue = "")
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:id="@+id/group1">
+        <item
+            android:id="@+id/menu_item_peek"
+            android:icon="@drawable/outline_remove_red_eye_24"
+            android:title="Peek"
+            app:showAsAction="withText" />
+    </group>
+
+    <group android:id="@+id/group2">
+        <item
+            android:id="@+id/menu_item_open_new_tab"
+            android:icon="@drawable/round_add_circle_outline_24"
+            android:title="Open in new tab"
+            app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_open_new_private_tab"
+            android:icon="@drawable/outline_policy_24"
+            android:title="Open in new private tab"
+            app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_open_new_disappearing_tab"
+            android:icon="@drawable/outline_timer_24"
+            android:title="Open in new disappearing tab"
+            app:showAsAction="withText" />
+    </group>
+
+    <group android:id="@+id/group3">
+        <item
+            android:id="@+id/menu_item_copy_link_address"
+            android:icon="@drawable/baseline_content_copy_24"
+            android:title="Copy link address"
+            app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_copy_link_text"
+            android:icon="@drawable/baseline_content_copy_24"
+            android:title="Copy link text"
+            app:showAsAction="withText" />
+    </group>
+
+    <group android:id="@+id/group4">
+        <item
+            android:id="@+id/menu_item_add_to_collection"
+            android:icon="@drawable/outline_library_add_24"
+            android:title="Add to collection"
+            app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_download_link"
+            android:icon="@drawable/outline_file_download_24"
+            android:title="Download Link"
+            app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_share_link"
+            android:icon="@drawable/outline_share_24"
+            android:title="Share link"
+            app:showAsAction="withText" />
+    </group>
+
+</menu>

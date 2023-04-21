@@ -1,6 +1,5 @@
 package com.singularitycoder.connectme
 
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -23,13 +21,11 @@ import com.singularitycoder.connectme.following.FollowingFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.Tab
-import com.singularitycoder.connectme.helpers.locationData.PlayServicesAvailabilityChecker
 import com.singularitycoder.connectme.history.HistoryFragment
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
-import javax.inject.Inject
 
 // TODO Notifications for remainders
 // TODO replace webviews with chrome views
@@ -44,12 +40,7 @@ class MainFragment : Fragment() {
         }
     }
 
-    @Inject
-    lateinit var playServicesAvailabilityChecker: PlayServicesAvailabilityChecker
-
-    private var lastUpdatedLocation: Location? = null
     private var topicParam: String? = null
-    private val viewModel: MainViewModel by viewModels()
 
     private lateinit var dateTimeTimer: Timer
     private lateinit var binding: FragmentMainBinding
@@ -127,23 +118,7 @@ class MainFragment : Fragment() {
     }
 
     private fun observeForData() {
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = viewModel.lastLocation) { lastLocation: Location? ->
-            println("lastLocation: ${lastLocation?.latitude}, ${lastLocation?.longitude}")
-            lastUpdatedLocation = lastLocation
-            if (playServicesAvailabilityChecker.isGooglePlayServicesAvailable()) {
-//                binding.tvAppSubtitle.text = if (lastLocation != null) {
-//                    getString(
-//                        R.string.location_lat_lng,
-//                        lastLocation.latitude,
-//                        lastLocation.longitude
-//                    )
-//                } else {
-//                    getString(R.string.waiting_for_location)
-//                }
-            } else {
-//                binding.tvAppSubtitle.text = getString(R.string.play_services_unavailable)
-            }
-        }
+
     }
 
     private fun refreshDateTime() {

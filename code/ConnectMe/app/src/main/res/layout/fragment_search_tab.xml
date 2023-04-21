@@ -5,6 +5,12 @@
     android:layout_height="match_parent"
     tools:context=".search.SearchTabFragment">
 
+    <LinearLayout
+        android:id="@+id/ll_dummy_view_group"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" />
+
     <WebView
         android:id="@+id/web_view"
         android:layout_width="match_parent"

@@ -380,10 +380,3 @@ fun WebView.setDesktopMode(
     }
     this.reload()
 }
-
-fun String?.simplifyUrl(): String? {
-    return this?.replace(oldValue = "https://www.", newValue = "")
-        ?.replace(oldValue = "http://www.", newValue = "")
-        ?.replace(oldValue = "http://", newValue = "")
-        ?.replace(oldValue = "https://", newValue = "")
-}

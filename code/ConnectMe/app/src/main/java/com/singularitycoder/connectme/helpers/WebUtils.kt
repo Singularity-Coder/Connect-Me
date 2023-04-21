@@ -7,6 +7,7 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.Icon
 import android.net.Uri
@@ -405,13 +406,13 @@ fun openInNewTab(context: Context, url: String?, incognito: Boolean) {
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
 fun Context.addShortcut(
-    webView: WebView,
+    webView: WebView?,
     favicon: Bitmap?,
-    themeColorWithFallback: Int
+    themeColorWithFallback: Int = Color.TRANSPARENT
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val intent = Intent(this, MainActivity::class.java)
-        intent.data = Uri.parse(webView.url)
+        intent.data = Uri.parse(webView?.url)
         intent.action = Intent.ACTION_MAIN
         val launcherIcon: Icon = if (favicon != null) {
             Icon.createWithBitmap(
@@ -420,7 +421,7 @@ fun Context.addShortcut(
         } else {
             Icon.createWithResource(this, R.mipmap.ic_launcher)
         }
-        val title = webView.title.toString()
+        val title = webView?.title.toString()
         val shortcutInfo = ShortcutInfo.Builder(this, title)
             .setShortLabel(title)
             .setIcon(launcherIcon)

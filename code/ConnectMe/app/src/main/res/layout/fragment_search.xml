@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     tools:context=".search.SearchFragment">
+<!--    android:animateLayoutChanges="true"-->
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager_tabs"
@@ -13,7 +14,7 @@
         android:layout_height="0dp"
         android:background="@color/white"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintBottom_toTopOf="@+id/cl_header"
+        app:layout_constraintBottom_toTopOf="@+id/cl_url_search_header"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
         tools:layout_editor_absoluteX="51dp" />
@@ -22,7 +23,7 @@
         android:id="@+id/scroll_view_new_tab_options"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/cl_header"
+        app:layout_constraintBottom_toTopOf="@+id/cl_url_search_header"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -92,9 +93,9 @@
         android:id="@+id/view_search_suggestions_scrim"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/white"
         android:alpha="0.7"
-        app:layout_constraintBottom_toTopOf="@+id/cl_header"
+        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/cl_url_search_header"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
@@ -106,7 +107,7 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/cl_header"
+        app:layout_constraintBottom_toTopOf="@+id/cl_url_search_header"
         app:strokeColor="@color/black_50"
         app:strokeWidth="1dp">
 
@@ -127,10 +128,10 @@
         android:layout_marginTop="-6dp"
         android:background="@drawable/background_black_gradient_fade"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cl_header" />
+        app:layout_constraintTop_toTopOf="@+id/cl_url_search_header" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_header"
+        android:id="@+id/cl_url_search_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/white"

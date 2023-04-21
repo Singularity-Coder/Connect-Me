@@ -3,7 +3,6 @@ package com.singularitycoder.connectme.helpers.constants
 import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
-import com.singularitycoder.connectme.helpers.capFirstChar
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.SearchFragment
 
@@ -73,9 +72,12 @@ object IntentKey {
     const val LOCATION_TOGGLE_STATUS = "LOCATION_TOGGLE_STATUS"
 }
 
-object DbKey {
-    const val DB_TREASURE = "db_treasure"
-    const val TABLE_TREASURE = "table_treasure"
+object Db {
+    const val CONNECT_ME = "db_connect_me"
+}
+
+object Table {
+    const val WEB_APP = "table_web_app"
 }
 
 object BroadcastKey {
@@ -90,6 +92,8 @@ object FragmentsTag {
 
 object BottomSheetTag {
     const val WEBSITE_ACTIONS = "WEBSITE_ACTIONS_BOTTOM_SHEET"
+    const val TAG_ADD_API_KEY = "TAG_ADD_API_KEY_BOTTOM_SHEET"
+    const val TAG_GET_INSIGHTS = "TAG_GET_INSIGHTS_BOTTOM_SHEET"
 }
 
 enum class QuickActionTabMenu(val value: String) {
@@ -97,7 +101,7 @@ enum class QuickActionTabMenu(val value: String) {
     NAVIGATE_BACK(value = "Navigate Back"),
     COLLECT_ALL_TABS(value = "Collect All Tabs"),
     HOME(value = "Home"),
-    SHARE_LINK(value = "Share Link"),
+    GET_INSIGHT(value = "Get Insight"),
     CLOSE_ALL_TABS(value = "Close All Tabs"),
     REFRESH_WEBSITE(value = "Refresh Website"),
     NAVIGATE_FORWARD(value = "Navigate Forward"),

@@ -27,6 +27,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: FragmentWebsiteActionsBottomSheetBinding
 
+    private var searchFragment: SearchFragment? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentWebsiteActionsBottomSheetBinding.inflate(inflater, container, false)
         return binding.root
@@ -42,8 +44,19 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     // https://stackoverflow.com/questions/15543186/how-do-i-create-colorstatelist-programmatically
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUI() {
+        searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
+            it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
+        } as? SearchFragment
         setTransparentBackground()
         setBottomSheetBehaviour()
+        val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
+            ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
+        ) as? SearchTabFragment
+        ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
+        tvSiteName.text = selectedWebpage?.getWebView()?.url
+            ?.substringAfter("//")
+            ?.substringBefore("/")
+        tvLink.text = selectedWebpage?.getWebView()?.url
         itemHistory.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_history_24))
             tvTitle.text = "History"
@@ -133,6 +146,17 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
+        cardSiteSecurity.onSafeClick {
+            llSslCertificateDetails.isVisible = llSslCertificateDetails.isVisible.not()
+            ivArrow.setImageDrawable(requireContext().drawable(
+                if (llSslCertificateDetails.isVisible) {
+                    R.drawable.round_keyboard_arrow_up_24
+                } else {
+                    R.drawable.round_keyboard_arrow_down_24
+                }
+            ))
+        }
+
         itemHistory.root.onSafeClick {  }
 
         itemDownloads.root.onSafeClick {  }
@@ -141,7 +165,12 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
         itemFindInPage.root.onSafeClick {  }
 
-        itemAddShortcut.root.onSafeClick {  }
+        itemAddShortcut.root.onSafeClick {
+            val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
+                ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
+            ) as? SearchTabFragment
+            requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
+        }
 
         itemPrint.root.onSafeClick {  }
 

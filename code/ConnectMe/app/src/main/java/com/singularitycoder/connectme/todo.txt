@@ -1,9 +1,39 @@
 TODAY
-Link editing feats
-On tab switch change link in search bar
-DB integration
+Avoid history logging in incognito
+
+
+
+
+Privacy report:
+Data saved - x kb
+Trackers n Ads blocked - x
+
 Close other tabs
+Cmd menu -> Close all private tabs
 FIXME: If u r filling form in website then u should not show apps on keyboard visible
+Textsize adjustment in webpage - slider
+zoom in webpage - slider
+Notifications
+Undo on closing tab
+Screenshot - rolling and visible
+
+
+Settings screen:
+Set custom website for home
+
+
+GPT:
+Is site fishy
+Is site truthful/trustworthy
+Summarise
+Translate to English
+Simplify or Explain simply
+Give Analogy
+Whats the mood of this site
+Custom Input
+
+
+
 
 Search
 TODO when in focus show copy, special edit options - www, .com, ., /, letter navigation using sliders, slider will show on another tap
@@ -16,6 +46,7 @@ TODO need delete all and some filters
 
 
 Downloads
+TODO filters
 TODO handle gif, image, audio, video, file
 TODO if image/gif show bottomsheet fullscreen image
 TODO if audio play options in bottomsheet.
@@ -58,12 +89,12 @@ Basic WebApp Collections
 0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
 1. Writing: Google docs, sheets, Slides, Notion
 2. Notetaking: Keep, Notion
-3. Entertainment: Youtube, Netflix
-4. Mail:
+3. Entertainment: Youtube, Netflix, Hotstar
+4. Mail: Gmail
 5. Directions: Maps,
-6. Tools: Drive, Dropbox,
-7. Education:
-8. Do anything/everything: ChatGPT
+6. Tools: Drive, Dropbox, Google Calender
+7. Education: Youtube, Khan Acad, Course Era, MIT MOOC, Udacity
+8. Do anything/everything: ChatGPT, Bing, Google
 
 
 Use queue to add urls navigating from the tab forward and backward
@@ -76,3 +107,13 @@ https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-androi
 
 P2P Comm
 https://github.com/briar/briar
+
+
+
+
+requireActivity().window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
+        val transition: Transition = Explode().apply {
+            duration = 5000
+        }
+        requireActivity().window.enterTransition = transition
+        requireActivity().window.exitTransition = transition
