@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@drawable/bg_top_rounded"
     android:orientation="vertical"
     tools:context="search.AddApiKeyBottomSheetFragment">
@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/scroll_view_conversation">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/iv_drag_handle"
@@ -53,21 +53,32 @@
         android:id="@+id/scroll_view_conversation"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/ll_default_requests">
+        app:layout_constraintBottom_toTopOf="@+id/ll_default_requests"
+        app:layout_constraintTop_toBottomOf="@+id/cl_header">
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_insights"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="true"
+            android:scrollbars="none"
+            tools:listitem="@layout/list_item_insight" />
     </androidx.core.widget.NestedScrollView>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_default_requests"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/white"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/card_ask_anything">
+        android:paddingTop="16dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/ll_ask_anything">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/ll_set_4"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
@@ -181,66 +192,73 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_ask_anything"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ll_ask_anything"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="@color/black_50"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/card_default_requests"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_ask_anything"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:maxHeight="208dp"
-            android:minHeight="44dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/black_50"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/card_default_requests"
+            app:layout_constraintStart_toStartOf="parent">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_ask_anything"
-                android:layout_width="0dp"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:maxHeight="208dp"
+                android:minHeight="44dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_ask_anything"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@null"
+                    android:enabled="true"
+                    android:hint="Ask about this website"
+                    android:inputType="textMultiLine"
+                    android:textColor="@color/title_color"
+                    android:textColorHint="@android:color/darker_gray"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_default_requests"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            app:cardBackgroundColor="@color/purple_500"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/card_ask_anything"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageButton
+                android:id="@+id/ib_default_requests"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:background="@null"
-                android:enabled="true"
-                android:hint="Ask about this website"
-                android:inputType="textMultiLine"
-                android:textColor="@color/title_color"
-                android:textColorHint="@android:color/darker_gray"
-                android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_default_requests"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        app:cardBackgroundColor="@color/purple_500"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/card_ask_anything"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageButton
-            android:id="@+id/ib_default_requests"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@null"
-            android:src="@drawable/baseline_auto_fix_high_24"
-            app:tint="@color/white" />
-    </com.google.android.material.card.MaterialCardView>
+                android:src="@drawable/baseline_auto_fix_high_24"
+                app:tint="@color/white" />
+        </com.google.android.material.card.MaterialCardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

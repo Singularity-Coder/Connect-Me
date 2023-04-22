@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
-// https://stackoverflow.com/questions/70384129/lifecycle-onlifecycleevent-is-deprecated
 class NetworkStatus @Inject constructor(context: Context) {
 
     private val conMan = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager

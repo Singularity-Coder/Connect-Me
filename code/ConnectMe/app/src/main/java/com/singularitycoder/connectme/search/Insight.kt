@@ -12,6 +12,8 @@ class InsightObject {
         val created: Long? = null,
         val choices: List<Choice> = emptyList(),
         val usage: Usage? = null,
+        val userType: Int = 1,
+        val insight: String? = ""
     ) : Parcelable
 
     @Parcelize
@@ -35,9 +37,15 @@ class InsightObject {
     ) : Parcelable
 
     @Parcelize
+    data class ErrorObject(
+        val error: Error? = null
+    ) : Parcelable
+
+    @Parcelize
     data class Error(
-        var code: Int? = null,
-        var status: String? = null,
-        var message: String? = null
+        val message: String? = null,
+        val type: String? = null,
+        val param: String? = null,
+        val code: String? = null,
     ) : Parcelable
 }

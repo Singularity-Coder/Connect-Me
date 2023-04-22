@@ -4,8 +4,11 @@ import android.content.Context
 import androidx.annotation.RawRes
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.coroutines.resume
@@ -114,4 +117,28 @@ fun String?.simplifyUrl(): String? {
         ?.replace(oldValue = "http://www.", newValue = "")
         ?.replace(oldValue = "http://", newValue = "")
         ?.replace(oldValue = "https://", newValue = "")
+}
+
+fun inputStreamToString(
+    connection: HttpURLConnection,
+    inputStream: InputStream
+): String {
+    var line: String? = ""
+    val stringBuilder = StringBuilder()
+    val inputStreamReader = InputStreamReader(inputStream)
+    val bufferedReader = BufferedReader(inputStreamReader)
+    try {
+        while (bufferedReader.readLine().also { line = it } != null) {
+            stringBuilder.append(line)
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+    } finally {
+        try {
+            bufferedReader.close()
+            connection.disconnect()
+        } catch (ignored: Exception) {
+        }
+    }
+    return stringBuilder.toString()
 }
