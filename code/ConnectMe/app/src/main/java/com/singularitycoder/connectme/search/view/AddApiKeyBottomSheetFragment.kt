@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.view
 
 import android.content.SharedPreferences
 import android.os.Bundle

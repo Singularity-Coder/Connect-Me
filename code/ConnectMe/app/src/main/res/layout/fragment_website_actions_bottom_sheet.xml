@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_top_rounded"
     android:orientation="vertical"
-    tools:context=".search.WebsiteActionsBottomSheetFragment">
+    tools:context=".search.view.WebsiteActionsBottomSheetFragment">
 
     <ImageView
         android:id="@+id/iv_drag_handle"
@@ -45,7 +45,9 @@
                     android:theme="@style/CustomRoundedImageView"
                     app:cardCornerRadius="10dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:strokeColor="@color/black_50"
+                    app:strokeWidth="1dp" />
 
                 <TextView
                     android:id="@+id/tv_site_name"
@@ -222,7 +224,7 @@
                                     android:textStyle="bold" />
 
                                 <TextView
-                                    android:id="@+id/domain"
+                                    android:id="@+id/tv_domain"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:text="Domain"
@@ -238,7 +240,7 @@
                                     android:textStyle="bold" />
 
                                 <TextView
-                                    android:id="@+id/issued_to_cn"
+                                    android:id="@+id/tv_issued_to_cn"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -246,7 +248,7 @@
                                     android:textColor="@color/title_color" />
 
                                 <TextView
-                                    android:id="@+id/issued_to_o"
+                                    android:id="@+id/tv_issued_to_o"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -254,7 +256,7 @@
                                     android:textColor="@color/title_color" />
 
                                 <TextView
-                                    android:id="@+id/issued_to_un"
+                                    android:id="@+id/tv_issued_to_un"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -271,7 +273,7 @@
                                     android:textStyle="bold" />
 
                                 <TextView
-                                    android:id="@+id/issued_by_cn"
+                                    android:id="@+id/tv_issued_by_cn"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -279,7 +281,7 @@
                                     android:textColor="@color/title_color" />
 
                                 <TextView
-                                    android:id="@+id/issued_by_o"
+                                    android:id="@+id/tv_issued_by_o"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -287,7 +289,7 @@
                                     android:textColor="@color/title_color" />
 
                                 <TextView
-                                    android:id="@+id/issued_by_un"
+                                    android:id="@+id/tv_issued_by_un"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -304,7 +306,7 @@
                                     android:textStyle="bold" />
 
                                 <TextView
-                                    android:id="@+id/issued_on"
+                                    android:id="@+id/tv_issued_on"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"
@@ -312,7 +314,7 @@
                                     android:textColor="@color/title_color" />
 
                                 <TextView
-                                    android:id="@+id/expires_on"
+                                    android:id="@+id/tv_expires_on"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="5dp"

@@ -57,8 +57,8 @@
 
     <!--https://stackoverflow.com/questions/59248890/imageview-with-only-one-rounded-corner-->
     <style name="CustomRoundedImageView" parent="">
-<!--        <item name="cornerFamilyTopLeft">rounded</item>-->
-<!--        <item name="cornerFamilyTopRight">cut</item>-->
+        <!--        <item name="cornerFamilyTopLeft">rounded</item>-->
+        <!--        <item name="cornerFamilyTopRight">cut</item>-->
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">0dp</item>
         <item name="cornerSizeTopRight">10dp</item>
@@ -84,5 +84,25 @@
     <style name="url_highlight">
         <item name="android:textColor">@color/light_gray</item>
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="RoundedCornerStartSmall" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeBottomLeft">24dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+        <item name="android:strokeColor">@color/input_box_stroke_color</item>
+        <item name="boxStrokeColor">@color/input_box_stroke_color</item>
+    </style>
+
+    <style name="RoundedCornerEndSmall" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+        <item name="cornerSizeBottomRight">24dp</item>
+        <item name="android:strokeColor">@color/input_box_stroke_color</item>
+        <item name="boxStrokeColor">@color/input_box_stroke_color</item>
     </style>
 </resources>

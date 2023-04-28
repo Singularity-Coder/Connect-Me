@@ -1,7 +1,8 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.view
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,13 +10,13 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentWebsiteActionsBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.DateFormat
 
 @AndroidEntryPoint
 class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
@@ -53,10 +54,9 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
         ) as? SearchTabFragment
         ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
-        tvSiteName.text = selectedWebpage?.getWebView()?.url
-            ?.substringAfter("//")
-            ?.substringBefore("/")
-        tvLink.text = selectedWebpage?.getWebView()?.url
+        tvSiteName.text = Uri.parse(selectedWebpage?.getWebView()?.url).host
+        tvLink.text = selectedWebpage?.getWebView()?.title
+        binding.setupWebsiteSecurity(selectedWebpage)
         itemHistory.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_history_24))
             tvTitle.text = "History"
@@ -141,6 +141,22 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             tvSubtitle.text = "Blocks cookie consent popups."
             switchOnOff.isVisible = true
         }
+    }
+
+    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(selectedWebpage: SearchTabFragment?) {
+        val domainString = Uri.parse(selectedWebpage?.getWebView()?.url).host
+        val sslCertificate = selectedWebpage?.getWebView()?.certificate
+        val startDate = sslCertificate?.validNotBeforeDate
+        val endDate = sslCertificate?.validNotAfterDate
+        tvDomain.text = domainString
+        tvIssuedToCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate?.issuedTo?.cName}"
+        tvIssuedToO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate?.issuedTo?.oName}"
+        tvIssuedToUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate?.issuedTo?.uName}"
+        tvIssuedByCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate?.issuedBy?.cName}"
+        tvIssuedByO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate?.issuedBy?.oName}"
+        tvIssuedByUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate?.issuedBy?.uName}"
+        tvIssuedOn.text = "${getString(R.string.ssl_cert_dialog_issued_on)}: ${DateFormat.getDateTimeInstance().format(startDate)}"
+        tvExpiresOn.text = "${getString(R.string.ssl_cert_dialog_expires_on)}: ${DateFormat.getDateTimeInstance().format(endDate)}"
     }
 
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUserActionListeners() {
@@ -262,7 +278,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 //        bottomSheet.layoutParams.height = deviceHeight()
 //        behavior.state = BottomSheetBehavior.STATE_EXPANDED
         var oldState = BottomSheetBehavior.STATE_HIDDEN
-        behavior.addBottomSheetCallback(object : BottomSheetCallback() {
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 println("bottom sheet state: ${behavior.state}")
                 when (newState) {

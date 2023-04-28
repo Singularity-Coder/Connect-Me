@@ -1,14 +1,17 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.view
 
 import android.annotation.SuppressLint
-import android.app.ActionBar.LayoutParams
+import android.app.ActionBar
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -39,7 +42,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
-import com.singularitycoder.connectme.helpers.searchSuggestions.*
+import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
 import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
 import com.singularitycoder.flowlauncher.helper.quickActionView.Action
@@ -385,7 +388,7 @@ class SearchFragment : Fragment() {
             if (searchSuggestionsList.size > 5) {
                 rvSearchSuggestions.layoutParams.height = heightDiff - 32.dpToPx().toInt()
             } else {
-                rvSearchSuggestions.layoutParams.height = LayoutParams.WRAP_CONTENT
+                rvSearchSuggestions.layoutParams.height = ActionBar.LayoutParams.WRAP_CONTENT
             }
             val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
             val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)

@@ -68,7 +68,7 @@ class DownloadsFragment : Fragment() {
                     imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
                     title = "Cringe Lord lords it over and gives it back to others $it",
                     source = "Cringe Lord lords it over and gives it back to others $it",
-                    time = if (isSelfProfile) "58 Mb * 5 hr ago" else "58 Mb",
+                    time = if (isSelfProfile) "58 Mb • 5 hr ago" else "58 Mb",
                     link = "",
                 )
             )

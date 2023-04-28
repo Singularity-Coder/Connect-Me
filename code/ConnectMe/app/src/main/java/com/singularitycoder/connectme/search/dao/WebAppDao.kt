@@ -1,8 +1,9 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.singularitycoder.connectme.helpers.constants.Table
+import com.singularitycoder.connectme.search.model.WebApp
 import kotlinx.coroutines.flow.Flow
 
 @Dao

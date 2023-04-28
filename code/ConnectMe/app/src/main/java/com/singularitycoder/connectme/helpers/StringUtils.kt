@@ -142,3 +142,9 @@ fun inputStreamToString(
     }
     return stringBuilder.toString()
 }
+
+fun getHostFrom(url: String?): String? {
+    return url
+        ?.substringAfter("//")
+        ?.substringBefore("/")
+}

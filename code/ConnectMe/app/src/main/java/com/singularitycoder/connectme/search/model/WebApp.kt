@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.model
 
 import android.os.Parcelable
 import androidx.room.Entity

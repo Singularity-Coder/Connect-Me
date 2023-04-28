@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
-import com.singularitycoder.connectme.search.WebAppDao
+import com.singularitycoder.connectme.search.dao.WebAppDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

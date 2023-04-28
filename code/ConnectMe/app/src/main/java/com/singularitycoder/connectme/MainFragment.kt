@@ -23,7 +23,7 @@ import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.Tab
 import com.singularitycoder.connectme.history.HistoryFragment
 import com.singularitycoder.connectme.profile.UserProfileFragment
-import com.singularitycoder.connectme.search.SearchFragment
+import com.singularitycoder.connectme.search.view.SearchFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 

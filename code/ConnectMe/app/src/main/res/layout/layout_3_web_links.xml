@@ -24,7 +24,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="14dp"
             android:drawableEnd="@drawable/round_keyboard_arrow_right_24"
-            android:drawableTint="@color/purple_500"
+            android:drawableTint="@color/light_gray_2"
             android:ellipsize="end"
             android:marqueeRepeatLimit="marquee_forever"
             android:maxLines="2"

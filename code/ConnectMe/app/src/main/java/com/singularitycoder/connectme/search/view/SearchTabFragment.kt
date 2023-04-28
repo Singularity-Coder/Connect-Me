@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.view
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -14,6 +14,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.forEach
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
@@ -23,9 +24,6 @@ import com.singularitycoder.connectme.helpers.constants.SearchEngine
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.regex.Pattern
 import javax.inject.Inject
-
-
-// private const val ARG_PARAM_TAB = "ARG_PARAM_TAB"
 
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
@@ -101,6 +99,8 @@ class SearchTabFragment : Fragment() {
         // https://stackoverflow.com/questions/14752523/how-to-make-a-scroll-listener-for-webview-in-android
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                btnScrollToTop.isVisible = scrollY > 200
+
                 if (oldScrollY < scrollY) {
                     // Scrolling Upwards
                     searchFragment?.showUrlSearchBar(false)
@@ -110,6 +110,12 @@ class SearchTabFragment : Fragment() {
                     // Scrolling Downwards
                     searchFragment?.showUrlSearchBar(true)
                 }
+            }
+        }
+
+        btnScrollToTop.onSafeClick {
+            (webView.scrollY downTo 0).forEach {
+                webView.scrollTo(0, it) // Does not smooth scroll. Adding delay doesnt work
             }
         }
 
@@ -343,7 +349,7 @@ class SearchTabFragment : Fragment() {
 
         @Deprecated("Deprecated in Java")
         override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
-            if (errorCode != WebViewClient.ERROR_UNSUPPORTED_SCHEME && errorCode != WebViewClient.ERROR_HOST_LOOKUP) {
+            if (errorCode != ERROR_UNSUPPORTED_SCHEME && errorCode != ERROR_HOST_LOOKUP) {
                 view?.loadUrl(DEFAULT_ERROR_PAGE_PATH)
             }
         }

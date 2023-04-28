@@ -65,7 +65,7 @@
                 app:layout_constraintBottom_toBottomOf="@+id/tv_title"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/tv_title"
-                app:tint="@color/light_gray" />
+                app:tint="@color/light_gray_2" />
 
             <View
                 android:id="@+id/view_dummy_for_dropdown"

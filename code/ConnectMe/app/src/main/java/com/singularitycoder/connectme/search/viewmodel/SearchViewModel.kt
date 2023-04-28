@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search
+package com.singularitycoder.connectme.search.viewmodel
 
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
@@ -12,6 +12,7 @@ import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSugges
 import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.YahooSearchSuggestionProvider
+import com.singularitycoder.connectme.search.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -37,7 +38,7 @@ class SearchViewModel @Inject constructor(
     private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
     val searchSuggestionResultsStateFlow = _searchSuggestionResultsStateFlow.asStateFlow()
 
-    private val _insightSharedFlow = MutableSharedFlow<Pair<InsightObject.Insight?, InsightObject.ErrorObject?>>()
+    private val _insightSharedFlow = MutableSharedFlow<ApiResult>()
     val insightSharedFlow = _insightSharedFlow.asSharedFlow()
 
     fun getSearchSuggestions(query: String) = viewModelScope.launch {
@@ -67,10 +68,22 @@ class SearchViewModel @Inject constructor(
         _searchSuggestionResultsStateFlow.value = emptyList()
     }
 
-    fun getInsight(content: String) = viewModelScope.launch(IO) {
+    fun getTextInsight(content: String) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
             getResponseFromChatGPT(content)
+        } catch (_: Exception) {
+        }
+    }
+
+    fun getImageInsight(
+        prompt: String,
+        numOfImages: Int,
+        imageSize: String
+    ) = viewModelScope.launch(IO) {
+        try {
+            if (networkStatus.isOnline().not()) return@launch
+            getImageResponseFromChatGPT(prompt = prompt, numOfImages = numOfImages, imageSize = imageSize)
         } catch (_: Exception) {
         }
     }
@@ -79,6 +92,8 @@ class SearchViewModel @Inject constructor(
     // https://hmkcode.com/android-send-json-data-to-server/
     @Throws(Exception::class)
     private suspend fun getResponseFromChatGPT(content: String) {
+        _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT))
+        val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
         val jsonObjectContent = JSONObject().apply {
             put("role", "user")
             put("content", content)
@@ -87,15 +102,91 @@ class SearchViewModel @Inject constructor(
             put(jsonObjectContent)
         }
         val jsonObjectRequest = JSONObject().apply {
-            put("model", "gpt-3.5-turbo")
+            put("model", selectedOpenAiModel)
             put("messages", jsonArrayContent.toString())
         }
+        makeOpenAiPostRequest(
+            url = URL("https://api.openai.com/v1/chat/completions"),
+            jsonObjectRequest = jsonObjectRequest,
+            onSuccess = { jsonObject: JsonObject? ->
+                val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Root::class.java)
+                val insight = Insight(
+                    created = insightResponse.created,
+                    insight = insightResponse.choices.firstOrNull()?.message?.content
+                )
+                _insightSharedFlow.emit(
+                    ApiResult(
+                        insight = insight,
+                        apiState = ApiState.SUCCESS,
+                        insightType = InsightType.TEXT
+                    )
+                )
+            },
+            onFailure = { errorJsonObject: JsonObject? ->
+                val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
+                _insightSharedFlow.emit(
+                    ApiResult(
+                        error = errorObject,
+                        apiState = ApiState.ERROR,
+                        insightType = InsightType.TEXT
+                    )
+                )
+            }
+        )
+    }
+
+    @Throws(Exception::class)
+    private suspend fun getImageResponseFromChatGPT(
+        prompt: String,
+        numOfImages: Int,
+        imageSize: String
+    ) {
+        _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.IMAGE))
+        val jsonObjectRequest = JSONObject().apply {
+            put("prompt", prompt)
+            put("n", numOfImages)
+            put("size", imageSize)
+        }
+        makeOpenAiPostRequest(
+            url = URL("https://api.openai.com/v1/images/generations"),
+            jsonObjectRequest = jsonObjectRequest,
+            onSuccess = { jsonObject: JsonObject? ->
+                val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, ImageInsightObject.Root::class.java)
+                val insight = Insight(
+                    created = insightResponse.created,
+                    imageList = insightResponse.data
+                )
+                _insightSharedFlow.emit(
+                    ApiResult(
+                        insight = insight,
+                        apiState = ApiState.SUCCESS,
+                        insightType = InsightType.IMAGE
+                    )
+                )
+            },
+            onFailure = { errorJsonObject: JsonObject? ->
+                val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
+                _insightSharedFlow.emit(
+                    ApiResult(
+                        error = errorObject,
+                        apiState = ApiState.ERROR,
+                        insightType = InsightType.IMAGE
+                    )
+                )
+            }
+        )
+    }
+
+    private suspend fun makeOpenAiPostRequest(
+        url: URL,
+        jsonObjectRequest: JSONObject,
+        onSuccess: suspend (jsonObject: JsonObject?) -> Unit,
+        onFailure: suspend (errorJsonObject: JsonObject?) -> Unit
+    ) {
         val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "")
         val decryptedApiSecret = AesEncryption.decrypt(encryptedApiSecret)
-        val url = URL("https://api.openai.com/v1/chat/completions")
 
         fun HttpURLConnection.setPostRequestContent() = try {
-            println("jsonObjectRequest: $jsonObjectRequest")
             val input: ByteArray = jsonObjectRequest.toString().toByteArray(Charsets.UTF_8)
             this.outputStream.apply {
                 write(input, 0, input.size)
@@ -110,32 +201,33 @@ class SearchViewModel @Inject constructor(
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Authorization", "Bearer $decryptedApiSecret")
             doOutput = true
-            instanceFollowRedirects = false
-            readTimeout = 20.seconds().toInt()
-            connectTimeout = 30.seconds().toInt()
+            instanceFollowRedirects = true
+            readTimeout = 10.seconds().toInt()
+            connectTimeout = 10.seconds().toInt()
             setPostRequestContent()
             connect()
         }
+
         when (connection.responseCode) {
             HttpURLConnection.HTTP_OK -> {
+                var jsonObject: JsonObject? = null
                 try {
                     val inputStream: InputStream = BufferedInputStream(connection.inputStream)
                     val jsonString = inputStreamToString(connection, inputStream)
-                    val jsonObject: JsonObject = JsonParser.parseString(jsonString).asJsonObject
-                    val insightResponse: InsightObject.Insight = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Insight::class.java)
-                    _insightSharedFlow.emit(Pair(insightResponse, null))
+                    jsonObject = JsonParser.parseString(jsonString).asJsonObject
                 } catch (_: Exception) {
                 }
+                onSuccess.invoke(jsonObject)
             }
             else -> {
+                var errorJsonObject: JsonObject? = null
                 try {
                     val errorStream: InputStream = connection.errorStream
                     val errorJsonString = inputStreamToString(connection, errorStream)
-                    val errorJsonObject: JsonObject = JsonParser.parseString(errorJsonString).asJsonObject
-                    val errorModel: InsightObject.ErrorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
-                    _insightSharedFlow.emit(Pair(null, errorModel))
+                    errorJsonObject = JsonParser.parseString(errorJsonString).asJsonObject
                 } catch (_: Exception) {
                 }
+                onFailure.invoke(errorJsonObject)
             }
         }
     }

@@ -1,5 +1,23 @@
 TODAY
+0. Fix ChatGPT - prompt horizontal list, send website to gpt then tell it to print keywords in json, decryption
+1. Prepare GPT prompts
+1. Create 2nd url search bar and split search suggestions
+1. Website actions - start with - find in page, then all others - get from Lineage OS
+1. Website profile get data from viewmodel
+2. Add to collection db
+3. Set up default collections - bloatware webapps
+3. Add to history db
+4. Configure home screen - set either website or show new tab screen
+2. Edit explore feed
+3. Explore feed - first get google suggestions about the topic, then scrape posts from all those topics from google
+4. RSS feed subscription - Refer feeder
+5. Downloads - first when u download image, specify directory
+5. P2P com - profiles
 Avoid history logging in incognito
+Google translate webpages
+
+
+Biometric auth to auto fill website passwords - Banana Browser
 
 
 
@@ -7,6 +25,9 @@ Avoid history logging in incognito
 Privacy report:
 Data saved - x kb
 Trackers n Ads blocked - x
+Time saved
+
+
 
 Close other tabs
 Cmd menu -> Close all private tabs
@@ -31,13 +52,15 @@ Simplify or Explain simply
 Give Analogy
 Whats the mood of this site
 Custom Input
-
+Find mistakes/errors, Logical fallacies, Biases, etc
+Contextual prompts - custom default prompts based on website category
 
 
 
 Search
 TODO when in focus show copy, special edit options - www, .com, ., /, letter navigation using sliders, slider will show on another tap
 TODO on focus show recent searches
+
 
 
 History

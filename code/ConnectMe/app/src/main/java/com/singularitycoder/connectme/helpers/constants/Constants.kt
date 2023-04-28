@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.profile.UserProfileFragment
-import com.singularitycoder.connectme.search.SearchFragment
+import com.singularitycoder.connectme.search.view.SearchFragment
 
 const val FILE_PROVIDER = "com.singularitycoder.connectme.fileprovider"
 
@@ -67,6 +67,10 @@ val dummyFaceUrls2 = listOf(
     "https://static.zerochan.net/Suda.Ayaka.full.3580598.png",
     "https://i.pinimg.com/564x/c7/90/f6/c790f67e19d50cb35be9d2a99c8304c8.jpg"
 )
+
+enum class ChatPeople {
+    USER, AI
+}
 
 object IntentKey {
     const val LOCATION_TOGGLE_STATUS = "LOCATION_TOGGLE_STATUS"

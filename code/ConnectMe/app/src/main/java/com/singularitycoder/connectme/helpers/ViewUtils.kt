@@ -13,8 +13,11 @@ import android.graphics.drawable.TransitionDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
+import android.text.Spannable
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.ImageSpan
 import android.text.style.MetricAffectingSpan
 import android.text.style.StyleSpan
 import android.util.DisplayMetrics
@@ -251,6 +254,22 @@ fun Context.showListPopupMenu(
             this.dismiss()
         }
         show()
+    }
+}
+
+// https://stackoverflow.com/questions/32969172/how-to-display-menu-item-with-icon-and-text-in-appcompatactivity
+// https://developer.android.com/develop/ui/views/text-and-emoji/spans
+fun menuIconWithText(icon: Drawable?, title: String): CharSequence {
+    icon?.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
+    icon ?: return title
+    val imageSpan = ImageSpan(icon, ImageSpan.ALIGN_BOTTOM)
+    return SpannableString("    $title").apply {
+        setSpan(
+            /* what = */ imageSpan,
+            /* startCharPos = */ 0,
+            /* endCharPos = */ 1,
+            /* flags = */ Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
     }
 }
 
@@ -686,6 +705,18 @@ fun View.slideAnimation(direction: SlideDirection, type: SlideType, duration: Lo
 
     })
     startAnimation(animate)
+}
+
+// https://stackoverflow.com/questions/56746361/how-to-create-a-more-natural-cardview-alpha-animation
+fun Context.setTransitionDrawable(view: View?) {
+    /** You can provide ColorDrawable instead of Drawable as well */
+    val color = arrayOf<Drawable?>(
+        drawable(R.drawable.ani_gradient_1),
+        drawable(R.drawable.ani_gradient_2),
+    )
+    val transition = TransitionDrawable(color)
+    view?.background = transition
+    transition.startTransition(1000)
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

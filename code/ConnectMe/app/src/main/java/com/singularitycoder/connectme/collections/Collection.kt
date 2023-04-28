@@ -1,7 +1,7 @@
 package com.singularitycoder.connectme.collections
 
 import android.os.Parcelable
-import com.singularitycoder.connectme.search.WebApp
+import com.singularitycoder.connectme.search.model.WebApp
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
