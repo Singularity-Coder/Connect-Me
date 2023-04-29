@@ -1,17 +1,21 @@
 package com.singularitycoder.connectme.search.model
 
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import com.singularitycoder.connectme.helpers.constants.Table
 import kotlinx.parcelize.Parcelize
 
+@Entity(tableName = Table.INSIGHT)
 @Parcelize
 data class Insight(
-    val id: String? = null,
+    @PrimaryKey val website: String = "",
     val created: Long? = null,
     val userType: Int = 1,
     val insightType: Int = 1,
     val insight: String? = "",
-    val imageList: List<ImageInsightObject.Image>? = emptyList()
+    val imageList: List<String> = emptyList(),
 ) : Parcelable
 
 class InsightObject {

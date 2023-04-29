@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
+import com.singularitycoder.connectme.search.dao.InsightDao
 import com.singularitycoder.connectme.search.dao.WebAppDao
 import dagger.Module
 import dagger.Provides
@@ -19,12 +20,14 @@ object DbModule {
     @Singleton
     @Provides
     fun injectConnectMeDatabase(@ApplicationContext context: Context): ConnectMeDatabase {
-        return Room.databaseBuilder(context, ConnectMeDatabase::class.java, Db.CONNECT_ME)
-            .fallbackToDestructiveMigration()
-            .build()
+        return Room.databaseBuilder(context, ConnectMeDatabase::class.java, Db.CONNECT_ME).build()
     }
 
     @Singleton
     @Provides
     fun injectWebAppDao(db: ConnectMeDatabase): WebAppDao = db.webAppDao()
+
+    @Singleton
+    @Provides
+    fun injectInsightDao(db: ConnectMeDatabase): InsightDao = db.insightDao()
 }

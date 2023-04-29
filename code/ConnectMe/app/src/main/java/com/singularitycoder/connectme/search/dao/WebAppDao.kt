@@ -10,10 +10,10 @@ import kotlinx.coroutines.flow.Flow
 interface WebAppDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(app: WebApp)
+    suspend fun insert(app: WebApp?)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(appList: List<WebApp>)
+    suspend fun insertAll(appList: List<WebApp?>)
 
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
@@ -25,13 +25,13 @@ interface WebAppDao {
 //    suspend fun getAppByPackage(packageName: String): WebApp?
 
     @Query("SELECT * FROM ${Table.WEB_APP}")
-    fun getAllLiveData(): LiveData<List<WebApp>>
+    fun getAllLiveData(): LiveData<List<WebApp?>>
 
     @Query("SELECT * FROM ${Table.WEB_APP}")
-    fun getAllStateFlow(): Flow<List<WebApp>>
+    fun getAllStateFlow(): Flow<List<WebApp?>>
 
     @Query("SELECT * FROM ${Table.WEB_APP}")
-    suspend fun getAll(): List<WebApp>
+    suspend fun getAll(): List<WebApp?>
 
 
     @Delete

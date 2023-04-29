@@ -2,20 +2,26 @@ package com.singularitycoder.connectme.search.view
 
 import android.graphics.drawable.AnimationDrawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemInsightBinding
-import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.ChatPeople
+import com.singularitycoder.connectme.helpers.deviceWidth
+import com.singularitycoder.connectme.helpers.dpToPx
+import com.singularitycoder.connectme.helpers.onSafeClick
 import com.singularitycoder.connectme.search.model.Insight
+import kotlin.math.ceil
 
 class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var insightsList = mutableListOf<Insight?>()
     private var itemClickListener: (insight: Insight?) -> Unit = {}
+    private var itemLongClickListener: (insight: Insight?, view: View?) -> Unit = { _, _ -> }
     private var animationDrawable: AnimationDrawable? = null
     private var currentImagePosition = 0
 
@@ -36,6 +42,10 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         itemClickListener = listener
     }
 
+    fun setOnItemLongClickListener(listener: (insight: Insight?, view: View?) -> Unit) {
+        itemLongClickListener = listener
+    }
+
     inner class ThisViewHolder(
         private val itemBinding: ListItemInsightBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
@@ -51,7 +61,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     tvTextResponse.text = insight?.insight
                     if (
                         insight?.insight?.contains(other = "thinking...", ignoreCase = true) == true ||
-                        insight?.insight?.contains(other = "drawing...", ignoreCase = true) == true
+                        insight?.insight?.contains(other = "painting...", ignoreCase = true) == true
                     ) {
                         cardResponse.setBackgroundResource(
                             if (insight.insight.contains(other = "thinking...", ignoreCase = true)) {
@@ -70,20 +80,23 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     if (insight?.imageList.isNullOrEmpty().not()) {
                         clChatImage.isVisible = true
                         tvTextResponse.isVisible = false
-                        ivChatImage.layoutParams.width = deviceWidth() - (deviceWidth() / 3)
+                        ivChatImage.layoutParams.width = deviceWidth() - (deviceWidth() / 3) + 32.dpToPx().toInt()
                         ivChatImage.layoutParams.height = deviceWidth() - (deviceWidth() / 3) + 32.dpToPx().toInt()
-                        tvImageCount.text = "${currentImagePosition + 1}/${insight?.imageList?.size}"
-                        ivChatImage.load(insight?.imageList?.getOrNull(currentImagePosition)?.url) {
-                            placeholder(R.color.black)
-                            error(R.color.md_red_dark)
-                        }
-                        root.setOnClickListener {
-                            sliderChatImage.progress = currentImagePosition
+                        sliderChatImage.max = insight?.imageList?.lastIndex ?: 0
+                        setImageDetails(insight)
+//                        val factor = if ((insight?.imageList?.lastIndex ?: 0) < 100) {
+//                            ceil(100F / (insight?.imageList?.lastIndex?.toFloat() ?: 0F)).toInt()
+//                        } else {
+//                            1
+//                        }
+                        sliderChatImage.isClickable = false
+                        cardResponse.setOnClickListener {
                             if (currentImagePosition == insight?.imageList?.lastIndex) {
                                 currentImagePosition = 0
                             } else {
                                 currentImagePosition++
                             }
+                            setImageDetails(insight)
                         }
                         btnFullScreen.onSafeClick {
 
@@ -93,12 +106,24 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         tvTextResponse.isVisible = true
                     }
                 }
-                root.setOnLongClickListener {
-                    root.context.clipboard()?.text = insight?.insight
-                    root.context.showToast("Copied!")
+                cardResponse.setOnLongClickListener {
+                    itemLongClickListener.invoke(insight, it)
+                    false
+                }
+                cardRequest.setOnLongClickListener {
+                    itemLongClickListener.invoke(insight, it)
                     false
                 }
             }
+        }
+
+        private fun ListItemInsightBinding.setImageDetails(insight: Insight?) {
+            tvImageCount.text = "${currentImagePosition + 1}/${insight?.imageList?.size}"
+            ivChatImage.load(insight?.imageList?.getOrNull(currentImagePosition)) {
+                placeholder(R.color.black)
+                error(R.color.md_red_dark)
+            }
+            sliderChatImage.progress = currentImagePosition
         }
     }
 }

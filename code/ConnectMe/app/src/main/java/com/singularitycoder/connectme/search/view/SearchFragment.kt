@@ -42,6 +42,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
+import com.singularitycoder.connectme.search.model.WebViewData
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
 import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
@@ -570,6 +571,14 @@ class SearchFragment : Fragment() {
 //        val simplifiedUrl = selectedWebpage?.getWebView()?.url?.simplifyUrl() ?: ""
         binding.etSearch.setText(selectedWebpage?.getWebView()?.title)
         binding.clWebsiteProfile.isVisible = selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
+        searchViewModel.setWebViewData(
+            WebViewData(
+                url = selectedWebpage?.getWebView()?.url,
+                title = selectedWebpage?.getWebView()?.title,
+                favIcon = selectedWebpage?.getWebView()?.favicon,
+                certificate = selectedWebpage?.getWebView()?.certificate
+            )
+        )
 //        val query = "/${simplifiedUrl.substringAfter("/")}"
 //        val styleSpan = TextAppearanceSpan(requireContext(), R.style.url_highlight)
 //        binding.etSearch.highlightQueriedText(query = query, result = simplifiedUrl, styleSpan = styleSpan)
@@ -870,6 +879,11 @@ class SearchFragment : Fragment() {
                     selectedWebpage?.refreshWebpage()
                 }
                 QuickActionTabMenu.GET_INSIGHT.ordinal -> {
+                    val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    if (selectedWebpage?.getWebView()?.url.isNullOrBlank() || selectedWebpage?.getWebView()?.url?.isValidURL()?.not() == true) {
+                        binding.root.showSnackBar("Not a valid website!")
+                        return@setOnActionSelectedListener
+                    }
                     val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "")
                     if (encryptedApiSecret.isNullOrBlank().not()) {
                         GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
@@ -983,7 +997,6 @@ class SearchFragment : Fragment() {
 //        } else {
 //            binding.clUrlSearchHeader.slideAnimation(SlideDirection.DOWN, SlideType.HIDE)//to make it disappear through bottom of the screen
 //        }
-
 
         binding.clUrlSearchHeader.isVisible = isVisible
     }

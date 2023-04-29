@@ -3,18 +3,23 @@ package com.singularitycoder.connectme.search.view
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.net.Uri
+import android.net.http.SslCertificate
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentWebsiteActionsBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.search.model.WebViewData
+import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DateFormat
 
@@ -25,6 +30,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         @JvmStatic
         fun newInstance() = WebsiteActionsBottomSheetFragment()
     }
+
+    private val searchViewModel by activityViewModels<SearchViewModel>()
 
     private lateinit var binding: FragmentWebsiteActionsBottomSheetBinding
 
@@ -50,13 +57,18 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         } as? SearchFragment
         setTransparentBackground()
         setBottomSheetBehaviour()
-        val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
-            ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
-        ) as? SearchTabFragment
-        ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
-        tvSiteName.text = Uri.parse(selectedWebpage?.getWebView()?.url).host
-        tvLink.text = selectedWebpage?.getWebView()?.title
-        binding.setupWebsiteSecurity(selectedWebpage)
+        try {
+            val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
+                ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
+            ) as? SearchTabFragment
+            val domainString = Uri.parse(selectedWebpage?.getWebView()?.url).host
+            val sslCertificate = selectedWebpage?.getWebView()?.certificate
+            ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
+            tvSiteName.text = Uri.parse(selectedWebpage?.getWebView()?.url).host
+            tvLink.text = selectedWebpage?.getWebView()?.title
+            binding.setupWebsiteSecurity(domainString, sslCertificate)
+        } catch (_: Exception) {
+        }
         itemHistory.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_history_24))
             tvTitle.text = "History"
@@ -143,9 +155,10 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(selectedWebpage: SearchTabFragment?) {
-        val domainString = Uri.parse(selectedWebpage?.getWebView()?.url).host
-        val sslCertificate = selectedWebpage?.getWebView()?.certificate
+    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(
+        domainString: String?,
+        sslCertificate: SslCertificate?
+    ) {
         val startDate = sslCertificate?.validNotBeforeDate
         val endDate = sslCertificate?.validNotAfterDate
         tvDomain.text = domainString
@@ -164,22 +177,24 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
         cardSiteSecurity.onSafeClick {
             llSslCertificateDetails.isVisible = llSslCertificateDetails.isVisible.not()
-            ivArrow.setImageDrawable(requireContext().drawable(
-                if (llSslCertificateDetails.isVisible) {
-                    R.drawable.round_keyboard_arrow_up_24
-                } else {
-                    R.drawable.round_keyboard_arrow_down_24
-                }
-            ))
+            ivArrow.setImageDrawable(
+                requireContext().drawable(
+                    if (llSslCertificateDetails.isVisible) {
+                        R.drawable.round_keyboard_arrow_up_24
+                    } else {
+                        R.drawable.round_keyboard_arrow_down_24
+                    }
+                )
+            )
         }
 
-        itemHistory.root.onSafeClick {  }
+        itemHistory.root.onSafeClick { }
 
-        itemDownloads.root.onSafeClick {  }
+        itemDownloads.root.onSafeClick { }
 
-        itemAddToCollections.root.onSafeClick {  }
+        itemAddToCollections.root.onSafeClick { }
 
-        itemFindInPage.root.onSafeClick {  }
+        itemFindInPage.root.onSafeClick { }
 
         itemAddShortcut.root.onSafeClick {
             val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
@@ -188,15 +203,15 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
         }
 
-        itemPrint.root.onSafeClick {  }
+        itemPrint.root.onSafeClick { }
 
-        itemTranslate.root.onSafeClick {  }
+        itemTranslate.root.onSafeClick { }
 
-        itemPermissions.root.onSafeClick {  }
+        itemPermissions.root.onSafeClick { }
 
-        itemClearCookies.root.onSafeClick {  }
+        itemClearCookies.root.onSafeClick { }
 
-        itemClearCache.root.onSafeClick {  }
+        itemClearCache.root.onSafeClick { }
 
 //        btnMenu.onSafeClick {
 //            val optionsList = listOf("Close")
@@ -268,7 +283,12 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentWebsiteActionsBottomSheetBinding.observeForData() {
-
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.webViewDataStateFlow) { it: WebViewData ->
+            ivSiteIcon.setImageBitmap(it.favIcon)
+            tvSiteName.text = Uri.parse(it.url).host
+            tvLink.text = it.title
+            binding.setupWebsiteSecurity(domainString = Uri.parse(it.url).host, sslCertificate = it.certificate)
+        }
     }
 
     private fun setBottomSheetBehaviour() {

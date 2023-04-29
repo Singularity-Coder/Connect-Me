@@ -68,6 +68,8 @@ val dummyFaceUrls2 = listOf(
     "https://i.pinimg.com/564x/c7/90/f6/c790f67e19d50cb35be9d2a99c8304c8.jpg"
 )
 
+val openAiModelsList = listOf("gpt-4", "gpt-3.5-turbo")
+
 enum class ChatPeople {
     USER, AI
 }
@@ -82,6 +84,7 @@ object Db {
 
 object Table {
     const val WEB_APP = "table_web_app"
+    const val INSIGHT = "table_insight"
 }
 
 object BroadcastKey {

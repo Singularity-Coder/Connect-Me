@@ -25,6 +25,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.regex.Pattern
 import javax.inject.Inject
 
+// private const val ARG_PARAM_TAB = "ARG_PARAM_TAB"
+
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
 
@@ -114,9 +116,10 @@ class SearchTabFragment : Fragment() {
         }
 
         btnScrollToTop.onSafeClick {
-            (webView.scrollY downTo 0).forEach {
-                webView.scrollTo(0, it) // Does not smooth scroll. Adding delay doesnt work
-            }
+//            (webView.scrollY downTo 0).forEach {
+//                webView.scrollTo(0, it) // Does not smooth scroll. Adding delay doesnt work
+//            }
+            webView.scrollTo(0, 0)
         }
 
         webView.setOnTouchListener(View.OnTouchListener { view, event ->
@@ -349,7 +352,7 @@ class SearchTabFragment : Fragment() {
 
         @Deprecated("Deprecated in Java")
         override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
-            if (errorCode != ERROR_UNSUPPORTED_SCHEME && errorCode != ERROR_HOST_LOOKUP) {
+            if (errorCode != WebViewClient.ERROR_UNSUPPORTED_SCHEME && errorCode != WebViewClient.ERROR_HOST_LOOKUP) {
                 view?.loadUrl(DEFAULT_ERROR_PAGE_PATH)
             }
         }

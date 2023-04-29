@@ -1,9 +1,11 @@
 TODAY
-0. Fix ChatGPT - prompt horizontal list, send website to gpt then tell it to print keywords in json, decryption
+decryption
+Full screen image viewing in chat
+
+0. Fix ChatGPT - prompt horizontal list, send website to gpt then tell it to print keywords in json,
 1. Prepare GPT prompts
 1. Create 2nd url search bar and split search suggestions
 1. Website actions - start with - find in page, then all others - get from Lineage OS
-1. Website profile get data from viewmodel
 2. Add to collection db
 3. Set up default collections - bloatware webapps
 3. Add to history db
@@ -15,7 +17,7 @@ TODAY
 5. P2P com - profiles
 Avoid history logging in incognito
 Google translate webpages
-
+Store the favicon in the database in bytearray string
 
 Biometric auth to auto fill website passwords - Banana Browser
 
@@ -54,6 +56,7 @@ Whats the mood of this site
 Custom Input
 Find mistakes/errors, Logical fallacies, Biases, etc
 Contextual prompts - custom default prompts based on website category
+Created date: When was the site created. Scammers generally create new sites.
 
 
 
@@ -106,6 +109,7 @@ Screenshot - Capture full page, capture visible area
 Recent tabs, Bookmarks, reading list, etc, etc will all be part of collections
 Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
+Voice chat in GPT
 
 
 Basic WebApp Collections

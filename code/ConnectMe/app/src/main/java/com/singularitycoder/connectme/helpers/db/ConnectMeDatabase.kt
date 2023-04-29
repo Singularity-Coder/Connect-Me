@@ -3,12 +3,15 @@ package com.singularitycoder.connectme.helpers.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.singularitycoder.connectme.search.dao.InsightDao
 import com.singularitycoder.connectme.search.model.WebApp
 import com.singularitycoder.connectme.search.dao.WebAppDao
+import com.singularitycoder.connectme.search.model.Insight
 
 @Database(
     entities = [
         WebApp::class,
+        Insight::class,
     ],
     version = 1,
     exportSchema = false
@@ -19,5 +22,6 @@ import com.singularitycoder.connectme.search.dao.WebAppDao
 )
 abstract class ConnectMeDatabase : RoomDatabase() {
     abstract fun webAppDao(): WebAppDao
+    abstract fun insightDao(): InsightDao
 }
 

@@ -20,10 +20,14 @@ import android.webkit.URLUtil
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
+import androidx.core.content.FileProvider
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
 import java.io.*
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URISyntaxException
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
@@ -478,4 +482,72 @@ fun WebView.screenshot(): Bitmap {
     canvas.drawBitmap(bitmap, 0f, height.toFloat(), paint)
     this.draw(canvas)
     return bitmap
+}
+
+// https://www.baeldung.com/java-validate-url
+fun String?.isValidURL(): Boolean {
+    return try {
+        this ?: return false
+        URL(this).toURI()
+        true
+    } catch (e: MalformedURLException) {
+        false
+    } catch (e: URISyntaxException) {
+        false
+    }
+}
+
+fun getHostFrom(url: String?): String? {
+    return url
+        ?.substringAfter("//")
+        ?.substringBefore("/")
+}
+
+fun String?.simplifyUrl(): String? {
+    return this?.replace(oldValue = "https://www.", newValue = "")
+        ?.replace(oldValue = "http://www.", newValue = "")
+        ?.replace(oldValue = "http://", newValue = "")
+        ?.replace(oldValue = "https://", newValue = "")
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun Context.shareUrl(url: String?, webView: WebView?) {
+    if (url == null) return
+    val intent = Intent(Intent.ACTION_SEND)
+    intent.putExtra(Intent.EXTRA_TEXT, url)
+    if (url == webView?.url) {
+        val file = File(cacheDir, "$timeNow.png")
+        try {
+            FileOutputStream(file).use { out ->
+                val bm = webView.screenshot()
+                bm.compress(Bitmap.CompressFormat.PNG, 70, out)
+                out.flush()
+                out.close()
+                intent.putExtra(
+                    Intent.EXTRA_STREAM,
+                    FileProvider.getUriForFile(this, FILE_PROVIDER, file)
+                )
+                intent.type = "image/png"
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        } catch (_: IOException) {
+        }
+    } else {
+        intent.type = "text/plain"
+    }
+    startActivity(Intent.createChooser(intent, "Send to"))
+}
+
+// https://github.com/LineageOS/android_packages_apps_Jelly
+fun WebView.setDesktopMode(
+    isDesktopMode: Boolean,
+    desktopUserAgent: String?,
+    mobileUserAgent: String?
+) {
+    this.settings.apply {
+        userAgentString = if (isDesktopMode) desktopUserAgent else mobileUserAgent
+        useWideViewPort = isDesktopMode
+        loadWithOverviewMode = isDesktopMode
+    }
+    this.reload()
 }

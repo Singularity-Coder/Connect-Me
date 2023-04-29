@@ -1,6 +1,5 @@
 package com.singularitycoder.connectme.search.view
 
-import android.R
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -18,12 +17,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentGetInsightsBottomSheetBinding
 import com.singularitycoder.connectme.databinding.ListItemIconTextRoundBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.helpers.constants.ChatPeople
-import com.singularitycoder.connectme.helpers.constants.Preferences
+import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.search.model.ApiResult
 import com.singularitycoder.connectme.search.model.ApiState
 import com.singularitycoder.connectme.search.model.Insight
@@ -48,6 +46,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val insightsAdapter = InsightsAdapter()
     private var isTextInsight: Boolean = true
+    private var isAllInsightsAdded: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentGetInsightsBottomSheetBinding.inflate(inflater, container, false)
@@ -87,16 +86,19 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         layoutItem4.tvText.text = "Find Errors" // Find mistakes, Logical fallacies, Biases, etc
         layoutItem1.tvText.text = "Simplify"
         layoutItem2.tvText.text = "Give analogy"
+        // When was the site created. Scammers generally create new sites.
 
         ibChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
 
         etImageQuantity.editText?.setText("2")
-        val imageQuantityAdapter = ArrayAdapter(requireContext(), R.layout.simple_list_item_1, (1..10).map { it.toString() })
+        val imageQuantityAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, (1..10).map { it.toString() })
         (etImageQuantity.editText as? AutoCompleteTextView)?.setAdapter(imageQuantityAdapter)
 
         etImageSize.editText?.setText("1024x1024")
-        val imageSizeAdapter = ArrayAdapter(requireContext(), R.layout.simple_list_item_1, listOf("256x256", "512x512", "1024x1024"))
+        val imageSizeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listOf("256x256", "512x512", "1024x1024"))
         (etImageSize.editText as? AutoCompleteTextView)?.setAdapter(imageSizeAdapter)
+
+        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setupUserActionListeners() {
@@ -122,12 +124,13 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             layout.root.onSafeClick {
                 llDefaultRequests.isVisible = false
                 searchViewModel.getTextInsight("Is google trustworthy?")
-                insightsAdapter.insightsList.add(
-                    Insight(
-                        userType = ChatPeople.USER.ordinal,
-                        insight = "Is google trustworthy?"
-                    )
+                val insight = Insight(
+                    userType = ChatPeople.USER.ordinal,
+                    insight = "Is google trustworthy?",
+                    created = timeNow
                 )
+                insightsAdapter.insightsList.add(insight)
+                searchViewModel.addInsight(insight)
                 insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
             }
         }
@@ -142,12 +145,13 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 setTextMode()
                 isTextInsight = true
             } else {
-                insightsAdapter.insightsList.add(
-                    Insight(
-                        userType = ChatPeople.USER.ordinal,
-                        insight = etAskAnything.text.toString().trim()
-                    )
+                val insight = Insight(
+                    userType = ChatPeople.USER.ordinal,
+                    insight = etAskAnything.text.toString().trim(),
+                    created = timeNow
                 )
+                insightsAdapter.insightsList.add(insight)
+                searchViewModel.addInsight(insight)
                 insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
                 if (isTextInsight) {
                     searchViewModel.getTextInsight(etAskAnything.text.toString())
@@ -183,15 +187,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             }
             ibDefaultRequests.setImageDrawable(
                 if (it.isNullOrBlank()) {
-                    requireContext().drawable(com.singularitycoder.connectme.R.drawable.baseline_auto_fix_high_24)
+                    requireContext().drawable(R.drawable.baseline_auto_fix_high_24)
                 } else {
-                    requireContext().drawable(com.singularitycoder.connectme.R.drawable.round_arrow_upward_24)
+                    requireContext().drawable(R.drawable.round_arrow_upward_24)
                 }
             )
         }
 
         etImageSize.editText?.setOnFocusChangeListener { view, isFocused ->
-            etImageQuantity.boxStrokeColor = requireContext().color(com.singularitycoder.connectme.R.color.black_50)
+            etImageQuantity.boxStrokeColor = requireContext().color(R.color.black_50)
         }
 
         ivEditApiKey.onSafeClick {
@@ -201,15 +205,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         ivAiSettings.onSafeClick {
             val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
-            val optionsList = listOf("gpt-4", "gpt-3.5-turbo")
             PopupMenu(requireContext(), it.first).apply {
-                optionsList.forEach {
+                openAiModelsList.forEach {
                     menu.add(
                         /* p0 = */ 0,
                         /* p1 = */ 1,
                         /* p2 = */ 1,
                         /* p3 = */ menuIconWithText(
-                            icon = requireContext().drawable(com.singularitycoder.connectme.R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) com.singularitycoder.connectme.R.color.purple_500 else R.color.transparent),
+                            icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent),
                             title = it
                         )
                     )
@@ -217,11 +220,11 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 setOnMenuItemClickListener { it: MenuItem? ->
                     view?.setHapticFeedback()
                     when (it?.title?.toString()?.trim()) {
-                        optionsList[0] -> {
-                            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, optionsList[0]).apply()
+                        openAiModelsList[0] -> {
+                            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
                         }
-                        optionsList[1] -> {
-                            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, optionsList[1]).apply()
+                        openAiModelsList[1] -> {
+                            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[1]).apply()
                         }
                     }
                     false
@@ -234,6 +237,32 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             isTextInsight = isTextInsight.not()
             setChatMode()
         }
+
+        insightsAdapter.setOnItemLongClickListener { insight: Insight?, view: View? ->
+            PopupMenu(requireContext(), view).apply {
+                val menuOptions = listOf("Copy", "Share", "Delete")
+                menuOptions.forEach {
+                    menu.add(it)
+                }
+                setOnMenuItemClickListener { it: MenuItem? ->
+                    view?.setHapticFeedback()
+                    when (it?.title?.toString()?.trim()) {
+                        menuOptions[0] -> {
+                            root.context.clipboard()?.text = insight?.insight
+                            root.context.showToast("Copied!")
+                        }
+                        menuOptions[1] -> {
+                            requireContext().shareText(text = insight?.insight)
+                        }
+                        menuOptions[2] -> {
+                            searchViewModel.deleteInsight(insight)
+                        }
+                    }
+                    false
+                }
+                show()
+            }
+        }
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setChatMode() {
@@ -245,14 +274,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setImageMode() {
-        ibChatMode.setImageResource(com.singularitycoder.connectme.R.drawable.filter_vintage_black_24dp)
+        ibChatMode.setImageResource(R.drawable.filter_vintage_black_24dp)
         ibChatMode.setPadding(5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt())
-        etAskAnything.hint = "Ask for a drawing"
+        etAskAnything.hint = "Ask for a painting"
         llImageGenerationOptions.isVisible = true
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setTextMode() {
-        ibChatMode.setImageResource(com.singularitycoder.connectme.R.drawable.title_black_24dp)
+        ibChatMode.setImageResource(R.drawable.title_black_24dp)
         ibChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
         etAskAnything.hint = "Ask about this website"
         llImageGenerationOptions.isVisible = false
@@ -270,14 +299,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                     insightsAdapter.insightsList.add(
                         Insight(
                             userType = ChatPeople.AI.ordinal,
-                            insight = if (it.insightType == InsightType.TEXT) "thinking..." else "drawing..."
+                            insight = if (it.insightType == InsightType.TEXT) "thinking..." else "painting..."
                         )
                     )
                     insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
                 }
                 ApiState.SUCCESS -> {
                     removeLoadingItem()
-                    insightsAdapter.insightsList.add(Insight(insight = it.insight?.insight))
+                    insightsAdapter.insightsList.add(it.insight)
                 }
                 ApiState.ERROR -> {
                     removeLoadingItem()
@@ -287,6 +316,13 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             }
             insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
             scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
+        }
+
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.getAllInsights()) { it: List<Insight?> ->
+            if (isAllInsightsAdded) return@collectLatestLifecycleFlow
+            insightsAdapter.insightsList.addAll(it)
+            insightsAdapter.notifyDataSetChanged()
+            isAllInsightsAdded = true
         }
     }
 

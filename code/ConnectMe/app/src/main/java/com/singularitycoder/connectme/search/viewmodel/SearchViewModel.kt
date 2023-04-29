@@ -1,6 +1,7 @@
 package com.singularitycoder.connectme.search.viewmodel
 
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
@@ -12,6 +13,7 @@ import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSugges
 import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.YahooSearchSuggestionProvider
+import com.singularitycoder.connectme.search.dao.InsightDao
 import com.singularitycoder.connectme.search.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
@@ -32,7 +34,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val preferences: SharedPreferences,
-    private val networkStatus: NetworkStatus
+    private val networkStatus: NetworkStatus,
+    private val insightDao: InsightDao
 ) : ViewModel() {
 
     private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
@@ -40,6 +43,9 @@ class SearchViewModel @Inject constructor(
 
     private val _insightSharedFlow = MutableSharedFlow<ApiResult>()
     val insightSharedFlow = _insightSharedFlow.asSharedFlow()
+
+    private val _webViewDataStateFlow = MutableStateFlow<WebViewData>(WebViewData())
+    val webViewDataStateFlow = _webViewDataStateFlow.asSharedFlow()
 
     fun getSearchSuggestions(query: String) = viewModelScope.launch {
         if (query.isBlank()) {
@@ -66,6 +72,20 @@ class SearchViewModel @Inject constructor(
 
     fun resetSearchSuggestions() {
         _searchSuggestionResultsStateFlow.value = emptyList()
+    }
+
+    fun getAllInsights() = insightDao.getAllStateFlow()
+
+    fun addInsight(insight: Insight?) = viewModelScope.launch {
+        insightDao.insert(insight)
+    }
+
+    fun deleteInsight(insight: Insight?) = viewModelScope.launch {
+        insightDao.delete(insight)
+    }
+
+    fun setWebViewData(webViewData: WebViewData) {
+        _webViewDataStateFlow.value = webViewData
     }
 
     fun getTextInsight(content: String) = viewModelScope.launch(IO) {
@@ -112,7 +132,8 @@ class SearchViewModel @Inject constructor(
                 val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Root::class.java)
                 val insight = Insight(
                     created = insightResponse.created,
-                    insight = insightResponse.choices.firstOrNull()?.message?.content
+                    insight = insightResponse.choices.firstOrNull()?.message?.content,
+                    website = Uri.parse(_webViewDataStateFlow.value.url).host ?: ""
                 )
                 _insightSharedFlow.emit(
                     ApiResult(
@@ -121,6 +142,7 @@ class SearchViewModel @Inject constructor(
                         insightType = InsightType.TEXT
                     )
                 )
+                insightDao.insert(insight)
             },
             onFailure = { errorJsonObject: JsonObject? ->
                 val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
@@ -154,7 +176,8 @@ class SearchViewModel @Inject constructor(
                 val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, ImageInsightObject.Root::class.java)
                 val insight = Insight(
                     created = insightResponse.created,
-                    imageList = insightResponse.data
+                    imageList = insightResponse.data.map { it.url },
+                    website = Uri.parse(_webViewDataStateFlow.value.url).host ?: ""
                 )
                 _insightSharedFlow.emit(
                     ApiResult(
@@ -163,6 +186,7 @@ class SearchViewModel @Inject constructor(
                         insightType = InsightType.IMAGE
                     )
                 )
+                insightDao.insert(insight)
             },
             onFailure = { errorJsonObject: JsonObject? ->
                 val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
