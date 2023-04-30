@@ -30,6 +30,9 @@ interface InsightDao {
     @Query("SELECT * FROM ${Table.INSIGHT}")
     fun getAllStateFlow(): Flow<List<Insight?>>
 
+    @Query("SELECT * FROM ${Table.INSIGHT} WHERE website = :website")
+    fun getAllByWebsiteStateFlow(website: String?): Flow<List<Insight?>>
+
     @Query("SELECT * FROM ${Table.INSIGHT}")
     suspend fun getAll(): List<Insight?>
 

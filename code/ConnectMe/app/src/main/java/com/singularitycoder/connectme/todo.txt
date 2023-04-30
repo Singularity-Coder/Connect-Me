@@ -1,8 +1,14 @@
 TODAY
+prompt horizontal list,
 decryption
-Full screen image viewing in chat
+send website to gpt then tell it to print keywords in json with a unique emoji attached to each prompt,----
 
-0. Fix ChatGPT - prompt horizontal list, send website to gpt then tell it to print keywords in json,
+
+
+keyword browsing not working - smartUrlFilter(url) returning null
+full screen chat image save pic and dismiss sheet
+
+
 1. Prepare GPT prompts
 1. Create 2nd url search bar and split search suggestions
 1. Website actions - start with - find in page, then all others - get from Lineage OS
@@ -20,6 +26,17 @@ Google translate webpages
 Store the favicon in the database in bytearray string
 
 Biometric auth to auto fill website passwords - Banana Browser
+
+
+Later:
+1. Fix image viewer slide down to close issue
+https://levelup.gitconnected.com/dynamic-viewpager-inside-bottomsheetdialogfragment-d234b00044f3
+https://developer.android.com/reference/com/google/android/material/bottomsheet/BottomSheetBehavior
+https://github.com/kafumi/android-bottomsheet-viewpager
+https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support-viewpager-with-nestedscrollingchilds-bfdca72235c3
+2. Chat iamge list progress is not full width
+
+
 
 
 

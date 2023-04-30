@@ -25,7 +25,8 @@ import kotlinx.coroutines.launch
 import org.eclipse.jetty.http.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
@@ -74,7 +75,7 @@ class SearchViewModel @Inject constructor(
         _searchSuggestionResultsStateFlow.value = emptyList()
     }
 
-    fun getAllInsights() = insightDao.getAllStateFlow()
+    fun getAllInsightsByWebsite(website: String?) = insightDao.getAllByWebsiteStateFlow(website)
 
     fun addInsight(insight: Insight?) = viewModelScope.launch {
         insightDao.insert(insight)
@@ -88,10 +89,56 @@ class SearchViewModel @Inject constructor(
         _webViewDataStateFlow.value = webViewData
     }
 
-    fun getTextInsight(content: String) = viewModelScope.launch(IO) {
+    fun getWebViewData(): WebViewData = _webViewDataStateFlow.value
+
+    // https://www.baeldung.com/httpurlconnection-post
+    // https://hmkcode.com/android-send-json-data-to-server/
+    fun getTextInsight(content: String, saveToDb: Boolean = true) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
-            getResponseFromChatGPT(content)
+            _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT))
+            val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
+            val jsonObjectContent = JSONObject().apply {
+                put("role", "user")
+                put("content", content)
+            }
+            val jsonArrayContent = JSONArray().apply {
+                put(jsonObjectContent)
+            }
+            val jsonObjectRequest = JSONObject().apply {
+                put("model", selectedOpenAiModel)
+                put("messages", jsonArrayContent.toString())
+            }
+            makeOpenAiPostRequest(
+                url = URL("https://api.openai.com/v1/chat/completions"),
+                jsonObjectRequest = jsonObjectRequest,
+                onSuccess = { jsonObject: JsonObject? ->
+                    val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Root::class.java)
+                    val insight = Insight(
+                        created = insightResponse.created,
+                        insight = insightResponse.choices.firstOrNull()?.message?.content,
+                        website = getHostFrom(url = _webViewDataStateFlow.value.url)
+                    )
+                    _insightSharedFlow.emit(
+                        ApiResult(
+                            insight = insight,
+                            apiState = ApiState.SUCCESS,
+                            insightType = InsightType.TEXT
+                        )
+                    )
+                    if (saveToDb) insightDao.insert(insight)
+                },
+                onFailure = { errorJsonObject: JsonObject? ->
+                    val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
+                    _insightSharedFlow.emit(
+                        ApiResult(
+                            error = errorObject,
+                            apiState = ApiState.ERROR,
+                            insightType = InsightType.TEXT
+                        )
+                    )
+                }
+            )
         } catch (_: Exception) {
         }
     }
@@ -103,102 +150,44 @@ class SearchViewModel @Inject constructor(
     ) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
-            getImageResponseFromChatGPT(prompt = prompt, numOfImages = numOfImages, imageSize = imageSize)
+            _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.IMAGE))
+            val jsonObjectRequest = JSONObject().apply {
+                put("prompt", prompt)
+                put("n", numOfImages)
+                put("size", imageSize)
+            }
+            makeOpenAiPostRequest(
+                url = URL("https://api.openai.com/v1/images/generations"),
+                jsonObjectRequest = jsonObjectRequest,
+                onSuccess = { jsonObject: JsonObject? ->
+                    val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, ImageInsightObject.Root::class.java)
+                    val insight = Insight(
+                        created = insightResponse.created,
+                        imageList = insightResponse.data.map { it.url },
+                        website = getHostFrom(url = _webViewDataStateFlow.value.url)
+                    )
+                    _insightSharedFlow.emit(
+                        ApiResult(
+                            insight = insight,
+                            apiState = ApiState.SUCCESS,
+                            insightType = InsightType.IMAGE
+                        )
+                    )
+                    insightDao.insert(insight)
+                },
+                onFailure = { errorJsonObject: JsonObject? ->
+                    val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
+                    _insightSharedFlow.emit(
+                        ApiResult(
+                            error = errorObject,
+                            apiState = ApiState.ERROR,
+                            insightType = InsightType.IMAGE
+                        )
+                    )
+                }
+            )
         } catch (_: Exception) {
         }
-    }
-
-    // https://www.baeldung.com/httpurlconnection-post
-    // https://hmkcode.com/android-send-json-data-to-server/
-    @Throws(Exception::class)
-    private suspend fun getResponseFromChatGPT(content: String) {
-        _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT))
-        val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
-        val jsonObjectContent = JSONObject().apply {
-            put("role", "user")
-            put("content", content)
-        }
-        val jsonArrayContent = JSONArray().apply {
-            put(jsonObjectContent)
-        }
-        val jsonObjectRequest = JSONObject().apply {
-            put("model", selectedOpenAiModel)
-            put("messages", jsonArrayContent.toString())
-        }
-        makeOpenAiPostRequest(
-            url = URL("https://api.openai.com/v1/chat/completions"),
-            jsonObjectRequest = jsonObjectRequest,
-            onSuccess = { jsonObject: JsonObject? ->
-                val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Root::class.java)
-                val insight = Insight(
-                    created = insightResponse.created,
-                    insight = insightResponse.choices.firstOrNull()?.message?.content,
-                    website = Uri.parse(_webViewDataStateFlow.value.url).host ?: ""
-                )
-                _insightSharedFlow.emit(
-                    ApiResult(
-                        insight = insight,
-                        apiState = ApiState.SUCCESS,
-                        insightType = InsightType.TEXT
-                    )
-                )
-                insightDao.insert(insight)
-            },
-            onFailure = { errorJsonObject: JsonObject? ->
-                val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
-                _insightSharedFlow.emit(
-                    ApiResult(
-                        error = errorObject,
-                        apiState = ApiState.ERROR,
-                        insightType = InsightType.TEXT
-                    )
-                )
-            }
-        )
-    }
-
-    @Throws(Exception::class)
-    private suspend fun getImageResponseFromChatGPT(
-        prompt: String,
-        numOfImages: Int,
-        imageSize: String
-    ) {
-        _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.IMAGE))
-        val jsonObjectRequest = JSONObject().apply {
-            put("prompt", prompt)
-            put("n", numOfImages)
-            put("size", imageSize)
-        }
-        makeOpenAiPostRequest(
-            url = URL("https://api.openai.com/v1/images/generations"),
-            jsonObjectRequest = jsonObjectRequest,
-            onSuccess = { jsonObject: JsonObject? ->
-                val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, ImageInsightObject.Root::class.java)
-                val insight = Insight(
-                    created = insightResponse.created,
-                    imageList = insightResponse.data.map { it.url },
-                    website = Uri.parse(_webViewDataStateFlow.value.url).host ?: ""
-                )
-                _insightSharedFlow.emit(
-                    ApiResult(
-                        insight = insight,
-                        apiState = ApiState.SUCCESS,
-                        insightType = InsightType.IMAGE
-                    )
-                )
-                insightDao.insert(insight)
-            },
-            onFailure = { errorJsonObject: JsonObject? ->
-                val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
-                _insightSharedFlow.emit(
-                    ApiResult(
-                        error = errorObject,
-                        apiState = ApiState.ERROR,
-                        insightType = InsightType.IMAGE
-                    )
-                )
-            }
-        )
     }
 
     private suspend fun makeOpenAiPostRequest(

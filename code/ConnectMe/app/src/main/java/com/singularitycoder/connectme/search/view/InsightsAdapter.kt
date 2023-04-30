@@ -21,7 +21,8 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var insightsList = mutableListOf<Insight?>()
     private var itemClickListener: (insight: Insight?) -> Unit = {}
-    private var itemLongClickListener: (insight: Insight?, view: View?) -> Unit = { _, _ -> }
+    private var itemLongClickListener: (insight: Insight?, view: View?, position: Int) -> Unit = { _, _, _ -> }
+    private var fullScreenClickListener: (insight: Insight?, currentImagePosition: Int) -> Unit = { _, _ -> }
     private var animationDrawable: AnimationDrawable? = null
     private var currentImagePosition = 0
 
@@ -42,8 +43,12 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         itemClickListener = listener
     }
 
-    fun setOnItemLongClickListener(listener: (insight: Insight?, view: View?) -> Unit) {
+    fun setOnItemLongClickListener(listener: (insight: Insight?, view: View?, position: Int) -> Unit) {
         itemLongClickListener = listener
+    }
+
+    fun setOnFullScreenClickListener(listener: (insight: Insight?, currentImagePosition: Int) -> Unit) {
+        fullScreenClickListener = listener
     }
 
     inner class ThisViewHolder(
@@ -99,7 +104,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                             setImageDetails(insight)
                         }
                         btnFullScreen.onSafeClick {
-
+                            fullScreenClickListener.invoke(insight, currentImagePosition)
                         }
                     } else {
                         clChatImage.isVisible = false
@@ -107,11 +112,11 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     }
                 }
                 cardResponse.setOnLongClickListener {
-                    itemLongClickListener.invoke(insight, it)
+                    itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
                     false
                 }
                 cardRequest.setOnLongClickListener {
-                    itemLongClickListener.invoke(insight, it)
+                    itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
                     false
                 }
             }

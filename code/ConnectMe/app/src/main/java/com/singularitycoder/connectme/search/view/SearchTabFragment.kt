@@ -262,6 +262,7 @@ class SearchTabFragment : Fragment() {
 //            applyThemeColor(UiUtils.getColor(favicon, binding.webView.isIncognito))
             if (icon.isRecycled.not()) icon.recycle()
             searchFragment?.getFaviconImageView()?.setImageBitmap(favicon)
+            searchFragment?.setWebViewData()
         }
 
         override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {

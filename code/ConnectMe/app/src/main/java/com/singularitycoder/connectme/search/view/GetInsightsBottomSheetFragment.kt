@@ -127,7 +127,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 val insight = Insight(
                     userType = ChatPeople.USER.ordinal,
                     insight = "Is google trustworthy?",
-                    created = timeNow
+                    created = timeNow,
+                    website = getHostFrom(searchViewModel.getWebViewData().url)
                 )
                 insightsAdapter.insightsList.add(insight)
                 searchViewModel.addInsight(insight)
@@ -148,7 +149,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 val insight = Insight(
                     userType = ChatPeople.USER.ordinal,
                     insight = etAskAnything.text.toString().trim(),
-                    created = timeNow
+                    created = timeNow,
+                    website = getHostFrom(searchViewModel.getWebViewData().url)
                 )
                 insightsAdapter.insightsList.add(insight)
                 searchViewModel.addInsight(insight)
@@ -238,7 +240,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             setChatMode()
         }
 
-        insightsAdapter.setOnItemLongClickListener { insight: Insight?, view: View? ->
+        insightsAdapter.setOnItemLongClickListener { insight: Insight?, view: View?, position: Int ->
             PopupMenu(requireContext(), view).apply {
                 val menuOptions = listOf("Copy", "Share", "Delete")
                 menuOptions.forEach {
@@ -256,12 +258,21 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                         }
                         menuOptions[2] -> {
                             searchViewModel.deleteInsight(insight)
+                            insightsAdapter.insightsList.removeAt(position)
+                            insightsAdapter.notifyItemRemoved(position)
                         }
                     }
                     false
                 }
                 show()
             }
+        }
+
+        insightsAdapter.setOnFullScreenClickListener { insight: Insight?, currentImagePosition: Int ->
+            ImageViewerBottomSheetFragment.newInstance(
+                imageList = insight?.imageList?.toTypedArray() ?: emptyArray(),
+                currentImagePosition = currentImagePosition
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_IMAGE_VIEWER)
         }
     }
 
@@ -318,7 +329,9 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
         }
 
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.getAllInsights()) { it: List<Insight?> ->
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(
+            flow = searchViewModel.getAllInsightsByWebsite(website = getHostFrom(searchViewModel.getWebViewData().url))
+        ) { it: List<Insight?> ->
             if (isAllInsightsAdded) return@collectLatestLifecycleFlow
             insightsAdapter.insightsList.addAll(it)
             insightsAdapter.notifyDataSetChanged()

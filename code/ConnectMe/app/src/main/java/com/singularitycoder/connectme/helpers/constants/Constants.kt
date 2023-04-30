@@ -101,6 +101,7 @@ object BottomSheetTag {
     const val WEBSITE_ACTIONS = "WEBSITE_ACTIONS_BOTTOM_SHEET"
     const val TAG_ADD_API_KEY = "TAG_ADD_API_KEY_BOTTOM_SHEET"
     const val TAG_GET_INSIGHTS = "TAG_GET_INSIGHTS_BOTTOM_SHEET"
+    const val TAG_IMAGE_VIEWER = "TAG_IMAGE_VIEWER_BOTTOM_SHEET"
 }
 
 enum class QuickActionTabMenu(val value: String) {

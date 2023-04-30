@@ -497,7 +497,7 @@ fun String?.isValidURL(): Boolean {
     }
 }
 
-fun getHostFrom(url: String?): String? {
+fun trimHostFrom(url: String?): String? {
     return url
         ?.substringAfter("//")
         ?.substringBefore("/")
@@ -550,4 +550,10 @@ fun WebView.setDesktopMode(
         loadWithOverviewMode = isDesktopMode
     }
     this.reload()
+}
+
+fun getHostFrom(url: String?): String = try {
+    Uri.parse(url).host ?: ""
+} catch (e: Exception) {
+    ""
 }

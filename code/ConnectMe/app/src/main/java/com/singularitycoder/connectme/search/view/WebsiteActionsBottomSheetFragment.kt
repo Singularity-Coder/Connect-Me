@@ -61,10 +61,10 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
                 ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
             ) as? SearchTabFragment
-            val domainString = Uri.parse(selectedWebpage?.getWebView()?.url).host
+            val domainString = getHostFrom(selectedWebpage?.getWebView()?.url)
             val sslCertificate = selectedWebpage?.getWebView()?.certificate
             ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
-            tvSiteName.text = Uri.parse(selectedWebpage?.getWebView()?.url).host
+            tvSiteName.text = getHostFrom(selectedWebpage?.getWebView()?.url)
             tvLink.text = selectedWebpage?.getWebView()?.title
             binding.setupWebsiteSecurity(domainString, sslCertificate)
         } catch (_: Exception) {
@@ -285,9 +285,9 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentWebsiteActionsBottomSheetBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.webViewDataStateFlow) { it: WebViewData ->
             ivSiteIcon.setImageBitmap(it.favIcon)
-            tvSiteName.text = Uri.parse(it.url).host
+            tvSiteName.text = getHostFrom(it.url)
             tvLink.text = it.title
-            binding.setupWebsiteSecurity(domainString = Uri.parse(it.url).host, sslCertificate = it.certificate)
+            binding.setupWebsiteSecurity(domainString = getHostFrom(it.url), sslCertificate = it.certificate)
         }
     }
 

@@ -27,4 +27,10 @@
     <string name="ssl_cert_dialog_issued_on">Issued On</string>
     <string name="ssl_cert_dialog_expires_on">Expires On</string>
     <string name="ssl_cert_dialog_dismiss">Dismiss</string>
+
+    <string name="dialog_title_save_image">Save Image?</string>
+    <string name="dialog_message_save_image">Saving this image will allow other apps to access it.\n\nAre you sure you want to save?</string>
+    <string name="save_image">Save image</string>
+    <string name="cancel">Cancel</string>
+
 </resources>

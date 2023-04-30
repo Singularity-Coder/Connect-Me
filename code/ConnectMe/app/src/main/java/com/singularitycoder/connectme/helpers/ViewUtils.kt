@@ -37,10 +37,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.RecyclerView
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import java.util.*
+import kotlin.collections.ArrayList
 
 fun Context.getThemeAttrColor(attributeColor: Int): Int {
     this.theme.resolveAttribute(attributeColor, ConnectMeUtils.typedValue, true)
@@ -178,6 +181,7 @@ fun Context.showAlertDialog(
     positiveBtnText: String,
     negativeBtnText: String = "",
     neutralBtnText: String = "",
+    icon: Drawable? = null,
     positiveAction: () -> Unit = {},
     negativeAction: () -> Unit = {},
     neutralAction: () -> Unit = {},
@@ -187,6 +191,7 @@ fun Context.showAlertDialog(
         if (title.isNotBlank()) setTitle(title)
         setMessage(message)
         background = drawable(R.drawable.alert_dialog_bg)
+        if (icon != null) setIcon(icon)
         setPositiveButton(positiveBtnText) { dialog, int ->
             positiveAction.invoke()
         }
@@ -717,6 +722,12 @@ fun Context.setTransitionDrawable(view: View?) {
     val transition = TransitionDrawable(color)
     view?.background = transition
     transition.startTransition(1000)
+}
+
+fun Context.getDrawableIcon(@DrawableRes drawableResId: Int): Drawable? {
+    val icon: Drawable? = VectorDrawableCompat.create(this.resources, drawableResId, null)
+    DrawableCompat.setTint(Objects.requireNonNull<Drawable?>(icon), ContextCompat.getColor(this, R.color.purple_500))
+    return icon
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

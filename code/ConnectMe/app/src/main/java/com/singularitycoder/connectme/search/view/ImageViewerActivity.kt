@@ -28,6 +28,7 @@ import dagger.hilt.android.components.ActivityComponent
 import java.util.*
 import javax.inject.Inject
 
+// https://github.com/briar/briar
 
 //class ImageViewerActivity : AppCompatActivity(), PullDownLayout.Callback, OnGlobalLayoutListener {
 //

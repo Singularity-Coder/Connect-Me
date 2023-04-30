@@ -22,12 +22,13 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -42,13 +43,14 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
-import com.singularitycoder.connectme.search.model.WebViewData
+import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
 import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
 import com.singularitycoder.flowlauncher.helper.quickActionView.Action
 import com.singularitycoder.flowlauncher.helper.quickActionView.QuickActionView
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONObject
 import javax.inject.Inject
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
@@ -70,7 +72,7 @@ class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
 
     private val topicTabsList = mutableListOf<String>()
-    private val searchViewModel: SearchViewModel by viewModels()
+    private val searchViewModel by activityViewModels<SearchViewModel>()
     private val iconTextActionAdapter by lazy { IconTextActionAdapter() }
 
     private var searchQuery: String = ""
@@ -402,6 +404,20 @@ class SearchFragment : Fragment() {
                 )
             })
         }
+
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+            when (it.apiState) {
+                ApiState.LOADING -> {
+                }
+                ApiState.SUCCESS -> {
+                    val dynamicPromptMap = JSONObject(it.insight?.insight ?: "").toMap()
+                    // TODO send this to default prompt list in chat
+                }
+                ApiState.ERROR -> {
+                }
+                else -> Unit
+            }
+        }
     }
 
     private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
@@ -565,20 +581,21 @@ class SearchFragment : Fragment() {
         binding.scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
         binding.viewSearchSuggestionsScrim.isVisible = false
         binding.cardSearchSuggestions.isVisible = false
+        searchViewModel.getTextInsight(
+            content = """
+            Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
+            prepare a json string with the keyword you found as the key and a sensational question prompt 
+            about the keyword as the value. Add an appropriate emoji before the key. 
+            Do not explain anything. Just give me the json string as your answer.
+        """.trimIndentsAndNewLines(),
+            saveToDb = false
+        )
     }
 
     private fun websiteStuffToLoad(selectedWebpage: SearchTabFragment?) {
 //        val simplifiedUrl = selectedWebpage?.getWebView()?.url?.simplifyUrl() ?: ""
         binding.etSearch.setText(selectedWebpage?.getWebView()?.title)
         binding.clWebsiteProfile.isVisible = selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
-        searchViewModel.setWebViewData(
-            WebViewData(
-                url = selectedWebpage?.getWebView()?.url,
-                title = selectedWebpage?.getWebView()?.title,
-                favIcon = selectedWebpage?.getWebView()?.favicon,
-                certificate = selectedWebpage?.getWebView()?.certificate
-            )
-        )
 //        val query = "/${simplifiedUrl.substringAfter("/")}"
 //        val styleSpan = TextAppearanceSpan(requireContext(), R.style.url_highlight)
 //        binding.etSearch.highlightQueriedText(query = query, result = simplifiedUrl, styleSpan = styleSpan)
@@ -633,6 +650,7 @@ class SearchFragment : Fragment() {
         tabLayoutTabs.getTabAt(currentTabPosition)?.view?.onSafeClick {
             val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[currentTabPosition]) as? SearchTabFragment
             ivWebappProfile.setImageBitmap(selectedWebpage?.getFavicon())
+            setWebViewData()
             websiteStuffToLoad(selectedWebpage)
             val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
                 selectedWebpage?.getWebView()?.title
@@ -959,6 +977,17 @@ class SearchFragment : Fragment() {
     fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile
 
     fun getTabsTabLayout(): TabLayout = binding.tabLayoutTabs
+
+    fun setWebViewData() {
+        val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+        val webViewData = WebViewData(
+            url = selectedWebpage?.getWebView()?.url,
+            title = selectedWebpage?.getWebView()?.title,
+            favIcon = binding.ivWebappProfile.drawable.toBitmap(),
+            certificate = selectedWebpage?.getWebView()?.certificate
+        )
+        searchViewModel.setWebViewData(webViewData)
+    }
 
     // https://stackoverflow.com/questions/19765938/show-and-hide-a-view-with-a-slide-up-down-animation
     // https://developer.android.com/develop/ui/views/animations/reveal-or-hide-view

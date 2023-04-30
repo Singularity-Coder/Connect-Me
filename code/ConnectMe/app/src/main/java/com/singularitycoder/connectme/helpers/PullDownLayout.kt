@@ -32,6 +32,7 @@ import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.customview.widget.ViewDragHelper
 
+// https://github.com/briar/briar
 class PullDownLayout @JvmOverloads constructor(
     context: Context?, attrs: AttributeSet? = null,
     defStyleAttr: Int = 0

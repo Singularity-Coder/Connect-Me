@@ -104,6 +104,22 @@ fun JSONArray.toList(): List<Any> = try {
     emptyList<Any>()
 }
 
+// https://stackoverflow.com/questions/44870961/how-to-map-a-json-string-to-kotlin-map
+fun JSONObject.toMap2(): Map<String, Any?> =
+    keys().asSequence().associateWith { key -> toValue(get(key)) }
+
+// https://stackoverflow.com/questions/44870961/how-to-map-a-json-string-to-kotlin-map
+fun JSONArray.toList2(): List<Any?> =
+    (0 until length()).map { index -> toValue(get(index)) }
+
+// https://stackoverflow.com/questions/44870961/how-to-map-a-json-string-to-kotlin-map
+private fun toValue(element: Any) = when (element) {
+    JSONObject.NULL -> null
+    is JSONObject -> element.toMap()
+    is JSONArray -> element.toList()
+    else -> element
+}
+
 fun getAssetsResourcePath(directory: String, resourceNameWithExtension: String): String {
     return "file:///android_asset/$directory/$resourceNameWithExtension"
 }

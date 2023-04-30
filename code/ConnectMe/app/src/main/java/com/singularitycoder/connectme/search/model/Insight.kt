@@ -10,7 +10,8 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.INSIGHT)
 @Parcelize
 data class Insight(
-    @PrimaryKey val website: String = "",
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val website: String = "",
     val created: Long? = null,
     val userType: Int = 1,
     val insightType: Int = 1,
