@@ -16,7 +16,7 @@ data class Insight(
     val userType: Int = 1,
     val insightType: Int = 1,
     val insight: String? = "",
-    val imageList: List<String> = emptyList(),
+    val imageList: List<String> = emptyList()
 ) : Parcelable
 
 class InsightObject {

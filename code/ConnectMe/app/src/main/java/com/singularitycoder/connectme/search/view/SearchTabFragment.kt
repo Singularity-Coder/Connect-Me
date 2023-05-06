@@ -27,6 +27,7 @@ import javax.inject.Inject
 
 // private const val ARG_PARAM_TAB = "ARG_PARAM_TAB"
 
+// Lots of references from https://github.com/LineageOS/android_packages_apps_Jelly
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
 
@@ -166,7 +167,7 @@ class SearchTabFragment : Fragment() {
             this.y = yTouchPos
         }
         binding.llDummyViewGroup.addView(menuDummyView)
-        binding.showPopupMenu(view = menuDummyView ?: return, menuRes = R.menu.webview_long_click_popup_menu)
+        binding.showWebViewPopupMenu(view = menuDummyView ?: return, menuRes = R.menu.webview_long_click_popup_menu)
     }
 
     fun loadUrl(url: String) {
@@ -345,7 +346,7 @@ class SearchTabFragment : Fragment() {
         }
 
         override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
-            if (request?.isForMainFrame == true && error != null) {
+            if (/* request?.isForMainFrame == true && */error != null) {
 //                view?.loadUrl(requireContext().resourceUri(R.raw.error_webpage).toString())
                 view?.loadUrl(DEFAULT_ERROR_PAGE_PATH)
             }
@@ -363,11 +364,7 @@ class SearchTabFragment : Fragment() {
 
     fun getFavicon(): Bitmap? = favicon
 
-    fun refreshWebpage() {
-        binding.webView.reload()
-    }
-
-    private fun FragmentSearchTabBinding.showPopupMenu(
+    private fun FragmentSearchTabBinding.showWebViewPopupMenu(
         view: View,
         @MenuRes menuRes: Int
     ) {

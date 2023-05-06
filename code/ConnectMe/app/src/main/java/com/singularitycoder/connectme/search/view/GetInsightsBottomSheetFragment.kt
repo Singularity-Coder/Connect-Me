@@ -3,32 +3,32 @@ package com.singularitycoder.connectme.search.view
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.text.Editable
 import android.view.*
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.FrameLayout
-import android.widget.PopupMenu
+import android.widget.*
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
+import androidx.recyclerview.widget.SnapHelper
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentGetInsightsBottomSheetBinding
-import com.singularitycoder.connectme.databinding.ListItemIconTextRoundBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
-import com.singularitycoder.connectme.search.model.ApiResult
-import com.singularitycoder.connectme.search.model.ApiState
-import com.singularitycoder.connectme.search.model.Insight
-import com.singularitycoder.connectme.search.model.InsightType
+import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONObject
+import java.util.*
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
@@ -42,11 +42,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     lateinit var preferences: SharedPreferences
 
     private lateinit var binding: FragmentGetInsightsBottomSheetBinding
+    private lateinit var textToSpeech: TextToSpeech
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val insightsAdapter = InsightsAdapter()
+    private val promptsAdapter = PromptsAdapter()
     private var isTextInsight: Boolean = true
     private var isAllInsightsAdded: Boolean = false
+    private var insightOnClickPosition: Int = 0
+    private var insightOnClick: Insight? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentGetInsightsBottomSheetBinding.inflate(inflater, container, false)
@@ -58,6 +62,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         binding.setupUI()
         binding.setupUserActionListeners()
         binding.observeForData()
+    }
+
+    override fun onDestroyView() {
+        if (this::textToSpeech.isInitialized) {
+            if (textToSpeech.isSpeaking) textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+        super.onDestroyView()
     }
 
     // https://stackoverflow.com/questions/15543186/how-do-i-create-colorstatelist-programmatically
@@ -73,20 +85,28 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         setBottomSheetBehaviour()
 
+        initTextToSpeech()
+
         rvInsights.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = insightsAdapter
         }
 
-        layoutItem7.tvText.text = "Is website fishy?" // Trustworthy or not. Check terms/privacy policy to see if they are trying to exploit u, right to repair exists, etc.
-        layoutItem8.tvText.text = "Similar sites"
-        layoutItem5.tvText.text = "Past misdeeds" // Check if this website or company is involved in shady stuff
-        layoutItem6.tvText.text = "Check mood" // U dont want to spoil ur day by reading bad stuff
-        layoutItem3.tvText.text = "Summarize"
-        layoutItem4.tvText.text = "Find Errors" // Find mistakes, Logical fallacies, Biases, etc
-        layoutItem1.tvText.text = "Simplify"
-        layoutItem2.tvText.text = "Give analogy"
-        // When was the site created. Scammers generally create new sites.
+        rvDefaultPrompts.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = promptsAdapter
+            val snapHelper: SnapHelper = LinearSnapHelper()
+            snapHelper.attachToRecyclerView(this)
+        }
+
+//        layoutItem7.tvText.text = "Is website fishy?" // Trustworthy or not. Check terms/privacy policy to see if they are trying to exploit u, right to repair exists, etc.
+//        layoutItem8.tvText.text = "Similar sites"
+//        layoutItem5.tvText.text = "Past misdeeds" // Check if this website or company is involved in shady stuff
+//        layoutItem6.tvText.text = "Check mood" // U dont want to spoil ur day by reading bad stuff
+//        layoutItem3.tvText.text = "Summarize"
+//        layoutItem4.tvText.text = "Find Errors" // Find mistakes, Logical fallacies, Biases, etc
+//        layoutItem1.tvText.text = "Simplify"
+//        layoutItem2.tvText.text = "Give analogy"
 
         ibChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
 
@@ -111,34 +131,23 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 //            }
 //        }
 
-        listOf(
-            layoutItem1,
-            layoutItem2,
-            layoutItem3,
-            layoutItem4,
-            layoutItem5,
-            layoutItem6,
-            layoutItem7,
-            layoutItem8,
-        ).forEach { layout: ListItemIconTextRoundBinding ->
-            layout.root.onSafeClick {
-                llDefaultRequests.isVisible = false
-                searchViewModel.getTextInsight("Is google trustworthy?")
-                val insight = Insight(
-                    userType = ChatPeople.USER.ordinal,
-                    insight = "Is google trustworthy?",
-                    created = timeNow,
-                    website = getHostFrom(searchViewModel.getWebViewData().url)
-                )
-                insightsAdapter.insightsList.add(insight)
-                searchViewModel.addInsight(insight)
-                insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
-            }
+        promptsAdapter.setOnItemClickListener { prompt: Pair<String, String> ->
+            rvDefaultPrompts.isVisible = false
+            searchViewModel.getTextInsight(prompt = prompt.second)
+            val insight = Insight(
+                userType = ChatRole.USER.ordinal,
+                insight = prompt.first,
+                created = timeNow,
+                website = getHostFrom(searchViewModel.getWebViewData().url)
+            )
+            insightsAdapter.insightsList.add(insight)
+            searchViewModel.addInsight(insight)
+            insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
         }
 
         ibDefaultRequests.onSafeClick {
             if (etAskAnything.text?.isBlank() == true) {
-                llDefaultRequests.isVisible = llDefaultRequests.isVisible.not()
+                rvDefaultPrompts.isVisible = rvDefaultPrompts.isVisible.not()
 //                if (llDefaultRequests.isVisible.not()) {
 //                    etAskAnything.showKeyboard()
 //                }
@@ -147,7 +156,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 isTextInsight = true
             } else {
                 val insight = Insight(
-                    userType = ChatPeople.USER.ordinal,
+                    userType = ChatRole.USER.ordinal,
                     insight = etAskAnything.text.toString().trim(),
                     created = timeNow,
                     website = getHostFrom(searchViewModel.getWebViewData().url)
@@ -156,7 +165,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 searchViewModel.addInsight(insight)
                 insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
                 if (isTextInsight) {
-                    searchViewModel.getTextInsight(etAskAnything.text.toString())
+                    searchViewModel.getTextInsight(prompt = etAskAnything.text.toString())
                 } else {
                     searchViewModel.getImageInsight(
                         prompt = etAskAnything.text.toString(),
@@ -174,7 +183,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         llImageGenerationOptions.setOnVisibilityChangedListener {
-            if (it) llDefaultRequests.isVisible = false
+            if (it) rvDefaultPrompts.isVisible = false
             setChatMode()
         }
 
@@ -184,8 +193,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         etAskAnything.doAfterTextChanged { it: Editable? ->
             if (it.isNullOrBlank().not()) {
-                llDefaultRequests.isVisible = false
-                rvInsights.minimumHeight = deviceHeight() / 3
+                rvDefaultPrompts.isVisible = false
             }
             ibDefaultRequests.setImageDrawable(
                 if (it.isNullOrBlank()) {
@@ -242,21 +250,39 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         insightsAdapter.setOnItemLongClickListener { insight: Insight?, view: View?, position: Int ->
             PopupMenu(requireContext(), view).apply {
-                val menuOptions = listOf("Copy", "Share", "Delete")
+                val menuOptions = listOf("Ask again", "Copy", "Share", "Delete")
                 menuOptions.forEach {
-                    menu.add(it)
+                    menu.add(
+                        0, 1, 1, menuIconWithText(
+                            icon = when (it.trim()) {
+                                menuOptions[0] -> requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
+                                menuOptions[1] -> requireContext().drawable(R.drawable.baseline_content_copy_24)?.changeColor(requireContext(), R.color.purple_500)
+                                menuOptions[2] -> requireContext().drawable(R.drawable.round_share_24)?.changeColor(requireContext(), R.color.purple_500)
+                                menuOptions[3] -> requireContext().drawable(R.drawable.outline_delete_24)?.changeColor(requireContext(), R.color.purple_500)
+                                else -> requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), android.R.color.transparent)
+                            },
+                            title = it
+                        )
+                    )
                 }
                 setOnMenuItemClickListener { it: MenuItem? ->
                     view?.setHapticFeedback()
                     when (it?.title?.toString()?.trim()) {
                         menuOptions[0] -> {
+                            searchViewModel.getTextInsight(prompt = insight?.insight)
+                            insightsAdapter.insightsList.add(insight)
+                            searchViewModel.addInsight(insight)
+                            insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
+                            rvInsights.scrollToPosition(insightsAdapter.insightsList.lastIndex)
+                        }
+                        menuOptions[1] -> {
                             root.context.clipboard()?.text = insight?.insight
                             root.context.showToast("Copied!")
                         }
-                        menuOptions[1] -> {
+                        menuOptions[2] -> {
                             requireContext().shareText(text = insight?.insight)
                         }
-                        menuOptions[2] -> {
+                        menuOptions[3] -> {
                             searchViewModel.deleteInsight(insight)
                             insightsAdapter.insightsList.removeAt(position)
                             insightsAdapter.notifyItemRemoved(position)
@@ -273,6 +299,21 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 imageList = insight?.imageList?.toTypedArray() ?: emptyArray(),
                 currentImagePosition = currentImagePosition
             ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_IMAGE_VIEWER)
+        }
+
+        insightsAdapter.setOnItemClickListener { insight: Insight?, position: Int ->
+            insightOnClick = insight
+            insightOnClickPosition = position
+            if (textToSpeech.isSpeaking) {
+                textToSpeech.stop()
+                insightsAdapter.removeTextViewSpan(
+                    recyclerView = binding.rvInsights,
+                    adapterPosition = insightOnClickPosition,
+                    insight = insightOnClick
+                )
+            } else {
+                startTextToSpeech(insight?.insight)
+            }
         }
     }
 
@@ -309,7 +350,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 ApiState.LOADING -> {
                     insightsAdapter.insightsList.add(
                         Insight(
-                            userType = ChatPeople.AI.ordinal,
+                            userType = ChatRole.ASSISTANT.ordinal,
                             insight = if (it.insightType == InsightType.TEXT) "thinking..." else "painting..."
                         )
                     )
@@ -327,15 +368,119 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             }
             insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
             scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
+            rvInsights.scrollToPosition(insightsAdapter.insightsList.lastIndex)
         }
 
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(
-            flow = searchViewModel.getAllInsightsByWebsite(website = getHostFrom(searchViewModel.getWebViewData().url))
+            flow = searchViewModel.getAllInsightsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
         ) { it: List<Insight?> ->
             if (isAllInsightsAdded) return@collectLatestLifecycleFlow
             insightsAdapter.insightsList.addAll(it)
             insightsAdapter.notifyDataSetChanged()
             isAllInsightsAdded = true
+        }
+
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(
+            flow = searchViewModel.getPromptBy(website = getHostFrom(searchViewModel.getWebViewData().url))
+        ) { prompt: Prompt? ->
+            try {
+                // TODO fix this later
+                val dynamicPromptMap = JSONObject(prompt?.promptsJson ?: "").toMap()
+
+                val triplePromptKeysList = mutableListOf<Triple<String, String, String>>()
+
+                var itemAddedPosition = 0
+
+                val apiPromptKeysList = dynamicPromptMap.keys.toList()
+                val localPromptKeysList = localTextPromptsMap.keys.toList()
+
+                val apiQuotient = apiPromptKeysList.size / 3
+                val localQuotient = localPromptKeysList.size / 3
+
+                (0..apiQuotient).forEach {
+                    triplePromptKeysList.add(
+                        Triple(
+                            first = apiPromptKeysList.getOrNull(itemAddedPosition) ?: "",
+                            second = apiPromptKeysList.getOrNull(itemAddedPosition + 1) ?: "",
+                            third = apiPromptKeysList.getOrNull(itemAddedPosition + 2) ?: ""
+                        )
+                    )
+                    itemAddedPosition += 3
+                }
+
+                (0..localQuotient).forEach {
+                    triplePromptKeysList.add(
+                        Triple(
+                            first = apiPromptKeysList.getOrNull(itemAddedPosition) ?: "",
+                            second = apiPromptKeysList.getOrNull(itemAddedPosition + 1) ?: "",
+                            third = apiPromptKeysList.getOrNull(itemAddedPosition + 2) ?: ""
+                        )
+                    )
+                    itemAddedPosition += 3
+                }
+
+                triplePromptKeysList.forEach { key: Triple<String, String, String> ->
+                    promptsAdapter.promptList.add(
+                        Triple(
+                            Pair(first = key.first, second = dynamicPromptMap.get(key.first).toString()),
+                            Pair(first = key.second, second = dynamicPromptMap.get(key.second).toString()),
+                            Pair(first = key.third, second = dynamicPromptMap.get(key.third).toString())
+                        )
+                    )
+                }
+
+                promptsAdapter.notifyDataSetChanged()
+            } catch (_: Exception) {
+                localTextPromptsMap.keys.forEach { key: String ->
+                    promptsAdapter.promptList.add(
+                        Triple(
+                            Pair(first = key, second = localTextPromptsMap.get(key).toString()),
+                            Pair(first = key, second = localTextPromptsMap.get(key).toString()),
+                            Pair(first = key, second = localTextPromptsMap.get(key).toString())
+                        )
+                    )
+                }
+                promptsAdapter.notifyDataSetChanged()
+            }
+        }
+    }
+
+    private fun initTextToSpeech() {
+        textToSpeech = TextToSpeech(context) { status: Int ->
+            if (status == TextToSpeech.SUCCESS) {
+                val result: Int = textToSpeech.setLanguage(Locale.getDefault())
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    println("Language not supported for Text-to-Speech!")
+                }
+            }
+        }
+        textToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String) = Unit
+            override fun onDone(utteranceId: String) = Unit
+
+            @Deprecated("Deprecated in Java", ReplaceWith("Unit"))
+            override fun onError(utteranceId: String) = Unit
+
+            override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                requireActivity().runOnUiThread {
+                    insightsAdapter.setTtsTextHighlighting(
+                        utteranceId = utteranceId,
+                        start = start,
+                        end = end,
+                        recyclerView = binding.rvInsights,
+                        adapterPosition = insightOnClickPosition,
+                        insight = insightOnClick
+                    )
+                }
+            }
+        })
+    }
+
+    private fun startTextToSpeech(textToSpeak: String?) {
+        val params = Bundle().apply { putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, textToSpeak /* utteranceId = */) }
+        textToSpeech.apply {
+            speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, params, textToSpeak)
+            playSilentUtterance(1000, TextToSpeech.QUEUE_ADD, textToSpeak) // Stay silent for 1000 ms
         }
     }
 

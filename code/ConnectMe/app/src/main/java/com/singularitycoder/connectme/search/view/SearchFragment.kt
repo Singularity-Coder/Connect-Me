@@ -290,7 +290,7 @@ class SearchFragment : Fragment() {
         }
 
         ibAddTab.setOnLongClickListener {
-            showPopupMenu(view = it, menuRes = R.menu.new_tab_popup_menu)
+            showAddTabPopupMenu(view = it, menuRes = R.menu.new_tab_popup_menu)
             true
         }
 
@@ -407,14 +407,18 @@ class SearchFragment : Fragment() {
 
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
             when (it.apiState) {
-                ApiState.LOADING -> {
-                }
+                ApiState.LOADING -> Unit
                 ApiState.SUCCESS -> {
-                    val dynamicPromptMap = JSONObject(it.insight?.insight ?: "").toMap()
-                    // TODO send this to default prompt list in chat
+                    val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    val promptsJson = "{" + it.insight?.insight?.substringAfter("{")?.substringBefore("}")?.trim() + "}"
+                    searchViewModel.addPrompt(
+                        Prompt(
+                            website = getHostFrom(url = selectedWebpage?.getWebView()?.url),
+                            promptsJson = promptsJson
+                        )
+                    )
                 }
-                ApiState.ERROR -> {
-                }
+                ApiState.ERROR -> Unit
                 else -> Unit
             }
         }
@@ -582,13 +586,22 @@ class SearchFragment : Fragment() {
         binding.viewSearchSuggestionsScrim.isVisible = false
         binding.cardSearchSuggestions.isVisible = false
         searchViewModel.getTextInsight(
-            content = """
+            prompt = """
             Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
             prepare a json string with the keyword you found as the key and a sensational question prompt 
             about the keyword as the value. Add an appropriate emoji before the key. 
             Do not explain anything. Just give me the json string as your answer.
         """.trimIndentsAndNewLines(),
             saveToDb = false
+        )
+        searchViewModel.getTextInsight(
+            prompt = """Answer questions that are within the scope of this website 
+                ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} only. The scope can include topics and
+                 content related to this website. 
+            """.trimIndentsAndNewLines(),
+            role = ChatRole.SYSTEM.name.toLowCase(),
+            saveToDb = false,
+            sendResponse = false
         )
     }
 
@@ -749,7 +762,7 @@ class SearchFragment : Fragment() {
             )
         }
 
-        requireContext().showPopup(
+        requireContext().showPopupMenu(
             view = tabView,
             menuList = tabOptionsList
         ) { menuPosition: Int ->
@@ -887,14 +900,13 @@ class SearchFragment : Fragment() {
                     val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                     selectedWebpage?.loadUrl(url = "https://" + searchEngine.url.substringAfter("https://").substringBefore("/"))
-
                 }
                 QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
                     binding.showCloseAllTabsPopup()
                 }
                 QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
-                    selectedWebpage?.refreshWebpage()
+                    selectedWebpage?.getWebView()?.reload()
                 }
                 QuickActionTabMenu.GET_INSIGHT.ordinal -> {
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
@@ -925,7 +937,7 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun FragmentSearchBinding.showPopupMenu(
+    private fun FragmentSearchBinding.showAddTabPopupMenu(
         view: View,
         @MenuRes menuRes: Int
     ) {

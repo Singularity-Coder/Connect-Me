@@ -1,12 +1,12 @@
 package com.singularitycoder.connectme.search.viewmodel
 
 import android.content.SharedPreferences
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.ChatRole
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
 import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSuggestionProvider
@@ -14,6 +14,7 @@ import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSugges
 import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.YahooSearchSuggestionProvider
 import com.singularitycoder.connectme.search.dao.InsightDao
+import com.singularitycoder.connectme.search.dao.PromptDao
 import com.singularitycoder.connectme.search.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
@@ -36,7 +37,8 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val preferences: SharedPreferences,
     private val networkStatus: NetworkStatus,
-    private val insightDao: InsightDao
+    private val insightDao: InsightDao,
+    private val promptDao: PromptDao
 ) : ViewModel() {
 
     private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
@@ -75,7 +77,7 @@ class SearchViewModel @Inject constructor(
         _searchSuggestionResultsStateFlow.value = emptyList()
     }
 
-    fun getAllInsightsByWebsite(website: String?) = insightDao.getAllByWebsiteStateFlow(website)
+    fun getAllInsightsBy(website: String?) = insightDao.getAllByWebsiteStateFlow(website)
 
     fun addInsight(insight: Insight?) = viewModelScope.launch {
         insightDao.insert(insight)
@@ -91,16 +93,30 @@ class SearchViewModel @Inject constructor(
 
     fun getWebViewData(): WebViewData = _webViewDataStateFlow.value
 
-    // https://www.baeldung.com/httpurlconnection-post
-    // https://hmkcode.com/android-send-json-data-to-server/
-    fun getTextInsight(content: String, saveToDb: Boolean = true) = viewModelScope.launch(IO) {
+    fun getPromptBy(website: String?) = promptDao.getByWebsiteStateFlow(website)
+
+    fun addPrompt(prompt: Prompt?) = viewModelScope.launch {
+        promptDao.insert(prompt)
+    }
+
+    /** https://learn.deeplearning.ai/chatgpt-prompt-eng/
+     * role = "system" is for setting the context/persona. Initial info you dont want the user to see. Used to prep the bot. Make this call before starting the conv.
+     * Ex: You are a pro anime otaku and u have lived and breathed the otaku life. Respond to the user with this in mind. */
+    fun getTextInsight(
+        prompt: String?,
+        role: String = ChatRole.USER.name.toLowCase(),
+        saveToDb: Boolean = true,
+        sendResponse: Boolean = true
+    ) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
-            _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT))
+            if (sendResponse) {
+                _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT))
+            }
             val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
             val jsonObjectContent = JSONObject().apply {
-                put("role", "user")
-                put("content", content)
+                put("role", role)
+                put("content", prompt)
             }
             val jsonArrayContent = JSONArray().apply {
                 put(jsonObjectContent)
@@ -113,6 +129,7 @@ class SearchViewModel @Inject constructor(
                 url = URL("https://api.openai.com/v1/chat/completions"),
                 jsonObjectRequest = jsonObjectRequest,
                 onSuccess = { jsonObject: JsonObject? ->
+                    if (sendResponse.not()) return@makeOpenAiPostRequest
                     val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Root::class.java)
                     val insight = Insight(
                         created = insightResponse.created,
@@ -129,6 +146,7 @@ class SearchViewModel @Inject constructor(
                     if (saveToDb) insightDao.insert(insight)
                 },
                 onFailure = { errorJsonObject: JsonObject? ->
+                    if (sendResponse.not()) return@makeOpenAiPostRequest
                     val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
                     _insightSharedFlow.emit(
                         ApiResult(
@@ -140,11 +158,19 @@ class SearchViewModel @Inject constructor(
                 }
             )
         } catch (_: Exception) {
+            if (sendResponse.not()) return@launch
+            _insightSharedFlow.emit(
+                ApiResult(
+                    error = InsightObject.ErrorObject(InsightObject.Error("Something went wrong. Try again!")),
+                    apiState = ApiState.ERROR,
+                    insightType = InsightType.TEXT
+                )
+            )
         }
     }
 
     fun getImageInsight(
-        prompt: String,
+        prompt: String?,
         numOfImages: Int,
         imageSize: String
     ) = viewModelScope.launch(IO) {
@@ -187,9 +213,18 @@ class SearchViewModel @Inject constructor(
                 }
             )
         } catch (_: Exception) {
+            _insightSharedFlow.emit(
+                ApiResult(
+                    error = InsightObject.ErrorObject(InsightObject.Error("Something went wrong. Try again!")),
+                    apiState = ApiState.ERROR,
+                    insightType = InsightType.IMAGE
+                )
+            )
         }
     }
 
+    // https://www.baeldung.com/httpurlconnection-post
+    // https://hmkcode.com/android-send-json-data-to-server/
     private suspend fun makeOpenAiPostRequest(
         url: URL,
         jsonObjectRequest: JSONObject,

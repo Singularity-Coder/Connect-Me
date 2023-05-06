@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
 import com.singularitycoder.connectme.search.dao.InsightDao
+import com.singularitycoder.connectme.search.dao.PromptDao
 import com.singularitycoder.connectme.search.dao.WebAppDao
 import dagger.Module
 import dagger.Provides
@@ -30,4 +31,8 @@ object DbModule {
     @Singleton
     @Provides
     fun injectInsightDao(db: ConnectMeDatabase): InsightDao = db.insightDao()
+
+    @Singleton
+    @Provides
+    fun injectPromptDao(db: ConnectMeDatabase): PromptDao = db.promptDao()
 }

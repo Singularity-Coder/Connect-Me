@@ -164,7 +164,7 @@
                                 app:layout_constraintTop_toTopOf="@+id/iv_picture">
 
                                 <TextView
-                                    android:id="@+id/tv_title"
+                                    android:id="@+id/tv_site_security_placeholder"
                                     style="@style/TextAppearance.Material3.BodyMedium"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -176,7 +176,7 @@
                                     android:textStyle="bold" />
 
                                 <TextView
-                                    android:id="@+id/tv_subtitle"
+                                    android:id="@+id/tv_site_security"
                                     style="@style/TextAppearance.Material3.BodyMedium"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -211,27 +211,15 @@
                                 android:layout_marginBottom="16dp"
                                 android:background="@drawable/shape_rounded_layout"
                                 android:orientation="vertical"
-                                android:padding="16dp"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:paddingBottom="16dp"
                                 android:visibility="gone"
                                 app:layout_constraintTop_toBottomOf="@+id/iv_picture">
 
-                                <!-- Domain Name -->
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="Domain"
-                                    android:textColor="@color/title_color"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/tv_domain"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="Domain"
-                                    android:textColor="@color/title_color" />
-
                                 <!-- Issued To -->
                                 <TextView
+                                    android:id="@+id/tv_issued_to_placeholder"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="16dp"
@@ -265,6 +253,7 @@
 
                                 <!-- Issued By -->
                                 <TextView
+                                    android:id="@+id/tv_issued_by_placeholder"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="16dp"
@@ -298,6 +287,7 @@
 
                                 <!-- Period of Validity -->
                                 <TextView
+                                    android:id="@+id/tv_validity_period_placeholder"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="16dp"

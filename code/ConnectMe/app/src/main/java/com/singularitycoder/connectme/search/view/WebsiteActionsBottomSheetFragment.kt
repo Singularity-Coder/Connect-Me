@@ -61,12 +61,11 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
                 ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
             ) as? SearchTabFragment
-            val domainString = getHostFrom(selectedWebpage?.getWebView()?.url)
             val sslCertificate = selectedWebpage?.getWebView()?.certificate
             ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
             tvSiteName.text = getHostFrom(selectedWebpage?.getWebView()?.url)
             tvLink.text = selectedWebpage?.getWebView()?.title
-            binding.setupWebsiteSecurity(domainString, sslCertificate)
+            binding.setupWebsiteSecurity(sslCertificate)
         } catch (_: Exception) {
         }
         itemHistory.apply {
@@ -155,21 +154,38 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(
-        domainString: String?,
-        sslCertificate: SslCertificate?
-    ) {
-        val startDate = sslCertificate?.validNotBeforeDate
-        val endDate = sslCertificate?.validNotAfterDate
-        tvDomain.text = domainString
-        tvIssuedToCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate?.issuedTo?.cName}"
-        tvIssuedToO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate?.issuedTo?.oName}"
-        tvIssuedToUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate?.issuedTo?.uName}"
-        tvIssuedByCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate?.issuedBy?.cName}"
-        tvIssuedByO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate?.issuedBy?.oName}"
-        tvIssuedByUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate?.issuedBy?.uName}"
-        tvIssuedOn.text = "${getString(R.string.ssl_cert_dialog_issued_on)}: ${DateFormat.getDateTimeInstance().format(startDate)}"
-        tvExpiresOn.text = "${getString(R.string.ssl_cert_dialog_expires_on)}: ${DateFormat.getDateTimeInstance().format(endDate)}"
+    @SuppressLint("SetTextI18n")
+    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(sslCertificate: SslCertificate?) {
+        if (sslCertificate == null) {
+            tvSiteSecurity.text = "Connection is insecure"
+            tvSiteSecurity.setTextColor(requireContext().color(R.color.md_red_500))
+            return
+        }
+
+        tvSiteSecurity.text = "Connection is secure"
+        tvSiteSecurity.setTextColor(requireContext().color(R.color.md_green_500))
+
+        tvIssuedToCn.isVisible = sslCertificate.issuedTo?.cName.isNullOrBlank().not()
+        tvIssuedToO.isVisible = sslCertificate.issuedTo?.oName.isNullOrBlank().not()
+        tvIssuedToUn.isVisible = sslCertificate.issuedTo?.uName.isNullOrBlank().not()
+        tvIssuedByCn.isVisible = sslCertificate.issuedBy?.cName.isNullOrBlank().not()
+        tvIssuedByO.isVisible = sslCertificate.issuedBy?.oName.isNullOrBlank().not()
+        tvIssuedByUn.isVisible = sslCertificate.issuedBy?.uName.isNullOrBlank().not()
+        tvIssuedOn.isVisible = sslCertificate.validNotBeforeDate != null
+        tvExpiresOn.isVisible = sslCertificate.validNotAfterDate != null
+
+        tvIssuedToPlaceholder.isVisible = tvIssuedToCn.isVisible || tvIssuedToO.isVisible || tvIssuedToUn.isVisible
+        tvIssuedByPlaceholder.isVisible = tvIssuedByCn.isVisible || tvIssuedByO.isVisible || tvIssuedByUn.isVisible
+        tvValidityPeriodPlaceholder.isVisible = tvIssuedOn.isVisible || tvExpiresOn.isVisible
+
+        tvIssuedToCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate.issuedTo?.cName}"
+        tvIssuedToO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate.issuedTo?.oName}"
+        tvIssuedToUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate.issuedTo?.uName}"
+        tvIssuedByCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate.issuedBy?.cName}"
+        tvIssuedByO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate.issuedBy?.oName}"
+        tvIssuedByUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate.issuedBy?.uName}"
+        tvIssuedOn.text = "${getString(R.string.ssl_cert_dialog_issued_on)}: ${DateFormat.getDateTimeInstance().format(sslCertificate.validNotBeforeDate)}"
+        tvExpiresOn.text = "${getString(R.string.ssl_cert_dialog_expires_on)}: ${DateFormat.getDateTimeInstance().format(sslCertificate.validNotAfterDate)}"
     }
 
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUserActionListeners() {
@@ -287,7 +303,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             ivSiteIcon.setImageBitmap(it.favIcon)
             tvSiteName.text = getHostFrom(it.url)
             tvLink.text = it.title
-            binding.setupWebsiteSecurity(domainString = getHostFrom(it.url), sslCertificate = it.certificate)
+            binding.setupWebsiteSecurity(sslCertificate = it.certificate)
         }
     }
 

@@ -19,7 +19,6 @@ interface InsightDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(insight: Insight?)
 
-
     @Transaction
     @Query("SELECT * FROM ${Table.INSIGHT} WHERE website LIKE :website LIMIT 1")
     suspend fun getInsightByWebsite(website: String): Insight?

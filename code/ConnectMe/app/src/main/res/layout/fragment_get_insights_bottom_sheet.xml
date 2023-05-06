@@ -110,160 +110,16 @@
         android:paddingTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!--        <androidx.core.widget.NestedScrollView-->
-        <!--            android:id="@+id/scroll_view_default_prompts"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="0dp"-->
-        <!--            app:layout_constraintTop_toTopOf="parent">-->
-
-        <!--            <androidx.appcompat.widget.LinearLayoutCompat-->
-        <!--                android:layout_width="match_parent"-->
-        <!--                android:layout_height="match_parent"-->
-        <!--                android:orientation="vertical">-->
-
-        <!--                <View-->
-        <!--                    android:layout_width="match_parent"-->
-        <!--                    android:layout_height="8dp" />-->
-
-        <!--                <androidx.recyclerview.widget.RecyclerView-->
-        <!--                    android:id="@+id/rv_default_prompts"-->
-        <!--                    android:layout_width="match_parent"-->
-        <!--                    android:layout_height="match_parent"-->
-        <!--                    android:nestedScrollingEnabled="true"-->
-        <!--                    android:scrollbars="none"-->
-        <!--                    tools:listitem="@layout/list_item_icon_text_round" />-->
-
-        <!--                <View-->
-        <!--                    android:layout_width="match_parent"-->
-        <!--                    android:layout_height="16dp" />-->
-        <!--            </androidx.appcompat.widget.LinearLayoutCompat>-->
-        <!--        </androidx.core.widget.NestedScrollView>-->
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/ll_default_requests"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_default_prompts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:orientation="vertical"
+            android:nestedScrollingEnabled="true"
+            android:paddingBottom="16dp"
+            android:scrollbars="none"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/card_ask_anything">
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_set_4"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <include
-                    android:id="@+id/layout_item_7"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <include
-                    android:id="@+id/layout_item_8"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:visibility="visible" />
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_set_3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <include
-                    android:id="@+id/layout_item_5"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <include
-                    android:id="@+id/layout_item_6"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:visibility="visible" />
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_set_2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <include
-                    android:id="@+id/layout_item_3"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <include
-                    android:id="@+id/layout_item_4"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:visibility="visible" />
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_set_1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <include
-                    android:id="@+id/layout_item_1"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <include
-                    android:id="@+id/layout_item_2"
-                    layout="@layout/list_item_icon_text_round"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:visibility="visible" />
-            </androidx.appcompat.widget.LinearLayoutCompat>
-        </androidx.appcompat.widget.LinearLayoutCompat>
+            app:layout_constraintBottom_toTopOf="@+id/card_ask_anything"
+            tools:listitem="@layout/list_item_3_texts_round" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/ll_image_generation_options"

@@ -86,7 +86,7 @@ class UserProfileFragment : Fragment() {
 
         btnMenu.onSafeClick {
             val optionsList = listOf("Close")
-            requireContext().showPopup(
+            requireContext().showPopupMenu(
                 view = it.first,
                 menuList = optionsList
             ) { menuPosition: Int ->

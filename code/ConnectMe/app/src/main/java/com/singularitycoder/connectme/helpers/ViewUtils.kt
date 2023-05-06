@@ -221,7 +221,7 @@ fun Context.showAlertDialog(
     }
 }
 
-fun Context.showPopup(
+fun Context.showPopupMenu(
     view: View?,
     menuList: List<String>,
     onItemClick: (position: Int) -> Unit

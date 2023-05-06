@@ -70,8 +70,21 @@ val dummyFaceUrls2 = listOf(
 
 val openAiModelsList = listOf("gpt-4", "gpt-3.5-turbo")
 
-enum class ChatPeople {
-    USER, AI
+val localTextPromptsMap = mapOf(
+    "🐟 Is website fishy?" to "",  // Trustworthy or not. Check terms/privacy policy to see if they are trying to exploit u, right to repair exists, etc.
+    "🟰 Similar sites" to "",
+    "🙅‍ Past misdeeds" to "", // Check if this website or company is involved in shady stuff
+    "😑 Check mood" to "", // U dont want to spoil ur day by reading bad stuff
+    "📒 Summarize" to "",
+    "❌ Find Errors" to "", // Find mistakes, Logical fallacies, Biases, etc
+    "⚡️ Simplify" to "",
+    "🌓 Give analogy" to "",
+    "📅 Created date" to "",
+    "🤖 Is AI content?" to "",
+)
+
+enum class ChatRole {
+    USER, ASSISTANT, SYSTEM
 }
 
 object IntentKey {
@@ -85,6 +98,7 @@ object Db {
 object Table {
     const val WEB_APP = "table_web_app"
     const val INSIGHT = "table_insight"
+    const val PROMPT = "table_prompt"
 }
 
 object BroadcastKey {

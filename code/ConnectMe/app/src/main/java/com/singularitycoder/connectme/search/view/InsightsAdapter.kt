@@ -1,26 +1,33 @@
 package com.singularitycoder.connectme.search.view
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.AnimationDrawable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemInsightBinding
-import com.singularitycoder.connectme.helpers.constants.ChatPeople
+import com.singularitycoder.connectme.helpers.color
+import com.singularitycoder.connectme.helpers.constants.ChatRole
 import com.singularitycoder.connectme.helpers.deviceWidth
 import com.singularitycoder.connectme.helpers.dpToPx
 import com.singularitycoder.connectme.helpers.onSafeClick
 import com.singularitycoder.connectme.search.model.Insight
-import kotlin.math.ceil
 
 class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var insightsList = mutableListOf<Insight?>()
-    private var itemClickListener: (insight: Insight?) -> Unit = {}
+
+    private var itemClickListener: (insight: Insight?, position: Int) -> Unit = { _, _ ->}
     private var itemLongClickListener: (insight: Insight?, view: View?, position: Int) -> Unit = { _, _, _ -> }
     private var fullScreenClickListener: (insight: Insight?, currentImagePosition: Int) -> Unit = { _, _ -> }
     private var animationDrawable: AnimationDrawable? = null
@@ -39,7 +46,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setOnItemClickListener(listener: (insight: Insight?) -> Unit) {
+    fun setOnItemClickListener(listener: (insight: Insight?, position: Int) -> Unit) {
         itemClickListener = listener
     }
 
@@ -51,12 +58,51 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fullScreenClickListener = listener
     }
 
+    // https://c1ctech.com/android-highlight-a-word-in-texttospeech/
+    // https://medium.com/androiddevelopers/spantastic-text-styling-with-spans-17b0c16b4568
+    fun setTtsTextHighlighting(
+        utteranceId: String?,
+        start: Int,
+        end: Int,
+        recyclerView: RecyclerView,
+        adapterPosition: Int,
+        insight: Insight?
+    ) {
+        val textWithHighlights: Spannable = SpannableString(utteranceId).apply {
+            setSpan(StyleSpan(Typeface.BOLD), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+            setSpan(BackgroundColorSpan(Color.YELLOW), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+//        setSpan(ForegroundColorSpan(Color.RED), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+//        setSpan(QuoteSpan(itemBinding.root.context.color(R.color.purple_500)), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+//        setSpan(RelativeSizeSpan(1.5f), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+        }
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(adapterPosition) as ThisViewHolder
+        if (insight?.userType == ChatRole.USER.ordinal) {
+            viewHolder.getView().tvTextRequest.text = textWithHighlights
+        } else {
+            viewHolder.getView().tvTextResponse.text = textWithHighlights
+        }
+    }
+
+    fun removeTextViewSpan(
+        recyclerView: RecyclerView,
+        adapterPosition: Int,
+        insight: Insight?
+    ) {
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(adapterPosition) as ThisViewHolder
+        if (insight?.userType == ChatRole.USER.ordinal) {
+            viewHolder.getView().tvTextRequest.text = insight.insight
+        } else {
+            viewHolder.getView().tvTextResponse.text = insight?.insight
+        }
+    }
+
     inner class ThisViewHolder(
         private val itemBinding: ListItemInsightBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
+        fun getView() = itemBinding
         fun setData(insight: Insight?) {
             itemBinding.apply {
-                if (insight?.userType == ChatPeople.USER.ordinal) {
+                if (insight?.userType == ChatRole.USER.ordinal) {
                     cardRequest.isVisible = true
                     cardResponse.isVisible = false
                     tvTextRequest.text = insight.insight
@@ -71,7 +117,10 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         cardResponse.setBackgroundResource(
                             if (insight.insight.contains(other = "thinking...", ignoreCase = true)) {
                                 R.drawable.animated_chat_gradient
-                            } else R.drawable.animated_chat_image_gradient
+                            } else {
+                                tvTextResponse.setTextColor(root.context.color(R.color.white))
+                                R.drawable.animated_chat_image_gradient
+                            }
                         )
                         animationDrawable = (cardResponse.background as? AnimationDrawable)?.apply {
                             setEnterFadeDuration(500)
@@ -111,13 +160,23 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         tvTextResponse.isVisible = true
                     }
                 }
-                cardResponse.setOnLongClickListener {
-                    itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
-                    false
+                cardResponse.apply {
+                    setOnLongClickListener {
+                        itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
+                        false
+                    }
+                    onSafeClick {
+                        itemClickListener.invoke(insight, bindingAdapterPosition)
+                    }
                 }
-                cardRequest.setOnLongClickListener {
-                    itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
-                    false
+                cardRequest.apply {
+                    setOnLongClickListener {
+                        itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
+                        false
+                    }
+                    onSafeClick {
+                        itemClickListener.invoke(insight, bindingAdapterPosition)
+                    }
                 }
             }
         }

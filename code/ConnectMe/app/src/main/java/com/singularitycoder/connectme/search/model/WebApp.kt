@@ -9,7 +9,7 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.WEB_APP)
 @Parcelize
 data class WebApp(
-    @PrimaryKey val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val imageUrl: String? = "",
     val title: String = "",
     val source: String? = "",
