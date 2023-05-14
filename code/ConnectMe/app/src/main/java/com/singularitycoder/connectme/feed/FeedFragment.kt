@@ -1,14 +1,22 @@
 package com.singularitycoder.connectme.feed
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
 import com.singularitycoder.connectme.helpers.constants.dummyImageUrls
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
@@ -46,41 +54,29 @@ class FeedFragment : Fragment() {
         observeForData()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentFeedBinding.setupUI() {
         rvFeed.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
-        feedAdapter.feedList = listOf(
-            Feed(
-                imageUrl = dummyImageUrls[1],
-                title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
-                source = "www.news.com",
-                time = "5 hours ago",
-                link = ""
-            ),
-            Feed(
-                imageUrl = dummyImageUrls[3],
-                title = "Two people stranded on an unknwon sea. People call it the scary Hahahah phenomenon.",
-                source = "www.google.com",
-                time = "4 hours ago",
-                link = ""
-            ),
-            Feed(
-                imageUrl = dummyImageUrls[0],
-                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
-                source = "www.newsplus.com",
-                time = "2 hours ago",
-                link = ""
-            ),
-            Feed(
-                imageUrl = dummyImageUrls[2],
-                title = "Two people stranded in an unknwon sea. People call it the scary Hahahah phenomenon.",
-                source = "www.google.com",
-                time = "9 hours ago",
-                link = ""
-            ),
-        )
+        lifecycleScope.launch(Default) {
+            (0..30).forEach { it: Int ->
+                feedList.add(
+                    Feed(
+                        imageUrl = dummyImageUrls[Random().nextInt(dummyImageUrls.size)],
+                        title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
+                        source = "www.news.com",
+                        time = "5 hours ago",
+                        link = ""
+                    )
+                )
+            }
+            withContext(Main) {
+                feedAdapter.feedList = feedList
+                feedAdapter.notifyDataSetChanged()
+            }
+        }
     }
 
     private fun FragmentFeedBinding.setupUserActionListeners() {

@@ -50,7 +50,6 @@ import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
 import com.singularitycoder.flowlauncher.helper.quickActionView.Action
 import com.singularitycoder.flowlauncher.helper.quickActionView.QuickActionView
 import dagger.hilt.android.AndroidEntryPoint
-import org.json.JSONObject
 import javax.inject.Inject
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
@@ -81,20 +80,9 @@ class SearchFragment : Fragment() {
     private var isWebsiteTitleSet: Boolean = false
 
     private val viewPager2PageChangeListener = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageScrollStateChanged(state: Int) {
-            super.onPageScrollStateChanged(state)
-            println("viewpager2: onPageScrollStateChanged")
-        }
-
-        override fun onPageSelected(position: Int) {
-            super.onPageSelected(position)
-            println("viewpager2: onPageSelected")
-        }
-
-        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-            super.onPageScrolled(position, positionOffset, positionOffsetPixels)
-            println("viewpager2: onPageScrolled")
-        }
+        override fun onPageScrollStateChanged(state: Int) = Unit
+        override fun onPageSelected(position: Int) = Unit
+        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) = Unit
     }
 
     private val tabSelectedListener = object : TabLayout.OnTabSelectedListener {
@@ -248,10 +236,6 @@ class SearchFragment : Fragment() {
             )
         }
 
-        ivSearchEngine.onSafeClick {
-            dummyView.performClick()
-        }
-
         viewSearchSuggestionsScrim.onSafeClick {
             cardSearchSuggestions.isVisible = false
             viewSearchSuggestionsScrim.isVisible = false
@@ -261,20 +245,27 @@ class SearchFragment : Fragment() {
             viewSearchSuggestionsScrim.isVisible = it
         }
 
-        dummyView.setOnClickListener {
-            val adapter = ArrayAdapter(
-                /* context = */ requireContext(),
-                /* resource = */ android.R.layout.simple_list_item_1,
-                /* objects = */ SearchEngine.values().map { it.value }
-            )
-            ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
-                anchorView = it
-                setAdapter(adapter)
-                setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-                    ivSearchEngine.setImageResource(SearchEngine.values()[position].icon)
-                    preferences.edit().putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.values()[position].name).apply()
+
+        ivSearchEngine.onSafeClick {
+            android.widget.PopupMenu(requireContext(), it.first).apply {
+                SearchEngine.values().forEach { it: SearchEngine ->
+                    menu.add(
+                        0, 1, 1, menuIconWithText(
+                            icon = requireContext().drawable(it.icon),
+                            title = it.value,
+                            iconWidth = 24.dpToPx().toInt(),
+                            iconHeight = 24.dpToPx().toInt(),
+                            defaultSpace = "      "
+                        )
+                    )
+                }
+                setOnMenuItemClickListener { it: MenuItem? ->
+                    view?.setHapticFeedback()
+                    ivSearchEngine.setImageResource(SearchEngine.getEngineBy(it?.title?.toString()).icon)
+                    preferences.edit().putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.getEngineBy(it?.title?.toString()).name).apply()
                     searchViewModel.getSearchSuggestions(searchQuery)
                     this.dismiss()
+                    false
                 }
                 show()
             }
@@ -406,8 +397,10 @@ class SearchFragment : Fragment() {
         }
 
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+            if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
+            if (it.screen != this@SearchFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
+
             when (it.apiState) {
-                ApiState.LOADING -> Unit
                 ApiState.SUCCESS -> {
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                     val promptsJson = "{" + it.insight?.insight?.substringAfter("{")?.substringBefore("}")?.trim() + "}"
@@ -418,9 +411,10 @@ class SearchFragment : Fragment() {
                         )
                     )
                 }
-                ApiState.ERROR -> Unit
                 else -> Unit
             }
+
+            searchViewModel.resetInsight()
         }
     }
 
@@ -580,20 +574,25 @@ class SearchFragment : Fragment() {
         } else NewTabType.NEW_TAB.value
         binding.tabLayoutTabs.getTabAt(binding.tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
             tabText?.substring(0, 10) + "..."
-        } else tabText
+        } else {
+            if ((tabText?.length ?: 0) < 5) "$tabText     " else tabText
+        }
         binding.etSearch.setSelection(binding.etSearch.selectionStart)
         binding.scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
         binding.viewSearchSuggestionsScrim.isVisible = false
         binding.cardSearchSuggestions.isVisible = false
-        searchViewModel.getTextInsight(
-            prompt = """
-            Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
-            prepare a json string with the keyword you found as the key and a sensational question prompt 
-            about the keyword as the value. Add an appropriate emoji before the key. 
-            Do not explain anything. Just give me the json string as your answer.
-        """.trimIndentsAndNewLines(),
-            saveToDb = false
-        )
+        searchViewModel.hasPromptList(website = getHostFrom(url = selectedWebpage?.getWebView()?.url)) {
+            searchViewModel.getTextInsight(
+                prompt = """
+                Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
+                prepare a json string with the keyword you found as the key and a sensational question prompt 
+                about the keyword as the value. Add an appropriate emoji before the key. 
+                Do not explain anything. Just give me the json string as your answer.
+            """.trimIndentsAndNewLines(),
+                saveToDb = false,
+                screen = this@SearchFragment.javaClass.simpleName
+            )
+        }
         searchViewModel.getTextInsight(
             prompt = """Answer questions that are within the scope of this website 
                 ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} only. The scope can include topics and
@@ -601,7 +600,8 @@ class SearchFragment : Fragment() {
             """.trimIndentsAndNewLines(),
             role = ChatRole.SYSTEM.name.toLowCase(),
             saveToDb = false,
-            sendResponse = false
+            sendResponse = false,
+            screen = this@SearchFragment.javaClass.simpleName
         )
     }
 
@@ -989,6 +989,10 @@ class SearchFragment : Fragment() {
     fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile
 
     fun getTabsTabLayout(): TabLayout = binding.tabLayoutTabs
+
+    fun setWebsiteProfileLayoutVisibility(isVisible: Boolean) {
+        binding.clWebsiteProfile.isVisible = isVisible
+    }
 
     fun setWebViewData() {
         val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment

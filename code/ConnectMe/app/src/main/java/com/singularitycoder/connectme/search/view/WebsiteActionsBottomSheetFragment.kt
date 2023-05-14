@@ -159,6 +159,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         if (sslCertificate == null) {
             tvSiteSecurity.text = "Connection is insecure"
             tvSiteSecurity.setTextColor(requireContext().color(R.color.md_red_500))
+            llSslCertificateDetails.isVisible = false
+            ivSiteSecurityArrow.isVisible = false
             return
         }
 
@@ -193,7 +195,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
         cardSiteSecurity.onSafeClick {
             llSslCertificateDetails.isVisible = llSslCertificateDetails.isVisible.not()
-            ivArrow.setImageDrawable(
+            ivSiteSecurityArrow.setImageDrawable(
                 requireContext().drawable(
                     if (llSslCertificateDetails.isVisible) {
                         R.drawable.round_keyboard_arrow_up_24

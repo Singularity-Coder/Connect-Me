@@ -1,15 +1,20 @@
 package com.singularitycoder.connectme.explore
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentExploreBinding
-import com.singularitycoder.connectme.helpers.constants.dummyImageUrls
 import com.singularitycoder.connectme.helpers.constants.typefaceList
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.random.Random
 
@@ -49,23 +54,29 @@ class ExploreFragment : Fragment() {
         observeForData()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentExploreBinding.setupUI() {
         rvFeed.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
-        repeat((0..30).count()) {
-            feedList.add(
-                Explore(
-                    title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
-                    source = "www.news.com",
-                    time = "5 hours ago",
-                    link = ""
+        lifecycleScope.launch(Default) {
+            repeat((0..30).count()) {
+                feedList.add(
+                    Explore(
+                        title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
+                        source = "www.news.com",
+                        time = "5 hours ago",
+                        link = ""
+                    )
                 )
-            )
+            }
+            withContext(Main) {
+                feedAdapter.setTypefacePosition(Random.nextInt(typefaceList.size))
+                feedAdapter.feedList = feedList
+                feedAdapter.notifyDataSetChanged()
+            }
         }
-        feedAdapter.setTypefacePosition(Random.nextInt(typefaceList.size))
-        feedAdapter.feedList = feedList
     }
 
     private fun FragmentExploreBinding.setupUserActionListeners() {

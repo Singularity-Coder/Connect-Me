@@ -1,16 +1,22 @@
 package com.singularitycoder.connectme.downloads
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
 import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
 import com.singularitycoder.connectme.helpers.onSafeClick
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
@@ -55,6 +61,7 @@ class DownloadsFragment : Fragment() {
         observeForData()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentDownloadsBinding.setupUI() {
         cardSearch.isVisible = isSelfProfile
         btnDeleteAllHistory.isVisible = isSelfProfile
@@ -62,18 +69,23 @@ class DownloadsFragment : Fragment() {
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = feedAdapter
         }
-        (0..30).forEach { it: Int ->
-            feedList.add(
-                Download(
-                    imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
-                    title = "Cringe Lord lords it over and gives it back to others $it",
-                    source = "Cringe Lord lords it over and gives it back to others $it",
-                    time = if (isSelfProfile) "58 Mb • 5 hr ago" else "58 Mb",
-                    link = "",
+        lifecycleScope.launch(Default) {
+            (0..30).forEach { it: Int ->
+                feedList.add(
+                    Download(
+                        imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
+                        title = "Cringe Lord lords it over and gives it back to others $it",
+                        source = "Cringe Lord lords it over and gives it back to others $it",
+                        time = if (isSelfProfile) "58 Mb • 5 hr ago" else "58 Mb",
+                        link = "",
+                    )
                 )
-            )
+            }
+            withContext(Main) {
+                feedAdapter.feedList = feedList
+                feedAdapter.notifyDataSetChanged()
+            }
         }
-        feedAdapter.feedList = feedList
     }
 
     private fun FragmentDownloadsBinding.setupUserActionListeners() {

@@ -13,10 +13,8 @@ import android.graphics.drawable.TransitionDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
+import android.text.*
+import android.text.style.BackgroundColorSpan
 import android.text.style.ImageSpan
 import android.text.style.MetricAffectingSpan
 import android.text.style.StyleSpan
@@ -264,11 +262,22 @@ fun Context.showListPopupMenu(
 
 // https://stackoverflow.com/questions/32969172/how-to-display-menu-item-with-icon-and-text-in-appcompatactivity
 // https://developer.android.com/develop/ui/views/text-and-emoji/spans
-fun menuIconWithText(icon: Drawable?, title: String): CharSequence {
-    icon?.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
+fun menuIconWithText(
+    icon: Drawable?,
+    title: String,
+    iconWidth: Int = -1,
+    iconHeight: Int = -1,
+    defaultSpace: String = "    "
+): CharSequence {
+    icon?.setBounds(
+        /* left = */ 0,
+        /* top = */ 0,
+        /* right = */ if (iconWidth == -1) icon.intrinsicWidth else iconWidth,
+        /* bottom = */ if (iconHeight == -1) icon.intrinsicHeight else iconHeight
+    )
     icon ?: return title
     val imageSpan = ImageSpan(icon, ImageSpan.ALIGN_BOTTOM)
-    return SpannableString("    $title").apply {
+    return SpannableString("$defaultSpace$title").apply {
         setSpan(
             /* what = */ imageSpan,
             /* startCharPos = */ 0,
@@ -416,21 +425,28 @@ fun View.isKeyboardHidden(): Boolean {
 }
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
-fun TextView?.highlightQueriedText(
+// https://c1ctech.com/android-highlight-a-word-in-texttospeech/
+// https://medium.com/androiddevelopers/spantastic-text-styling-with-spans-17b0c16b4568
+// setSpan(ForegroundColorSpan(Color.RED), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+// setSpan(QuoteSpan(itemBinding.root.context.color(R.color.purple_500)), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+// setSpan(RelativeSizeSpan(1.5f), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+fun TextView?.highlightText(
     query: String,
     result: String,
-    styleSpan: MetricAffectingSpan = StyleSpan(Typeface.BOLD)
+    spanList: List<ParcelableSpan> = listOf(StyleSpan(Typeface.BOLD), BackgroundColorSpan(Color.YELLOW))
 ): TextView? {
     if (query.isBlank() || result.isBlank()) return this
     val spannable = SpannableStringBuilder(result)
     var queryTextPos = result.toLowCase().indexOf(string = query)
     while (queryTextPos >= 0) {
-        spannable.setSpan(
-            /* what = */ styleSpan,
-            /* start = */ queryTextPos,
-            /* end = */ queryTextPos + query.length,
-            /* flags = */ Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
+        spanList.forEach { span: ParcelableSpan ->
+            spannable.setSpan(
+                /* what = */ span,
+                /* start = */ queryTextPos,
+                /* end = */ queryTextPos + query.length,
+                /* flags = */ Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
         queryTextPos = result.toLowCase().indexOf(string = query, startIndex = queryTextPos + query.length)
     }
     this?.text = spannable

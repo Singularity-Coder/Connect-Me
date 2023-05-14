@@ -3,6 +3,8 @@ package com.singularitycoder.connectme.helpers.constants
 import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.helpers.toLowCase
+import com.singularitycoder.connectme.helpers.trimIndentsAndNewLines
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.view.SearchFragment
 
@@ -70,17 +72,36 @@ val dummyFaceUrls2 = listOf(
 
 val openAiModelsList = listOf("gpt-4", "gpt-3.5-turbo")
 
+// Many of them dont work with GPT either because its not connected to internet or denies it. Need to find OS model.
+// https://consumeraffairs.nic.in/organisation-and-units/division/consumer-protection-unit/consumer-rights
+// Let's work this out in a step by step way to be sure we have the right answer
+// Let's think step by step
 val localTextPromptsMap = mapOf(
-    "🐟 Is website fishy?" to "",  // Trustworthy or not. Check terms/privacy policy to see if they are trying to exploit u, right to repair exists, etc.
-    "🟰 Similar sites" to "",
-    "🙅‍ Past misdeeds" to "", // Check if this website or company is involved in shady stuff
-    "😑 Check mood" to "", // U dont want to spoil ur day by reading bad stuff
-    "📒 Summarize" to "",
-    "❌ Find Errors" to "", // Find mistakes, Logical fallacies, Biases, etc
-    "⚡️ Simplify" to "",
-    "🌓 Give analogy" to "",
-    "📅 Created date" to "",
-    "🤖 Is AI content?" to "",
+    "🛡️ Safety report" to """
+        1. When was the website created?
+        2. Is the content of this website AI generated? If so which part?
+        3. Check the Terms Conditions and Privacy Policy of this website and check if this organisation is trying to exploit me or not. 
+        Do they adhere to all the consumer rights laid down by the government of my country like "right to repair", "responsibility to complain", etc. Do their policies harm me or favour me?
+        Also let me know if their policies can be used against me in any way. Are they truthful? Are they trustworthy?
+        4. Find negative news about this website or the company that owns it. Is it involved in shady stuff? Provide links to the news and sources.
+        Answer the questions in the same order.
+        5. Are there any mistakes in the content of this website? Mistakes can be spelling, grammatical, etc. Is it biased? Does it contain any logical fallacies?
+    """.trimIndent(),
+    "🐟 Is website fishy?" to """
+        Check the Terms Conditions and Privacy Policy of this website and check if this organisation is trying to exploit me or not. 
+        Do they adhere to all the consumer rights laid down by the government of my country like "right to repair", "responsibility to complain", etc. Do their policies harm me or favour me?
+        Also let me know if their policies can be used against me in any way. Are they truthful? Are they trustworthy?
+    """.trimIndentsAndNewLines(),
+    "🟰 Similar sites" to "Find websites similar to this one.",
+    "🙅‍ Past misdeeds" to "Find negative news about this website or the company that owns it. Is it involved in shady stuff? Provide links to the news and sources.",
+    "😑 Check mood" to "What is the tone and mood of this website?", // U dont want to spoil ur day by reading bad stuff
+    "📒 Summarize" to "Summarise the content of this website in 5 points with max 15 words per point.",
+    "❌ Find Errors" to "Are there any mistakes in the content of this website? Mistakes can be spelling, grammatical, etc. Is it biased? Does it contain any logical fallacies?",
+    "⚡️ Simplify" to "Explain simply the content of this website as if I am a 10 year old.",
+    "🌓 Give analogy" to "Can you give an analogy?",
+    "📅 Created date" to "When was the website created?",
+    "🤖 Is AI content?" to "Is the content of this website AI generated? If so which part?",
+    "🗣️ Translate to ..." to "",
 )
 
 enum class ChatRole {
@@ -180,5 +201,11 @@ enum class SearchEngine(
         value = "Yahoo",
         icon = R.drawable.yahoo,
         url = "https://search.yahoo.com/search?p={searchTerms}&fr=yfp-hrmob-s&fr2=p%3Afp%2Cm%3Asa&.tsrc=yfp-hrmob-s&fp=1&toggle=1&cop=mss&ei=UTF-8"
-    ),
+    );
+
+    companion object {
+        fun getEngineBy(name: String?): SearchEngine {
+            return values().firstOrNull { it.value.toLowCase().trim() == name?.toLowCase()?.trim() } ?: GOOGLE
+        }
+    }
 }

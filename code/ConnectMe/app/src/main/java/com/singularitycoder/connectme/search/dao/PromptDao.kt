@@ -24,7 +24,7 @@ interface PromptDao {
 
     @Transaction
     @Query("SELECT * FROM ${Table.PROMPT} WHERE website LIKE :website LIMIT 1")
-    suspend fun getInsightByWebsite(website: String): Prompt?
+    suspend fun getInsightByWebsite(website: String?): Prompt?
 
     @Query("SELECT * FROM ${Table.PROMPT}")
     fun getAllLiveData(): LiveData<List<Prompt?>>

@@ -25,9 +25,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.regex.Pattern
 import javax.inject.Inject
 
+// Lots of references from https://github.com/LineageOS/android_packages_apps_Jelly
+
 // private const val ARG_PARAM_TAB = "ARG_PARAM_TAB"
 
-// Lots of references from https://github.com/LineageOS/android_packages_apps_Jelly
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
 
@@ -35,6 +36,7 @@ class SearchTabFragment : Fragment() {
         private const val DESKTOP_DEVICE = "X11; Linux x86_64"
         private const val DESKTOP_USER_AGENT_FALLBACK = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
         private const val HEADER_DNT = "DNT"
+        private const val ERROR_PAGE_TITLE = "Something went wrong, try again or try something different!"
         private const val DEFAULT_ERROR_PAGE_PATH = "file:///android_res/raw/error_webpage.html"
 
         @JvmStatic
@@ -188,8 +190,8 @@ class SearchTabFragment : Fragment() {
     }
 
     private fun FragmentSearchTabBinding.setupWebView() {
-        webView.webChromeClient = setupWebChromeClient(searchFragment)
-        webView.webViewClient = setupWebViewClient(searchFragment)
+        webView.webChromeClient = setupWebChromeClient()
+        webView.webViewClient = setupWebViewClient()
         webView.addJavascriptInterface(
             /* object = */ SimpleWebJavascriptInterface(),
             /* name = */ "Android"
@@ -240,16 +242,18 @@ class SearchTabFragment : Fragment() {
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
     }
 
-    private fun setupWebChromeClient(searchFragment: SearchFragment?) = object : WebChromeClient() {
+    private fun setupWebChromeClient() = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView, progress: Int) {
             searchFragment?.setLinearProgress(progress)
             if (progress == 100) {
                 isWebpageLoadedAtLeastOnce = true
                 searchFragment?.doOnWebPageLoaded()
-
                 hideProgressHandler.removeCallbacks(hideProgressRunnable)
                 hideProgressRunnable = Runnable { searchFragment?.showLinearProgress(false) }
                 hideProgressHandler.postDelayed(hideProgressRunnable, 1.seconds())
+                if (view.title?.contains(other = ERROR_PAGE_TITLE, ignoreCase = true) == true) {
+                    searchFragment?.setWebsiteProfileLayoutVisibility(isVisible = false)
+                }
             }
         }
 
@@ -310,7 +314,7 @@ class SearchTabFragment : Fragment() {
         }
     }
 
-    private fun setupWebViewClient(searchFragment: SearchFragment?) = object : WebViewClient() {
+    private fun setupWebViewClient() = object : WebViewClient() {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             searchFragment?.showLinearProgress(true)
@@ -342,11 +346,12 @@ class SearchTabFragment : Fragment() {
                 SslError.SSL_INVALID -> "SSL connection is invalid."
                 else -> ""
             }
+            if (message.isBlank()) return
             requireContext().showAlertDialog(message = message, positiveBtnText = "Okay")
         }
 
         override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
-            if (/* request?.isForMainFrame == true && */error != null) {
+            if (request?.isForMainFrame == true && error != null) {
 //                view?.loadUrl(requireContext().resourceUri(R.raw.error_webpage).toString())
                 view?.loadUrl(DEFAULT_ERROR_PAGE_PATH)
             }

@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.SnapHelper
+import androidx.room.util.query
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -99,15 +100,6 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             snapHelper.attachToRecyclerView(this)
         }
 
-//        layoutItem7.tvText.text = "Is website fishy?" // Trustworthy or not. Check terms/privacy policy to see if they are trying to exploit u, right to repair exists, etc.
-//        layoutItem8.tvText.text = "Similar sites"
-//        layoutItem5.tvText.text = "Past misdeeds" // Check if this website or company is involved in shady stuff
-//        layoutItem6.tvText.text = "Check mood" // U dont want to spoil ur day by reading bad stuff
-//        layoutItem3.tvText.text = "Summarize"
-//        layoutItem4.tvText.text = "Find Errors" // Find mistakes, Logical fallacies, Biases, etc
-//        layoutItem1.tvText.text = "Simplify"
-//        layoutItem2.tvText.text = "Give analogy"
-
         ibChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
 
         etImageQuantity.editText?.setText("2")
@@ -133,16 +125,24 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         promptsAdapter.setOnItemClickListener { prompt: Pair<String, String> ->
             rvDefaultPrompts.isVisible = false
-            searchViewModel.getTextInsight(prompt = prompt.second)
-            val insight = Insight(
-                userType = ChatRole.USER.ordinal,
-                insight = prompt.first,
-                created = timeNow,
-                website = getHostFrom(searchViewModel.getWebViewData().url)
-            )
-            insightsAdapter.insightsList.add(insight)
-            searchViewModel.addInsight(insight)
-            insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
+            if (prompt.first.trim().contains(other = "Translate to ...", ignoreCase = true)) {
+                etAskAnything.setText("Translate content to ")
+                etAskAnything.showKeyboard()
+            } else {
+                searchViewModel.getTextInsight(
+                    prompt = prompt.second,
+                    screen = this@GetInsightsBottomSheetFragment.javaClass.simpleName
+                )
+                val insight = Insight(
+                    userType = ChatRole.USER.ordinal,
+                    insight = prompt.first,
+                    created = timeNow,
+                    website = getHostFrom(searchViewModel.getWebViewData().url)
+                )
+                insightsAdapter.insightsList.add(insight)
+                searchViewModel.addInsight(insight)
+                insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
+            }
         }
 
         ibDefaultRequests.onSafeClick {
@@ -165,7 +165,10 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 searchViewModel.addInsight(insight)
                 insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
                 if (isTextInsight) {
-                    searchViewModel.getTextInsight(prompt = etAskAnything.text.toString())
+                    searchViewModel.getTextInsight(
+                        prompt = etAskAnything.text.toString(),
+                        screen = this@GetInsightsBottomSheetFragment.javaClass.simpleName
+                    )
                 } else {
                     searchViewModel.getImageInsight(
                         prompt = etAskAnything.text.toString(),
@@ -269,11 +272,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                     view?.setHapticFeedback()
                     when (it?.title?.toString()?.trim()) {
                         menuOptions[0] -> {
-                            searchViewModel.getTextInsight(prompt = insight?.insight)
-                            insightsAdapter.insightsList.add(insight)
-                            searchViewModel.addInsight(insight)
-                            insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
-                            rvInsights.scrollToPosition(insightsAdapter.insightsList.lastIndex)
+                            etAskAnything.setText(insight?.insight)
+                            etAskAnything.setSelection(etAskAnything.text?.length ?: 0)
                         }
                         menuOptions[1] -> {
                             root.context.clipboard()?.text = insight?.insight
@@ -342,10 +342,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentGetInsightsBottomSheetBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+            if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
+            if (it.screen != this@GetInsightsBottomSheetFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
+
             fun removeLoadingItem() {
+                if (insightsAdapter.insightsList.isEmpty()) return
                 insightsAdapter.insightsList.removeAt(insightsAdapter.insightsList.lastIndex)
                 insightsAdapter.notifyItemRemoved(insightsAdapter.insightsList.size)
             }
+
             when (it.apiState) {
                 ApiState.LOADING -> {
                     insightsAdapter.insightsList.add(
@@ -362,13 +367,22 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 }
                 ApiState.ERROR -> {
                     removeLoadingItem()
-                    insightsAdapter.insightsList.add(Insight(insight = it.error?.error?.message))
+                    val errorMessage = if (it.error?.error?.message.isNullOrBlank()) {
+                        if (it.error?.error?.code?.contains("invalid_api_key", true) == true) {
+                            "Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys."
+                        } else {
+                            "Something went wrong. Try again!"
+                        }
+                    } else it.error?.error?.message
+                    insightsAdapter.insightsList.add(Insight(insight = errorMessage, imageList = dummyFaceUrls2))
                 }
                 else -> Unit
             }
+
             insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
-            scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
+//            scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
             rvInsights.scrollToPosition(insightsAdapter.insightsList.lastIndex)
+            searchViewModel.resetInsight()
         }
 
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(
@@ -456,7 +470,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
         textToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) = Unit
-            override fun onDone(utteranceId: String) = Unit
+            override fun onDone(utteranceId: String) {
+                requireActivity().runOnUiThread {
+                    insightsAdapter.removeTextViewSpan(
+                        recyclerView = binding.rvInsights,
+                        adapterPosition = insightOnClickPosition,
+                        insight = insightOnClick
+                    )
+                }
+            }
 
             @Deprecated("Deprecated in Java", ReplaceWith("Unit"))
             override fun onError(utteranceId: String) = Unit
@@ -464,9 +486,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
                 requireActivity().runOnUiThread {
                     insightsAdapter.setTtsTextHighlighting(
+                        query = utteranceId?.substring(start, end) ?: "",
                         utteranceId = utteranceId,
-                        start = start,
-                        end = end,
                         recyclerView = binding.rvInsights,
                         adapterPosition = insightOnClickPosition,
                         insight = insightOnClick

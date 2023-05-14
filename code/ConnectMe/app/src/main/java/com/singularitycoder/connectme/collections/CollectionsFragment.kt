@@ -1,15 +1,21 @@
 package com.singularitycoder.connectme.collections
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
 import com.singularitycoder.connectme.search.model.WebApp
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
@@ -48,28 +54,34 @@ class CollectionsFragment : Fragment() {
         observeForData()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentCollectionsBinding.setupUI() {
         rvFeed.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
-        (0..30).forEach { it: Int ->
-            feedList.add(
-                Collection(
-                    title = "Collection $it",
-                    websitesList = (0..4).map {
-                        WebApp(
-                            imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
-                            title = "The Random Publications",
-                            source = "Randomness is random.",
-                            time = "5 hours ago",
-                            link = "https://www.randompub.com",
-                        )
-                    }
+        lifecycleScope.launch(Default) {
+            (0..30).forEach { it: Int ->
+                feedList.add(
+                    Collection(
+                        title = "Collection $it",
+                        websitesList = (0..4).map {
+                            WebApp(
+                                imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
+                                title = "The Random Publications",
+                                source = "Randomness is random.",
+                                time = "5 hours ago",
+                                link = "https://www.randompub.com",
+                            )
+                        }
+                    )
                 )
-            )
+            }
+            withContext(Main) {
+                feedAdapter.feedList = feedList
+                feedAdapter.notifyDataSetChanged()
+            }
         }
-        feedAdapter.feedList = feedList
     }
 
     private fun FragmentCollectionsBinding.setupUserActionListeners() {

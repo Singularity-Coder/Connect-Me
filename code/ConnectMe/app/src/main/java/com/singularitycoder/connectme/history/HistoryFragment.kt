@@ -1,15 +1,20 @@
 package com.singularitycoder.connectme.history
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentHistoryBinding
 import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
 import com.singularitycoder.connectme.helpers.onSafeClick
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @AndroidEntryPoint
@@ -46,30 +51,36 @@ class HistoryFragment : Fragment() {
         observeForData()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentHistoryBinding.setupUI() {
         rvHistory.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = historyAdapter
         }
-        (0..30).forEach { it: Int ->
-            historyList.add(
-                History(
-                    imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
-                    title = "The Random Publications",
-                    source = "Randomness is random.",
-                    time = "5 hours ago",
-                    link = "https://www.randompub.com",
-                    posts = 17L + it
+        lifecycleScope.launch(Dispatchers.Default) {
+            (0..30).forEach { it: Int ->
+                historyList.add(
+                    History(
+                        imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
+                        title = "The Random Publications",
+                        source = "Randomness is random.",
+                        time = "5 hours ago",
+                        link = "https://www.randompub.com",
+                        posts = 17L + it
+                    )
                 )
-            )
+            }
+            withContext(Dispatchers.Main) {
+                historyAdapter.historyList = historyList
+                historyAdapter.notifyDataSetChanged()
+            }
         }
-        historyAdapter.historyList = historyList
     }
 
     private fun FragmentHistoryBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
-        btnDeleteAllHistory.onSafeClick {  }
+        btnDeleteAllHistory.onSafeClick { }
 
         historyAdapter.setOnClickListener { it: History ->
         }

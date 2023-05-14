@@ -1,14 +1,21 @@
 package com.singularitycoder.connectme.following
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
 import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @AndroidEntryPoint
@@ -45,24 +52,30 @@ class FollowingFragment : Fragment() {
         observeForData()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentFollowingBinding.setupUI() {
         rvFollowing.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = followingAdapter
         }
-        (0..30).forEach { it: Int ->
-            followingList.add(
-                Following(
-                    imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
-                    title = "The Random Publications",
-                    source = "random.com",
-                    time = "5 hours ago",
-                    link = "",
-                    posts = 17L + it
+        lifecycleScope.launch(Default) {
+            (0..30).forEach { it: Int ->
+                followingList.add(
+                    Following(
+                        imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
+                        title = "The Random Publications",
+                        source = "random.com",
+                        time = "5 hours ago",
+                        link = "",
+                        posts = 17L + it
+                    )
                 )
-            )
+            }
+            withContext(Main) {
+                followingAdapter.followingList = followingList
+                followingAdapter.notifyDataSetChanged()
+            }
         }
-        followingAdapter.followingList = followingList
     }
 
     private fun FragmentFollowingBinding.setupUserActionListeners() {

@@ -1,6 +1,8 @@
 package com.singularitycoder.connectme.helpers
 
 import android.annotation.SuppressLint
+import android.graphics.Typeface
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -48,7 +50,11 @@ class IconTextActionAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fun setData(iconTextAction: IconTextAction) {
             itemBinding.apply {
                 tvText.text = iconTextAction.title
-                tvText.highlightQueriedText(query = query, result = tvText.text.toString())
+                tvText.highlightText(
+                    query = query,
+                    result = tvText.text.toString(),
+                    spanList = listOf(StyleSpan(Typeface.BOLD))
+                )
                 ivIcon.setImageResource(iconTextAction.icon)
                 ivAction.setImageResource(iconTextAction.actionIcon)
                 ivAction.isVisible = true

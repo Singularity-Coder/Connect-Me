@@ -18,11 +18,13 @@ import com.singularitycoder.connectme.search.dao.PromptDao
 import com.singularitycoder.connectme.search.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.eclipse.jetty.http.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
@@ -48,7 +50,7 @@ class SearchViewModel @Inject constructor(
     val insightSharedFlow = _insightSharedFlow.asSharedFlow()
 
     private val _webViewDataStateFlow = MutableStateFlow<WebViewData>(WebViewData())
-    val webViewDataStateFlow = _webViewDataStateFlow.asSharedFlow()
+    val webViewDataStateFlow = _webViewDataStateFlow.asStateFlow()
 
     fun getSearchSuggestions(query: String) = viewModelScope.launch {
         if (query.isBlank()) {
@@ -99,6 +101,21 @@ class SearchViewModel @Inject constructor(
         promptDao.insert(prompt)
     }
 
+    fun resetInsight() = viewModelScope.launch(IO) {
+        _insightSharedFlow.emit(ApiResult(apiState = ApiState.NONE))
+    }
+
+    fun hasPromptList(
+        website: String?,
+        callback: () -> Unit
+    ) = viewModelScope.launch(IO) {
+        val hasPromptList = promptDao.getInsightByWebsite(website)?.promptsJson.isNullOrBlank().not()
+        withContext(Main) {
+            if (hasPromptList) return@withContext
+            callback.invoke()
+        }
+    }
+
     /** https://learn.deeplearning.ai/chatgpt-prompt-eng/
      * role = "system" is for setting the context/persona. Initial info you dont want the user to see. Used to prep the bot. Make this call before starting the conv.
      * Ex: You are a pro anime otaku and u have lived and breathed the otaku life. Respond to the user with this in mind. */
@@ -106,12 +123,13 @@ class SearchViewModel @Inject constructor(
         prompt: String?,
         role: String = ChatRole.USER.name.toLowCase(),
         saveToDb: Boolean = true,
-        sendResponse: Boolean = true
+        sendResponse: Boolean = true,
+        screen: String? = null
     ) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
             if (sendResponse) {
-                _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT))
+                _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT, screen = screen))
             }
             val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
             val jsonObjectContent = JSONObject().apply {
@@ -126,7 +144,7 @@ class SearchViewModel @Inject constructor(
                 put("messages", jsonArrayContent.toString())
             }
             makeOpenAiPostRequest(
-                url = URL("https://api.openai.com/v1/chat/completions"),
+                url = "https://api.openai.com/v1/chat/completions",
                 jsonObjectRequest = jsonObjectRequest,
                 onSuccess = { jsonObject: JsonObject? ->
                     if (sendResponse.not()) return@makeOpenAiPostRequest
@@ -140,7 +158,8 @@ class SearchViewModel @Inject constructor(
                         ApiResult(
                             insight = insight,
                             apiState = ApiState.SUCCESS,
-                            insightType = InsightType.TEXT
+                            insightType = InsightType.TEXT,
+                            screen = screen
                         )
                     )
                     if (saveToDb) insightDao.insert(insight)
@@ -152,7 +171,8 @@ class SearchViewModel @Inject constructor(
                         ApiResult(
                             error = errorObject,
                             apiState = ApiState.ERROR,
-                            insightType = InsightType.TEXT
+                            insightType = InsightType.TEXT,
+                            screen = screen
                         )
                     )
                 }
@@ -163,7 +183,8 @@ class SearchViewModel @Inject constructor(
                 ApiResult(
                     error = InsightObject.ErrorObject(InsightObject.Error("Something went wrong. Try again!")),
                     apiState = ApiState.ERROR,
-                    insightType = InsightType.TEXT
+                    insightType = InsightType.TEXT,
+                    screen = screen
                 )
             )
         }
@@ -172,18 +193,19 @@ class SearchViewModel @Inject constructor(
     fun getImageInsight(
         prompt: String?,
         numOfImages: Int,
-        imageSize: String
+        imageSize: String,
+        screen: String? = null
     ) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
-            _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.IMAGE))
+            _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.IMAGE, screen = screen))
             val jsonObjectRequest = JSONObject().apply {
                 put("prompt", prompt)
                 put("n", numOfImages)
                 put("size", imageSize)
             }
             makeOpenAiPostRequest(
-                url = URL("https://api.openai.com/v1/images/generations"),
+                url = "https://api.openai.com/v1/images/generations",
                 jsonObjectRequest = jsonObjectRequest,
                 onSuccess = { jsonObject: JsonObject? ->
                     val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, ImageInsightObject.Root::class.java)
@@ -196,7 +218,8 @@ class SearchViewModel @Inject constructor(
                         ApiResult(
                             insight = insight,
                             apiState = ApiState.SUCCESS,
-                            insightType = InsightType.IMAGE
+                            insightType = InsightType.IMAGE,
+                            screen = screen
                         )
                     )
                     insightDao.insert(insight)
@@ -207,7 +230,8 @@ class SearchViewModel @Inject constructor(
                         ApiResult(
                             error = errorObject,
                             apiState = ApiState.ERROR,
-                            insightType = InsightType.IMAGE
+                            insightType = InsightType.IMAGE,
+                            screen = screen
                         )
                     )
                 }
@@ -217,7 +241,8 @@ class SearchViewModel @Inject constructor(
                 ApiResult(
                     error = InsightObject.ErrorObject(InsightObject.Error("Something went wrong. Try again!")),
                     apiState = ApiState.ERROR,
-                    insightType = InsightType.IMAGE
+                    insightType = InsightType.IMAGE,
+                    screen = screen
                 )
             )
         }
@@ -226,7 +251,7 @@ class SearchViewModel @Inject constructor(
     // https://www.baeldung.com/httpurlconnection-post
     // https://hmkcode.com/android-send-json-data-to-server/
     private suspend fun makeOpenAiPostRequest(
-        url: URL,
+        url: String,
         jsonObjectRequest: JSONObject,
         onSuccess: suspend (jsonObject: JsonObject?) -> Unit,
         onFailure: suspend (errorJsonObject: JsonObject?) -> Unit
@@ -243,7 +268,7 @@ class SearchViewModel @Inject constructor(
         } catch (_: Exception) {
         }
 
-        val connection: HttpURLConnection = (url.openConnection() as HttpURLConnection).apply {
+        val connection: HttpURLConnection = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = HttpMethod.POST.name
             setRequestProperty("Content-Type", "application/json; utf-8")
             setRequestProperty("Accept", "application/json")
