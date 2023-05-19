@@ -464,7 +464,7 @@ class SearchFragment : Fragment() {
                         "Share" -> {
                             setTextColor(requireContext().color(R.color.purple_500))
                             chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.round_share_24)
+                            chipIcon = requireContext().drawable(R.drawable.outline_share_24)
                             chipIconSize = 16.dpToPx()
                             chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
                             iconStartPadding = 6.dpToPx()
@@ -817,7 +817,7 @@ class SearchFragment : Fragment() {
             createChildView(R.drawable.other_houses_black_24dp, QuickActionTabMenu.HOME.value, R.color.purple_50),
             createChildView(R.drawable.round_close_24, QuickActionTabMenu.CLOSE_ALL_TABS.value, R.color.purple_50),
             createChildView(R.drawable.round_refresh_24, QuickActionTabMenu.REFRESH_WEBSITE.value, R.color.purple_50),
-            createChildView(R.drawable.round_share_24, QuickActionTabMenu.GET_INSIGHT.value, R.color.purple_50),
+            createChildView(R.drawable.outline_share_24, QuickActionTabMenu.GET_INSIGHT.value, R.color.purple_50),
         )
         binding.pinterestView.setPinClickListener(object : PinterestView.PinMenuClickListener {
             override fun onMenuItemClick(checkedView: View?, clickItemPos: Int) {

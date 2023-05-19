@@ -262,7 +262,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                             icon = when (it.trim()) {
                                 menuOptions[0] -> requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
                                 menuOptions[1] -> requireContext().drawable(R.drawable.baseline_content_copy_24)?.changeColor(requireContext(), R.color.purple_500)
-                                menuOptions[2] -> requireContext().drawable(R.drawable.round_share_24)?.changeColor(requireContext(), R.color.purple_500)
+                                menuOptions[2] -> requireContext().drawable(R.drawable.outline_share_24)?.changeColor(requireContext(), R.color.purple_500)
                                 menuOptions[3] -> requireContext().drawable(R.drawable.outline_delete_24)?.changeColor(requireContext(), R.color.purple_500)
                                 else -> requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), android.R.color.transparent)
                             },

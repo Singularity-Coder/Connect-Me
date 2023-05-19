@@ -1,6 +1,5 @@
 TODAY
 If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts
-Fix prompt list exception
 If on backpress webview reached first page then show speed dial
 decryption
 Room lazy load

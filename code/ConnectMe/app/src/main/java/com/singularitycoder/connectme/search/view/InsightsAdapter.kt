@@ -91,30 +91,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fun getView() = itemBinding
         fun setData(insight: Insight?) {
             itemBinding.apply {
-                tvTextResponse.onSafeClick {
-                    cardResponse.performClick()
-                }
-                tvTextRequest.onSafeClick {
-                    cardRequest.performClick()
-                }
-                cardResponse.apply {
-                    setOnLongClickListener {
-                        itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
-                        false
-                    }
-                    onSafeClick {
-                        itemClickListener.invoke(insight, bindingAdapterPosition)
-                    }
-                }
-                cardRequest.apply {
-                    setOnLongClickListener {
-                        itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
-                        false
-                    }
-                    onSafeClick {
-                        itemClickListener.invoke(insight, bindingAdapterPosition)
-                    }
-                }
+                setupUserActionListeners(insight)
                 if (insight?.userType == ChatRole.USER.ordinal) {
                     cardRequest.isVisible = true
                     cardResponse.isVisible = false
@@ -188,6 +165,45 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         clChatImage.isVisible = false
                         tvTextResponse.isVisible = true
                     }
+                }
+            }
+        }
+
+        private fun ListItemInsightBinding.setupUserActionListeners(insight: Insight?) {
+            tvTextResponse.apply {
+                setOnLongClickListener {
+                    cardResponse.performLongClick()
+                    false
+                }
+                onSafeClick {
+                    cardResponse.performClick()
+                }
+            }
+            tvTextRequest.apply {
+                setOnLongClickListener {
+                    cardRequest.performLongClick()
+                    false
+                }
+                onSafeClick {
+                    cardRequest.performClick()
+                }
+            }
+            cardResponse.apply {
+                setOnLongClickListener {
+                    itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
+                    false
+                }
+                onSafeClick {
+                    itemClickListener.invoke(insight, bindingAdapterPosition)
+                }
+            }
+            cardRequest.apply {
+                setOnLongClickListener {
+                    itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
+                    false
+                }
+                onSafeClick {
+                    itemClickListener.invoke(insight, bindingAdapterPosition)
                 }
             }
         }
