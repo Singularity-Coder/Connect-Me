@@ -43,6 +43,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.lang.reflect.Method
 import java.util.*
 
@@ -151,8 +154,8 @@ fun Context.getVideoThumbnailBitmap(docUri: Uri): Bitmap? {
 // https://stackoverflow.com/questions/33222918/sharing-bitmap-via-android-intent
 fun Context.shareImageAndTextViaApps(
     uri: Uri,
-    title: String,
-    subtitle: String,
+    title: String = "",
+    subtitle: String = "",
     intentTitle: String? = null
 ) {
     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -351,4 +354,18 @@ fun Context.shareText(
         flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
     }, null)
     startActivity(share)
+}
+
+// https://stackoverflow.com/questions/8295773/how-can-i-transform-a-bitmap-into-a-uri
+fun Bitmap?.uri(): Uri {
+    val tempFile = File.createTempFile("temp_image", ".png")
+    val bytes = ByteArrayOutputStream()
+    this?.compress(Bitmap.CompressFormat.PNG, 100, bytes)
+    val bitmapData = bytes.toByteArray()
+    FileOutputStream(tempFile).apply {
+        write(bitmapData)
+        flush()
+        close()
+    }
+    return Uri.fromFile(tempFile)
 }

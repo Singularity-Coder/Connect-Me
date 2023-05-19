@@ -96,6 +96,7 @@ class MainFragment : Fragment() {
 
     private fun FragmentMainBinding.setupUI() {
         setUpViewPager()
+        requireActivity().setNavigationBarColor(R.color.white)
         refreshDateTime()
         ivProfileImage.setImageDrawable(requireContext().drawable(R.drawable.hithesh))
     }

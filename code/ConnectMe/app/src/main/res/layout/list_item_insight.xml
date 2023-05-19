@@ -84,14 +84,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
                 android:max="10"
-                android:maxWidth="16dp"
+                android:layout_marginEnd="-16dp"
                 android:maxHeight="16dp"
                 android:minWidth="16dp"
-                android:minHeight="10dp"
-                android:progress="9"
+                android:minHeight="8dp"
+                android:progress="10"
                 android:progressDrawable="@drawable/custom_media_track_drawable"
                 android:splitTrack="false"
-                android:thumb="@color/purple_500"
+                android:thumb="@null"
                 app:layout_constraintTop_toBottomOf="@+id/iv_chat_image" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

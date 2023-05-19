@@ -84,6 +84,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         setTransparentBackground()
 
+        requireActivity().setNavigationBarColor(R.color.white)
+
         setBottomSheetBehaviour()
 
         initTextToSpeech()
@@ -173,7 +175,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                     searchViewModel.getImageInsight(
                         prompt = etAskAnything.text.toString(),
                         numOfImages = etImageQuantity.editText?.text.toString().trim().toIntOrNull() ?: 2,
-                        imageSize = etImageSize.editText?.text.toString().trim()
+                        imageSize = etImageSize.editText?.text.toString().trim(),
+                        screen = this@GetInsightsBottomSheetFragment.javaClass.simpleName
                     )
                 }
                 etAskAnything.setText("")
@@ -374,7 +377,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                             "Something went wrong. Try again!"
                         }
                     } else it.error?.error?.message
-                    insightsAdapter.insightsList.add(Insight(insight = errorMessage, imageList = dummyFaceUrls2))
+                    insightsAdapter.insightsList.add(Insight(insight = errorMessage/*, imageList = dummyFaceUrls2*/))
                 }
                 else -> Unit
             }

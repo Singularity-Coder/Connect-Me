@@ -127,7 +127,7 @@ fun Context.isOldStorageReadPermissionGranted(): Boolean {
 }
 
 // https://stackoverflow.com/questions/15662258/how-to-save-a-bitmap-on-internal-storage
-fun Bitmap?.saveToInternalStorage(
+fun Bitmap?.saveToStorage(
     fileName: String,
     fileDir: String,
 ) {

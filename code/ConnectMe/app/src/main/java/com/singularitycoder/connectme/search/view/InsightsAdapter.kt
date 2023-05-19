@@ -143,6 +143,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     }
 
                     if (insight?.imageList.isNullOrEmpty().not()) {
+                        currentImagePosition = 0
                         clChatImage.isVisible = true
                         tvTextResponse.isVisible = false
                         ivChatImage.layoutParams.width = deviceWidth() - (deviceWidth() / 3) + 32.dpToPx().toInt()
@@ -152,7 +153,12 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         setImageDetails(insight)
                         sliderChatImage.isClickable = false
                         cardResponse.setOnClickListener {
-                            onCardResponseClicked(insight)
+                            if (currentImagePosition == insight?.imageList?.lastIndex) {
+                                currentImagePosition = 0
+                            } else {
+                                currentImagePosition++
+                            }
+                            setImageDetails(insight)
                         }
                         btnFullScreen.onSafeClick {
                             fullScreenClickListener.invoke(insight, currentImagePosition)
@@ -160,11 +166,11 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         sliderChatImage.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                                 println("seekbar progress: $progress")
+                                tvImageCount.text = "${progress + 1}/${insight?.imageList?.size}"
                                 ivChatImage.load(insight?.imageList?.getOrNull(progress)) {
                                     placeholder(R.color.black)
                                     error(R.color.md_red_dark)
                                 }
-                                tvImageCount.text = "${progress + 1}/${insight?.imageList?.size}"
                             }
 
                             override fun onStartTrackingTouch(seekBar: SeekBar) = Unit
@@ -178,15 +184,6 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     }
                 }
             }
-        }
-
-        private fun ListItemInsightBinding.onCardResponseClicked(insight: Insight?) {
-            if (currentImagePosition == insight?.imageList?.lastIndex) {
-                currentImagePosition = 0
-            } else {
-                currentImagePosition++
-            }
-            setImageDetails(insight)
         }
 
         private fun ListItemInsightBinding.setImageDetails(insight: Insight?) {

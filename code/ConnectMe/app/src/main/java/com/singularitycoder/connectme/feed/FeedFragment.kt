@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
+import com.singularitycoder.connectme.helpers.CodeExecutor
 import com.singularitycoder.connectme.helpers.constants.dummyImageUrls
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,14 @@ class FeedFragment : Fragment() {
         binding.setupUI()
         binding.setupUserActionListeners()
         observeForData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+//        CodeExecutor.executeCode(
+//            javaClassName = "EelloWoruludu",
+//            commandsList = listOf("System.out.println(\"Eeeelloololo Waraladuuuuuuuu\")")
+//        )
     }
 
     @SuppressLint("NotifyDataSetChanged")

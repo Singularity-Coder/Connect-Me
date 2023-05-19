@@ -57,4 +57,61 @@
             app:dividerColor="@color/black_50"
             app:layout_constraintTop_toBottomOf="@+id/tv_header" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_image_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:paddingTop="16dp"
+        android:paddingBottom="48dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close"
+            style="@style/Widget.App.Button.IconOnly"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/transparent_black_30"
+            app:icon="@drawable/round_close_24"
+            app:iconTint="@color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/card_search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/card_search"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_download"
+            style="@style/Widget.App.Button.IconOnly"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/transparent_black_30"
+            app:icon="@drawable/outline_file_download_24"
+            app:iconTint="@color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/card_search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/card_search"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_share"
+            style="@style/Widget.App.Button.IconOnly"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/transparent_black_30"
+            app:icon="@drawable/outline_share_24"
+            app:iconTint="@color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/card_search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/card_search"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.constraintlayout.widget.ConstraintLayout>

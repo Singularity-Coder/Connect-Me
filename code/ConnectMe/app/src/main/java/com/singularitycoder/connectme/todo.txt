@@ -1,9 +1,21 @@
 TODAY
-full screen chat image save pic, share pic, and dismiss sheet
-decryption
 If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts
 Fix prompt list exception
+If on backpress webview reached first page then show speed dial
+decryption
 Room lazy load
+Fill explore with GPT responses
+Voice chat in GPT
+full screen chat image save pic,
+
+Explore
+1. News and other useful/subscribed info summaries
+2. find fun info based on the topics at every hour/half hour
+3. Long click to get AI summary
+
+Remainders - help u keep learning abt ur fav hobby
+Look at my calendar prepare plans appropriately - make decisions appropriately - optional switch
+Notes - summarize imp stuff from explore here
 
 
 1. Create 2nd url search bar and split search suggestions
@@ -20,9 +32,6 @@ Room lazy load
 Avoid history logging in incognito
 Google translate webpages
 Store the favicon in the database in bytearray string
-
-Biometric auth to auto fill website passwords - Banana Browser
-Unlimited browsers/accounts - Pawxy
 
 
 default Text select menu options
@@ -96,7 +105,6 @@ Screenshot - Capture full page, capture visible area
 Recent tabs, Bookmarks, reading list, etc, etc will all be part of collections
 Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
-Voice chat in GPT
 
 
 Basic WebApp Collections
@@ -111,8 +119,6 @@ Basic WebApp Collections
 8. Do anything/everything: ChatGPT, Bing, Google
 
 
-Use queue to add urls navigating from the tab forward and backward
-
 
 RSS Reader
 https://code.google.com/archive/p/android-rss/source/default/source
@@ -121,16 +127,6 @@ https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-androi
 
 P2P Comm
 https://github.com/briar/briar
-
-
-
-
-requireActivity().window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
-        val transition: Transition = Explode().apply {
-            duration = 5000
-        }
-        requireActivity().window.enterTransition = transition
-        requireActivity().window.exitTransition = transition
 
 
 TODO LATER:
@@ -146,4 +142,6 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 ----default prompts for images - draw graphs n visualisations based on data of site
 ----execute code directly from gpt response. - https://stackoverflow.com/questions/15656530/is-it-possible-to-execute-a-java-code-string-at-runtime-in-android
 5. Since ChatGPT doesnt perform some queries, either use Bard APIs or try own custom model that runs on mobile and send the webpage text directly to it.
-
+6. Biometric auth to auto fill website passwords
+7. Unlimited browsers/accounts - Pawxy
+8. Mark as Ad - touch on the element to mark as an Ad - XBrowser

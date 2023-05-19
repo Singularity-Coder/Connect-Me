@@ -553,50 +553,50 @@ fun getDimenAttr(context: Context, @StyleRes style: Int, @AttrRes dimen: Int): F
 }
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
-fun Activity.setNavigationBarColor(@ColorRes color: Int) {
-    window.navigationBarColor = this.color(color)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (isColorLight(this.color(color))) {
-            window.insetsController?.setSystemBarsAppearance(
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-            )
-        } else {
-            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
-        }
-    } else {
-        var flags = window.decorView.systemUiVisibility
-        flags = if (isColorLight(this.color(color))) {
-            flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        } else {
-            flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-        }
-        window.decorView.systemUiVisibility = flags
-    }
-}
+//fun Activity.setNavigationBarColor(@ColorRes color: Int) {
+//    window.navigationBarColor = this.color(color)
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//        if (isColorLight(this.color(color))) {
+//            window.insetsController?.setSystemBarsAppearance(
+//                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+//                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+//            )
+//        } else {
+//            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
+//        }
+//    } else {
+//        var flags = window.decorView.systemUiVisibility
+//        flags = if (isColorLight(this.color(color))) {
+//            flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+//        } else {
+//            flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+//        }
+//        window.decorView.systemUiVisibility = flags
+//    }
+//}
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
-fun Activity.setStatusBarColor(@ColorRes color: Int) {
-    window.statusBarColor = this.color(color)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (isColorLight(this.color(color))) {
-            window.insetsController?.setSystemBarsAppearance(
-                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-            )
-        } else {
-            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
-        }
-    } else {
-        var flags = window.decorView.systemUiVisibility
-        flags = if (isColorLight(this.color(color))) {
-            flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        } else {
-            flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-        }
-        window.decorView.systemUiVisibility = flags
-    }
-}
+//fun Activity.setStatusBarColor(@ColorRes color: Int) {
+//    window.statusBarColor = this.color(color)
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//        if (isColorLight(this.color(color))) {
+//            window.insetsController?.setSystemBarsAppearance(
+//                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+//                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+//            )
+//        } else {
+//            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+//        }
+//    } else {
+//        var flags = window.decorView.systemUiVisibility
+//        flags = if (isColorLight(this.color(color))) {
+//            flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+//        } else {
+//            flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+//        }
+//        window.decorView.systemUiVisibility = flags
+//    }
+//}
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
 fun Activity.resetSystemUIColor(@ColorRes color: Int) {
@@ -744,6 +744,16 @@ fun Context.getDrawableIcon(@DrawableRes drawableResId: Int): Drawable? {
     val icon: Drawable? = VectorDrawableCompat.create(this.resources, drawableResId, null)
     DrawableCompat.setTint(Objects.requireNonNull<Drawable?>(icon), ContextCompat.getColor(this, R.color.purple_500))
     return icon
+}
+
+// https://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
+fun Activity.setStatusBarColor(@ColorRes color: Int) {
+    window.statusBarColor = ContextCompat.getColor(this, color)
+}
+
+// https://stackoverflow.com/questions/27839105/android-lollipop-change-navigation-bar-color
+fun Activity.setNavigationBarColor(@ColorRes color: Int) {
+    window.navigationBarColor = ContextCompat.getColor(this, color)
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

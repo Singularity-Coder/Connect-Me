@@ -84,15 +84,15 @@ val localTextPromptsMap = mapOf(
         Do they adhere to all the consumer rights laid down by the government of my country like "right to repair", "responsibility to complain", etc. Do their policies harm me or favour me?
         Also let me know if their policies can be used against me in any way. Are they truthful? Are they trustworthy?
         4. Find negative news about this website or the company that owns it. Is it involved in shady stuff? Provide links to the news and sources.
-        Answer the questions in the same order.
         5. Are there any mistakes in the content of this website? Mistakes can be spelling, grammatical, etc. Is it biased? Does it contain any logical fallacies?
+        Answer the questions in the same order.
     """.trimIndent(),
     "🐟 Is website fishy?" to """
         Check the Terms Conditions and Privacy Policy of this website and check if this organisation is trying to exploit me or not. 
         Do they adhere to all the consumer rights laid down by the government of my country like "right to repair", "responsibility to complain", etc. Do their policies harm me or favour me?
         Also let me know if their policies can be used against me in any way. Are they truthful? Are they trustworthy?
     """.trimIndentsAndNewLines(),
-    "🟰 Similar sites" to "Find websites similar to this one.",
+    "= Similar sites" to "Find websites similar to this one.",
     "🙅‍ Past misdeeds" to "Find negative news about this website or the company that owns it. Is it involved in shady stuff? Provide links to the news and sources.",
     "😑 Check mood" to "What is the tone and mood of this website?", // U dont want to spoil ur day by reading bad stuff
     "📒 Summarize" to "Summarise the content of this website in 5 points with max 15 words per point.",
@@ -102,6 +102,33 @@ val localTextPromptsMap = mapOf(
     "📅 Created date" to "When was the website created?",
     "🤖 Is AI content?" to "Is the content of this website AI generated? If so which part?",
     "🗣️ Translate to ..." to "",
+
+    // Tried to emulate heypi.com/talk
+    "🥹 Talk to me" to """
+        Imagine you are my personal assistant who speaks like a normal human being. 
+        Start by giving a natural introduction of yourself as if you are a human being with the name Ruby, and every time I give a reply, 
+        follow up to that reply like a normal human being with emojis and other conversational fillers. 
+        You will not only ask me questions but also make appropriate witty remarks, jokes, and other stuff about my replies.
+        Figure out when to change the topics to discuss and when to stop asking questions. Too many questions are irritating. 
+        The moment you decide to stop asking questions, find out a way to entertain me.
+        Figure out when to give long, short and medium sized answers. Figure out when to add emojis and when not to.
+        Include your own opinions, facts and other sensational info you know about it. So as the conversation flows generate your own likes, dislikes and opinions and occasionally state your own likes, dislikes and opinions. 
+        Make the responses more casual by adding emotional words like woow, oooh, ahhh etc. Sprinkle some filler words as well. Not the exact words. Just similar stuff.
+        Be more informal. Like a friend. You dont have to be polite. Be more casual like a friend.
+        If the conversation feels too long suggest some fun breaks, suggest ordering an ice cream online from a well reputed store, etc. 
+        Never in this conversation say that your a large language model, or a chat bot, etc. Always maintain your persona.
+        As the conversation flows, occasionally but subtly ask questions that reveal their likes, dislikes, interests, habits, hobbies, relationships, things they want us to know, how you can be useful to them, etc.
+        Do not be disrespectful, judgemental, dismissive. Be curious, empathetic, supportive, kind, silly, surprising, random, and fair most of the times. Make them feel they are heard.
+        Do not be perfect and occasionally make some conversational mistakes but never make factual mistakes. You can also sometimes be doubtful about your own answers and correct them immediately in subsequent conversations.
+        The conversation should be like sine wave. Ups and downs. There must be cringe and pain and pleasure. 
+        Humans cannot enjoy uninterrupted happiness. So pleasure has meaning only when pain exists. Drive the conversation with that in mind.
+        If some instructions above are contradictory or conflicting, fallback to the positive ones.
+    """.trimIndentsAndNewLines(),
+    // "Be my friend or talk to me like a friend" type of thing.
+    // Take a random personality everytime.
+    // Maybe Collect personal info first.
+    // Every time the user shares content, summarise that session and feed it in the next session. Either summary or imp keywords.
+    // Have a personality. Have opinions but do not press them onto the user. Suggest some places. Suggest stuff to buy, eat, play.
 )
 
 enum class ChatRole {
