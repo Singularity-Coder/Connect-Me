@@ -2,6 +2,7 @@ package com.singularitycoder.connectme.search.view
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.singularitycoder.connectme.databinding.ListItem3TextsRoundBinding
 import com.singularitycoder.connectme.helpers.deviceWidth
@@ -60,14 +61,20 @@ class PromptsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         root.setPadding(8.dpToPx().toInt(), 0, 0, 0)
                     }
                 }
+
+                cardText1.isVisible = promptPair.first.first.isBlank().not()
                 tvText1.text = promptPair.first.first
                 cardText1.onSafeClick {
                     itemClickListener.invoke(Pair(first = promptPair.first.first, second = promptPair.first.second))
                 }
+
+                cardText2.isVisible = promptPair.second.first.isBlank().not()
                 tvText2.text = promptPair.second.first
                 cardText2.onSafeClick {
                     itemClickListener.invoke(Pair(first = promptPair.second.first, second = promptPair.second.second))
                 }
+
+                cardText3.isVisible = promptPair.third.first.isBlank().not()
                 tvText3.text = promptPair.third.first
                 cardText3.onSafeClick {
                     itemClickListener.invoke(Pair(first = promptPair.third.first, second = promptPair.third.second))

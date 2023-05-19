@@ -91,6 +91,12 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fun getView() = itemBinding
         fun setData(insight: Insight?) {
             itemBinding.apply {
+                tvTextResponse.onSafeClick {
+                    cardResponse.performClick()
+                }
+                tvTextRequest.onSafeClick {
+                    cardRequest.performClick()
+                }
                 cardResponse.apply {
                     setOnLongClickListener {
                         itemLongClickListener.invoke(insight, it, bindingAdapterPosition)

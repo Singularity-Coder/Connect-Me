@@ -14,7 +14,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.SnapHelper
-import androidx.room.util.query
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -400,65 +399,69 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(
             flow = searchViewModel.getPromptBy(website = getHostFrom(searchViewModel.getWebViewData().url))
         ) { prompt: Prompt? ->
-            try {
-                // TODO fix this later
-                val dynamicPromptMap = JSONObject(prompt?.promptsJson ?: "").toMap()
-
-                val triplePromptKeysList = mutableListOf<Triple<String, String, String>>()
-
-                var itemAddedPosition = 0
-
-                val apiPromptKeysList = dynamicPromptMap.keys.toList()
-                val localPromptKeysList = localTextPromptsMap.keys.toList()
-
-                val apiQuotient = apiPromptKeysList.size / 3
-                val localQuotient = localPromptKeysList.size / 3
-
-                (0..apiQuotient).forEach {
-                    triplePromptKeysList.add(
-                        Triple(
-                            first = apiPromptKeysList.getOrNull(itemAddedPosition) ?: "",
-                            second = apiPromptKeysList.getOrNull(itemAddedPosition + 1) ?: "",
-                            third = apiPromptKeysList.getOrNull(itemAddedPosition + 2) ?: ""
-                        )
-                    )
-                    itemAddedPosition += 3
-                }
-
-                (0..localQuotient).forEach {
-                    triplePromptKeysList.add(
-                        Triple(
-                            first = apiPromptKeysList.getOrNull(itemAddedPosition) ?: "",
-                            second = apiPromptKeysList.getOrNull(itemAddedPosition + 1) ?: "",
-                            third = apiPromptKeysList.getOrNull(itemAddedPosition + 2) ?: ""
-                        )
-                    )
-                    itemAddedPosition += 3
-                }
-
-                triplePromptKeysList.forEach { key: Triple<String, String, String> ->
-                    promptsAdapter.promptList.add(
-                        Triple(
-                            Pair(first = key.first, second = dynamicPromptMap.get(key.first).toString()),
-                            Pair(first = key.second, second = dynamicPromptMap.get(key.second).toString()),
-                            Pair(first = key.third, second = dynamicPromptMap.get(key.third).toString())
-                        )
-                    )
-                }
-
-                promptsAdapter.notifyDataSetChanged()
+            val dynamicPromptMap = try {
+                JSONObject(prompt?.promptsJson ?: "").toMap()
             } catch (_: Exception) {
-                localTextPromptsMap.keys.forEach { key: String ->
-                    promptsAdapter.promptList.add(
+                emptyMap<String, String>()
+            }
+
+            val tripleDynamicPromptKeysList = mutableListOf<Triple<String, String, String>>()
+            val tripleLocalPromptKeysList = mutableListOf<Triple<String, String, String>>()
+
+            var dynamicItemAddedPosition = 0
+            var localItemAddedPosition = 0
+
+            val apiPromptKeysList = dynamicPromptMap.keys.toList()
+            val localPromptKeysList = localTextPromptsMap.keys.toList()
+
+            val apiQuotient = if (dynamicPromptMap.isEmpty().not()) apiPromptKeysList.size / 3 else 0
+            val localQuotient = localPromptKeysList.size / 3
+
+            if (dynamicPromptMap.isEmpty().not()) {
+                (0..apiQuotient).forEach {
+                    tripleDynamicPromptKeysList.add(
                         Triple(
-                            Pair(first = key, second = localTextPromptsMap.get(key).toString()),
-                            Pair(first = key, second = localTextPromptsMap.get(key).toString()),
-                            Pair(first = key, second = localTextPromptsMap.get(key).toString())
+                            first = apiPromptKeysList.getOrNull(dynamicItemAddedPosition) ?: "",
+                            second = apiPromptKeysList.getOrNull(dynamicItemAddedPosition + 1) ?: "",
+                            third = apiPromptKeysList.getOrNull(dynamicItemAddedPosition + 2) ?: ""
                         )
                     )
+                    dynamicItemAddedPosition += 3
                 }
-                promptsAdapter.notifyDataSetChanged()
             }
+
+            (0..localQuotient).forEach {
+                tripleLocalPromptKeysList.add(
+                    Triple(
+                        first = localPromptKeysList.getOrNull(localItemAddedPosition) ?: "",
+                        second = localPromptKeysList.getOrNull(localItemAddedPosition + 1) ?: "",
+                        third = localPromptKeysList.getOrNull(localItemAddedPosition + 2) ?: ""
+                    )
+                )
+                localItemAddedPosition += 3
+            }
+
+            tripleDynamicPromptKeysList.forEach { key: Triple<String, String, String> ->
+                promptsAdapter.promptList.add(
+                    Triple(
+                        Pair(first = key.first, second = dynamicPromptMap.get(key.first).toString()),
+                        Pair(first = key.second, second = dynamicPromptMap.get(key.second).toString()),
+                        Pair(first = key.third, second = dynamicPromptMap.get(key.third).toString())
+                    )
+                )
+            }
+
+            tripleLocalPromptKeysList.forEach { key: Triple<String, String, String> ->
+                promptsAdapter.promptList.add(
+                    Triple(
+                        Pair(first = key.first, second = localTextPromptsMap.get(key.first).toString()),
+                        Pair(first = key.second, second = localTextPromptsMap.get(key.second).toString()),
+                        Pair(first = key.third, second = localTextPromptsMap.get(key.third).toString())
+                    )
+                )
+            }
+
+            promptsAdapter.notifyDataSetChanged()
         }
     }
 
