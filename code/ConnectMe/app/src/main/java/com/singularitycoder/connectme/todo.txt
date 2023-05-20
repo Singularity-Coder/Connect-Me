@@ -1,10 +1,9 @@
 TODAY
-If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts
-If on backpress webview reached first page then show speed dial
+Voice chat in GPT - handle microphone blocking android 12
 decryption
 Room lazy load
+If on backpress webview reached first page then show speed dial
 Fill explore with GPT responses
-Voice chat in GPT
 full screen chat image save pic,
 
 Explore
@@ -144,3 +143,5 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 6. Biometric auth to auto fill website passwords
 7. Unlimited browsers/accounts - Pawxy
 8. Mark as Ad - touch on the element to mark as an Ad - XBrowser
+9. If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts - there are ways to fetch all activities and trigger appropriate onses but completing a task seems impossible for now.
+

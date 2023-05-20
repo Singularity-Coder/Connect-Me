@@ -49,6 +49,10 @@ import java.io.FileOutputStream
 import java.lang.reflect.Method
 import java.util.*
 
+fun Context.isRecordAudioPermissionGranted(): Boolean {
+    return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+}
+
 fun View.showSnackBar(
     message: String,
     anchorView: View? = null,

@@ -1,13 +1,21 @@
 package com.singularitycoder.connectme.search.view
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.text.Editable
 import android.view.*
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
@@ -41,8 +49,12 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     @Inject
     lateinit var preferences: SharedPreferences
 
+    @Inject
+    lateinit var networkStatus: NetworkStatus
+
     private lateinit var binding: FragmentGetInsightsBottomSheetBinding
     private lateinit var textToSpeech: TextToSpeech
+    private lateinit var animationDrawable: AnimationDrawable
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val insightsAdapter = InsightsAdapter()
@@ -51,6 +63,28 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private var isAllInsightsAdded: Boolean = false
     private var insightOnClickPosition: Int = 0
     private var insightOnClick: Insight? = null
+    private var speechRecognizer: SpeechRecognizer? = null
+
+    private val recordAudioPermissionResult = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isPermissionGranted: Boolean? ->
+        isPermissionGranted ?: return@registerForActivityResult
+
+        // Permission permanently denied
+        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.RECORD_AUDIO)) {
+            requireContext().showPermissionSettings()
+            return@registerForActivityResult
+        }
+
+        // This can be called twice. A user can deny the permission twice and then is directed to rationale
+        if (isPermissionGranted.not()) {
+            return@registerForActivityResult
+        }
+
+        if (requireContext().isRecordAudioPermissionGranted().not()) {
+            return@registerForActivityResult
+        }
+
+        startVoiceSearch()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentGetInsightsBottomSheetBinding.inflate(inflater, container, false)
@@ -89,6 +123,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         initTextToSpeech()
 
+        initVoiceSearch()
+
         rvInsights.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = insightsAdapter
@@ -101,7 +137,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             snapHelper.attachToRecyclerView(this)
         }
 
-        ibChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
+        ivChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
 
         etImageQuantity.editText?.setText("2")
         val imageQuantityAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, (1..10).map { it.toString() })
@@ -200,6 +236,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             if (it.isNullOrBlank().not()) {
                 rvDefaultPrompts.isVisible = false
             }
+            cardVoiceSearch.isVisible = it.isNullOrBlank()
             ibDefaultRequests.setImageDrawable(
                 if (it.isNullOrBlank()) {
                     requireContext().drawable(R.drawable.baseline_auto_fix_high_24)
@@ -248,7 +285,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             }
         }
 
-        ibChatMode.onSafeClick {
+        ivChatMode.onSafeClick {
             isTextInsight = isTextInsight.not()
             setChatMode()
         }
@@ -317,6 +354,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 startTextToSpeech(insight?.insight)
             }
         }
+
+        ivVoiceSearch.onSafeClick {
+            checkPermissionAndStartSpeechToText()
+        }
+
+        cardVoiceSearchLayout.onSafeClick {
+            stopVoiceSearch()
+        }
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setChatMode() {
@@ -328,15 +373,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setImageMode() {
-        ibChatMode.setImageResource(R.drawable.filter_vintage_black_24dp)
-        ibChatMode.setPadding(5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt())
+        ivChatMode.setImageResource(R.drawable.filter_vintage_black_24dp)
+        ivChatMode.setPadding(5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt())
         etAskAnything.hint = "Ask for a painting"
         llImageGenerationOptions.isVisible = true
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setTextMode() {
-        ibChatMode.setImageResource(R.drawable.title_black_24dp)
-        ibChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
+        ivChatMode.setImageResource(R.drawable.title_black_24dp)
+        ivChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
         etAskAnything.hint = "Ask about this website"
         llImageGenerationOptions.isVisible = false
     }
@@ -509,6 +554,79 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, params, textToSpeak)
             playSilentUtterance(1000, TextToSpeech.QUEUE_ADD, textToSpeak) // Stay silent for 1000 ms
         }
+    }
+
+    // https://gist.github.com/magdamiu/77389efb66ae9e693dcf1d5680fdf531
+    private fun setAnimatedGradientBackgroundForVoiceSearch() {
+        binding.cardVoiceSearchLayout.setBackgroundResource(R.drawable.animated_voice_search_gradient)
+        animationDrawable = binding.cardVoiceSearchLayout.background as AnimationDrawable
+        animationDrawable.setEnterFadeDuration(500)
+        animationDrawable.setExitFadeDuration(500)
+    }
+
+    private fun FragmentGetInsightsBottomSheetBinding.initVoiceSearch() {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(p0: Bundle?) {
+                tvSpokenText.hint = ""
+            }
+
+            override fun onBeginningOfSpeech() {
+                tvSpokenText.hint = "Listening..."
+            }
+
+            override fun onRmsChanged(p0: Float) = Unit
+            override fun onBufferReceived(p0: ByteArray?) = Unit
+            override fun onEndOfSpeech() = Unit
+
+            override fun onError(p0: Int) {
+                stopVoiceSearch()
+            }
+
+            override fun onResults(bundle: Bundle?) {
+                val data = bundle?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                tvSpokenText.text = data?.firstOrNull()
+                etAskAnything.setText(data?.firstOrNull() ?: "")
+                stopVoiceSearch()
+            }
+
+            override fun onPartialResults(bundle: Bundle?) {
+                val data = bundle?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                tvSpokenText.text = data?.firstOrNull()
+            }
+
+            override fun onEvent(p0: Int, p1: Bundle?) = Unit
+        })
+    }
+
+    private fun startVoiceSearch() {
+        if (networkStatus.isOnline().not()) {
+            requireContext().showToast("No Internet")
+            return
+        }
+        binding.llAskAnything.isVisible = false
+        binding.cardVoiceSearchLayout.isVisible = true
+        setAnimatedGradientBackgroundForVoiceSearch()
+        val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context?.packageName)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        }
+        if (animationDrawable.isRunning.not()) animationDrawable.start()
+        binding.tvSpokenText.text = "Speak now"
+        speechRecognizer?.startListening(speechRecognizerIntent)
+    }
+
+    private fun stopVoiceSearch() {
+        if (animationDrawable.isRunning) animationDrawable.stop()
+        binding.llAskAnything.isVisible = true
+        binding.cardVoiceSearchLayout.isVisible = false
+        speechRecognizer?.stopListening()
+    }
+
+    private fun checkPermissionAndStartSpeechToText() {
+        recordAudioPermissionResult.launch(Manifest.permission.RECORD_AUDIO)
     }
 
     private fun setBottomSheetBehaviour() {
