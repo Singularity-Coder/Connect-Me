@@ -1,10 +1,12 @@
 TODAY
-Voice chat in GPT - handle microphone blocking android 12
 decryption
 Room lazy load
 If on backpress webview reached first page then show speed dial
 Fill explore with GPT responses
+
 full screen chat image save pic,
+Voice chat in GPT - handle microphone blocking android 12
+
 
 Explore
 1. News and other useful/subscribed info summaries
@@ -144,4 +146,4 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 7. Unlimited browsers/accounts - Pawxy
 8. Mark as Ad - touch on the element to mark as an Ad - XBrowser
 9. If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts - there are ways to fetch all activities and trigger appropriate onses but completing a task seems impossible for now.
-
+10. If perfomed voice search then automatically read out the response. Since the result will always be the last item, u can get the position from adapter list last item

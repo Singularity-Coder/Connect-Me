@@ -103,6 +103,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             if (textToSpeech.isSpeaking) textToSpeech.stop()
             textToSpeech.shutdown()
         }
+        stopVoiceSearch()
         super.onDestroyView()
     }
 
@@ -360,7 +361,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         cardVoiceSearchLayout.onSafeClick {
-            stopVoiceSearch()
+            stop()
         }
     }
 
@@ -565,6 +566,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.initVoiceSearch() {
+        setAnimatedGradientBackgroundForVoiceSearch()
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
         speechRecognizer?.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(p0: Bundle?) {
@@ -580,14 +582,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             override fun onEndOfSpeech() = Unit
 
             override fun onError(p0: Int) {
-                stopVoiceSearch()
+                stop()
             }
 
             override fun onResults(bundle: Bundle?) {
                 val data = bundle?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 tvSpokenText.text = data?.firstOrNull()
                 etAskAnything.setText(data?.firstOrNull() ?: "")
-                stopVoiceSearch()
+                stop()
             }
 
             override fun onPartialResults(bundle: Bundle?) {
@@ -606,22 +608,25 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
         binding.llAskAnything.isVisible = false
         binding.cardVoiceSearchLayout.isVisible = true
-        setAnimatedGradientBackgroundForVoiceSearch()
+        if (animationDrawable.isRunning.not()) animationDrawable.start()
+        binding.tvSpokenText.text = "Speak now"
         val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context?.packageName)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
-        if (animationDrawable.isRunning.not()) animationDrawable.start()
-        binding.tvSpokenText.text = "Speak now"
         speechRecognizer?.startListening(speechRecognizerIntent)
     }
 
-    private fun stopVoiceSearch() {
+    private fun stop() {
         if (animationDrawable.isRunning) animationDrawable.stop()
         binding.llAskAnything.isVisible = true
         binding.cardVoiceSearchLayout.isVisible = false
+    }
+
+    private fun stopVoiceSearch() {
+        stop()
         speechRecognizer?.stopListening()
     }
 
