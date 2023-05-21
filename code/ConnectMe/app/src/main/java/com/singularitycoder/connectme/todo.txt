@@ -1,12 +1,26 @@
 TODAY
 decryption
+3. Set up default collections - bloatware webapps
+3. Add to history db
+History
+TODO need date strip
+TODO need delete all and some filters
+3. Add to following db
 Room lazy load
 If on backpress webview reached first page then show speed dial
 Fill explore with GPT responses
 
-full screen chat image save pic,
-Voice chat in GPT - handle microphone blocking android 12
 
+Basic WebApp Collections
+0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
+1. Writing: Google docs, sheets, Slides, Notion
+2. Notetaking: Keep, Notion
+3. Entertainment: Youtube, Netflix, Hotstar
+4. Mail: Gmail
+5. Directions: Maps,
+6. Tools: Drive, Dropbox, Google Calender
+7. Education: Youtube, Khan Acad, Course Era, MIT MOOC, Udacity
+8. Do anything/everything: ChatGPT, Bing, Google
 
 Explore
 1. News and other useful/subscribed info summaries
@@ -21,8 +35,6 @@ Notes - summarize imp stuff from explore here
 1. Create 2nd url search bar and split search suggestions
 1. Website actions - start with - find in page, then all others - get from Lineage OS
 2. Add to collection db
-3. Set up default collections - bloatware webapps
-3. Add to history db
 4. Configure home screen - set either website or show new tab screen
 2. Edit explore feed
 3. Explore feed - first get google suggestions about the topic, then scrape posts from all those topics from google
@@ -31,23 +43,13 @@ Notes - summarize imp stuff from explore here
 5. P2P com - profiles
 Avoid history logging in incognito
 Google translate webpages
-Store the favicon in the database in bytearray string
 
 
-default Text select menu options
 TODO Url editing when in focus show letter navigation using sliders, slider will show on another tap
 TODO on focus show recent searches
 
 
 
-Privacy report: - Settings
-Data saved - x kb
-Trackers n Ads blocked - x
-Time saved
-
-
-
-Close other tabs
 Cmd menu -> Close all private tabs
 FIXME: If u r filling form in website then u should not show apps on keyboard visible
 Textsize adjustment in webpage - slider
@@ -60,11 +62,6 @@ Screenshot - rolling and visible
 Settings screen:
 Set custom website for home
 
-
-
-History
-TODO need date strip
-TODO need delete all and some filters
 
 
 Downloads
@@ -107,18 +104,6 @@ Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
 
 
-Basic WebApp Collections
-0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
-1. Writing: Google docs, sheets, Slides, Notion
-2. Notetaking: Keep, Notion
-3. Entertainment: Youtube, Netflix, Hotstar
-4. Mail: Gmail
-5. Directions: Maps,
-6. Tools: Drive, Dropbox, Google Calender
-7. Education: Youtube, Khan Acad, Course Era, MIT MOOC, Udacity
-8. Do anything/everything: ChatGPT, Bing, Google
-
-
 
 RSS Reader
 https://code.google.com/archive/p/android-rss/source/default/source
@@ -127,6 +112,10 @@ https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-androi
 
 P2P Comm
 https://github.com/briar/briar
+
+FIXME irritating stuff
+1. full screen chat image save pic,
+2. Close other tabs
 
 
 TODO LATER:
@@ -147,3 +136,15 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 8. Mark as Ad - touch on the element to mark as an Ad - XBrowser
 9. If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts - there are ways to fetch all activities and trigger appropriate onses but completing a task seems impossible for now.
 10. If perfomed voice search then automatically read out the response. Since the result will always be the last item, u can get the position from adapter list last item
+11. Privacy report: - Settings
+    Data saved - x kb
+    Trackers n Ads blocked - x
+    Time saved
+12. default Text select menu options - this is system behav. How to add to context menu?
+
+TODO Checklist
+1. Git Remove DS store - https://stackoverflow.com/questions/9050914/how-can-i-remove-all-files-in-my-git-repo-and-update-push-from-my-local-git-repo
+2. File IO
+3. Room Foreign Key
+4. Room Relations
+5. RSA/AES encryption decryption

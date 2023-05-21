@@ -73,8 +73,6 @@ fun showDeviceSecurityAlert(context: Context): AlertDialog {
         .show()
 }
 
-fun String.toByteArray() = this.toByteArray(Charsets.UTF_8)
-
 fun ByteArray.fromByteToString() = String(this,Charsets.UTF_8)
 
 fun Context.openLockScreenSettings() {

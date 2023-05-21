@@ -538,6 +538,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
                 requireActivity().runOnUiThread {
                     insightsAdapter.setTtsTextHighlighting(
+                        start = start,
+                        end = end,
                         query = utteranceId?.substring(start, end) ?: "",
                         utteranceId = utteranceId,
                         recyclerView = binding.rvInsights,

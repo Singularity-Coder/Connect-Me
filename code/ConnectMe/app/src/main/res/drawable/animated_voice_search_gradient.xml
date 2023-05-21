@@ -10,7 +10,7 @@
 <!--        android:drawable="@drawable/gradient_purple"-->
 <!--        android:duration="500" />-->
     <item
-        android:drawable="@drawable/gradient_purple_light"
+        android:drawable="@drawable/gradient_purple_light_flipped"
         android:duration="500" />
 <!--    <item-->
 <!--        android:drawable="@drawable/gradient_indigo"-->
@@ -22,7 +22,7 @@
 <!--        android:drawable="@drawable/gradient_blue"-->
 <!--        android:duration="500" />-->
     <item
-        android:drawable="@drawable/gradient_indigo_light"
+        android:drawable="@drawable/gradient_indigo_light_flipped"
         android:duration="500" />
 <!--    <item-->
 <!--        android:drawable="@drawable/gradient_light_blue"-->

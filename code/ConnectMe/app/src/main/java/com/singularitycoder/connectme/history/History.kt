@@ -1,17 +1,18 @@
 package com.singularitycoder.connectme.history
 
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.singularitycoder.connectme.helpers.constants.Table
 import kotlinx.parcelize.Parcelize
 
+@Entity(tableName = Table.HISTORY)
 @Parcelize
 data class History(
-    val id: Long = 0,
-    val imageUrl: String? = "",
-    val title: String = "",
-    val source: String? = "",
-    val time: String? = "",
-    val link: String? = "",
-    val posts: Long = 0L
-) : Parcelable {
-    constructor() : this(0, "", "", "", "", "", 0L)
-}
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val favicon: String? = "",
+    val title: String? = "",
+    val time: Long? = 0L,
+    val website: String? = "",
+    val link: String? = ""
+) : Parcelable

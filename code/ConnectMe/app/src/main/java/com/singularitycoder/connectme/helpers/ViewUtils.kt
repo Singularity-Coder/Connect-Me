@@ -430,6 +430,7 @@ fun View.isKeyboardHidden(): Boolean {
 // setSpan(ForegroundColorSpan(Color.RED), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
 // setSpan(QuoteSpan(itemBinding.root.context.color(R.color.purple_500)), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
 // setSpan(RelativeSizeSpan(1.5f), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+// FIXME not highlighting the right word all the time as compared to direct span assignment
 fun TextView?.highlightText(
     query: String,
     result: String,

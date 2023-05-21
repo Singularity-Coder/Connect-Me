@@ -13,16 +13,15 @@ import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSugges
 import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.YahooSearchSuggestionProvider
+import com.singularitycoder.connectme.history.History
+import com.singularitycoder.connectme.history.HistoryDao
 import com.singularitycoder.connectme.search.dao.InsightDao
 import com.singularitycoder.connectme.search.dao.PromptDao
 import com.singularitycoder.connectme.search.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.jetty.http.HttpMethod
@@ -40,7 +39,8 @@ class SearchViewModel @Inject constructor(
     private val preferences: SharedPreferences,
     private val networkStatus: NetworkStatus,
     private val insightDao: InsightDao,
-    private val promptDao: PromptDao
+    private val promptDao: PromptDao,
+    private val historyDao: HistoryDao,
 ) : ViewModel() {
 
     private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
@@ -81,6 +81,13 @@ class SearchViewModel @Inject constructor(
 
     fun getAllInsightsBy(website: String?) = insightDao.getAllByWebsiteStateFlow(website)
 
+    /** https://medium.com/androiddevelopers/7-pro-tips-for-room-fbadea4bfbd1
+     * [distinctUntilChanged] means collect will not trigger until that specific row is updated.
+     * So this wont spam collect for every change in the table. */
+    fun getAllInsightsByWebsiteStateFlow(website: String?): Flow<Insight?> {
+        return insightDao.getInsightByWebsiteStateFlow(website).distinctUntilChanged()
+    }
+
     fun addInsight(insight: Insight?) = viewModelScope.launch {
         insightDao.insert(insight)
     }
@@ -99,6 +106,10 @@ class SearchViewModel @Inject constructor(
 
     fun addPrompt(prompt: Prompt?) = viewModelScope.launch {
         promptDao.insert(prompt)
+    }
+
+    fun addToHistory(history: History) = viewModelScope.launch {
+        historyDao.insert(history)
     }
 
     fun resetInsight() = viewModelScope.launch(IO) {

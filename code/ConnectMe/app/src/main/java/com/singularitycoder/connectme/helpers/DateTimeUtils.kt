@@ -57,14 +57,14 @@ fun Long.toIntuitiveDateTime(): String {
     val elapsedTimeInMonths = elapsedTimeInDays / 30
     return when {
         elapsedTimeInSeconds < 60 -> "Now"
-        elapsedTimeInMinutes == 1L -> "$elapsedTimeInMinutes Minute ago"
-        elapsedTimeInMinutes < 60 -> "$elapsedTimeInMinutes Minutes ago"
-        elapsedTimeInHours == 1L -> "$elapsedTimeInHours Hour ago"
-        elapsedTimeInHours < 24 -> "$elapsedTimeInHours Hours ago"
-        elapsedTimeInDays == 1L -> "$elapsedTimeInDays Day ago"
-        elapsedTimeInDays < 30 -> "$elapsedTimeInDays Days ago"
-        elapsedTimeInMonths == 1L -> "$elapsedTimeInMonths Month ago"
-        elapsedTimeInMonths < 12 -> "$elapsedTimeInMonths Months ago"
+        elapsedTimeInMinutes == 1L -> "$elapsedTimeInMinutes min ago"
+        elapsedTimeInMinutes < 60 -> "$elapsedTimeInMinutes min ago"
+        elapsedTimeInHours == 1L -> "$elapsedTimeInHours hr ago"
+        elapsedTimeInHours < 24 -> "$elapsedTimeInHours hr ago"
+        elapsedTimeInDays == 1L -> "$elapsedTimeInDays day ago"
+        elapsedTimeInDays < 30 -> "$elapsedTimeInDays days ago"
+        elapsedTimeInMonths == 1L -> "$elapsedTimeInMonths mon ago"
+        elapsedTimeInMonths < 12 -> "$elapsedTimeInMonths mon ago"
         else -> postedTime toTimeOfType DateType.dd_MMM_yyyy_hh_mm_a
     }
 }

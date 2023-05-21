@@ -16,12 +16,16 @@ import androidx.core.view.MenuCompat
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
+import com.singularitycoder.connectme.history.History
+import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import okio.internal.commonToUtf8String
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -53,6 +57,7 @@ class SearchTabFragment : Fragment() {
     private val hideProgressHandler by lazy {
         Handler(Looper.getMainLooper())
     }
+    private val searchViewModel by viewModels<SearchViewModel>()
 
     private var hideProgressRunnable = Runnable {}
 
@@ -268,6 +273,15 @@ class SearchTabFragment : Fragment() {
             if (icon.isRecycled.not()) icon.recycle()
             searchFragment?.getFaviconImageView()?.setImageBitmap(favicon)
             searchFragment?.setWebViewData()
+            searchViewModel.addToHistory(
+                History(
+                    favicon = favicon?.toByteArray()?.toString(Charsets.UTF_8),
+                    title = view?.title,
+                    time = timeNow,
+                    website = getHostFrom(url = view?.url),
+                    link = view?.url
+                )
+            )
         }
 
         override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {

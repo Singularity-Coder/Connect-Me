@@ -6,16 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.databinding.FragmentHistoryBinding
-import com.singularitycoder.connectme.helpers.constants.dummyFaviconUrls
+import com.singularitycoder.connectme.helpers.collectLatestLifecycleFlow
 import com.singularitycoder.connectme.helpers.onSafeClick
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
+
+private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
@@ -30,7 +30,8 @@ class HistoryFragment : Fragment() {
     private lateinit var binding: FragmentHistoryBinding
 
     private val historyAdapter = HistoryAdapter()
-    private val historyList = mutableListOf<History>()
+
+    private val historyViewModel by activityViewModels<HistoryViewModel>()
 
     private var topicParam: String? = null
 
@@ -57,24 +58,6 @@ class HistoryFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = historyAdapter
         }
-        lifecycleScope.launch(Dispatchers.Default) {
-            (0..30).forEach { it: Int ->
-                historyList.add(
-                    History(
-                        imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
-                        title = "The Random Publications",
-                        source = "Randomness is random.",
-                        time = "5 hours ago",
-                        link = "https://www.randompub.com",
-                        posts = 17L + it
-                    )
-                )
-            }
-            withContext(Dispatchers.Main) {
-                historyAdapter.historyList = historyList
-                historyAdapter.notifyDataSetChanged()
-            }
-        }
     }
 
     private fun FragmentHistoryBinding.setupUserActionListeners() {
@@ -86,9 +69,12 @@ class HistoryFragment : Fragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeForData() {
-
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = historyViewModel.getAllHistoryBy()) { it: List<History?> ->
+            if (it.isEmpty()) return@collectLatestLifecycleFlow
+            historyAdapter.historyList = it.reversed()
+            historyAdapter.notifyDataSetChanged()
+        }
     }
 }
-
-private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"

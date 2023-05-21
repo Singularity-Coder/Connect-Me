@@ -1,13 +1,15 @@
 package com.singularitycoder.connectme.helpers
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
+import java.io.*
 import java.net.HttpURLConnection
 import java.nio.charset.Charset
 import java.util.*
@@ -150,4 +152,41 @@ fun inputStreamToString(
         }
     }
     return stringBuilder.toString()
+}
+
+// Bitmap to Binary - Bard -> https://qiita.com/date62noka3/items/42f971fb0ee1be2970e8
+// use the compress() method of the Bitmap object to write the bitmap to the output stream.
+fun Bitmap?.toByteArray(): ByteArray {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    this?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+    return byteArrayOutputStream.toByteArray()
+}
+
+fun Context.getBitmapFrom(@DrawableRes image: Int): Bitmap {
+    return BitmapFactory.decodeResource(resources, image)
+}
+
+// Bard -> https://qiita.com/date62noka3/items/42f971fb0ee1be2970e8
+fun Context.getBitmapFromUri(uri: Uri?): Bitmap? {
+    uri ?: return null
+    val parcelFileDescriptor: ParcelFileDescriptor = this.contentResolver.openFileDescriptor(uri, "r") ?: return null
+    val fileDescriptor: FileDescriptor = parcelFileDescriptor.fileDescriptor
+    val image: Bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+    parcelFileDescriptor.close()
+    return image
+}
+
+/**
+ * Here are some other ways to convert a string to a byte array in Kotlin:
+ * You can use the encodeToByteArray() method of the String class. This method takes an optional character set parameter, which defaults to UTF-8.
+ * You can use the getBytes() method of the String class. This method takes an optional character set parameter, which defaults to the platform's default character set.
+ * You can use the toByteArray() method of the CharSequence interface. This method takes an optional character set parameter, which defaults to UTF-8.
+ * */
+fun ByteArray?.toBitmap(): Bitmap? {
+    this ?: return null
+    return BitmapFactory.decodeByteArray(
+        /* data = */ this,
+        /* offset = */ 0,
+        /* length = */ this.size
+    )
 }

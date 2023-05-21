@@ -147,6 +147,7 @@ object Table {
     const val WEB_APP = "table_web_app"
     const val INSIGHT = "table_insight"
     const val PROMPT = "table_prompt"
+    const val HISTORY = "table_history"
 }
 
 object BroadcastKey {

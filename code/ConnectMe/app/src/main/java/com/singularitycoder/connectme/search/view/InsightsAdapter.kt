@@ -1,6 +1,13 @@
 package com.singularitycoder.connectme.search.view
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.AnimationDrawable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -52,6 +59,8 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     // https://c1ctech.com/android-highlight-a-word-in-texttospeech/
     // https://medium.com/androiddevelopers/spantastic-text-styling-with-spans-17b0c16b4568
     fun setTtsTextHighlighting(
+        start: Int = 0,
+        end: Int = 0,
         query: String,
         utteranceId: String?,
         recyclerView: RecyclerView,
@@ -59,15 +68,21 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         insight: Insight?
     ) {
         val viewHolder = recyclerView.findViewHolderForAdapterPosition(adapterPosition) as ThisViewHolder
+        val textWithHighlights: Spannable = SpannableString(utteranceId).apply {
+            setSpan(StyleSpan(Typeface.BOLD), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+            setSpan(BackgroundColorSpan(Color.YELLOW), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+        }
         if (insight?.userType == ChatRole.USER.ordinal) {
             viewHolder.getView().tvTextRequest.apply {
-                text = utteranceId
-                highlightText(query = query, result = text.toString())
+                text = textWithHighlights
+//                text = utteranceId
+//                highlightText(query = query, result = text.toString())
             }
         } else {
             viewHolder.getView().tvTextResponse.apply {
-                text = utteranceId
-                highlightText(query = query, result = text.toString())
+                text = textWithHighlights
+//                text = utteranceId
+//                highlightText(query = query, result = text.toString())
             }
         }
     }

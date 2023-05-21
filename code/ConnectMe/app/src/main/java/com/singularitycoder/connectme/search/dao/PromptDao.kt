@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PromptDao {
 
+    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(prompt: Prompt?)
 
@@ -16,11 +17,13 @@ interface PromptDao {
     suspend fun insertAll(appList: List<Prompt?>)
 
 
+    @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(prompt: Prompt?)
 
     @Query("UPDATE ${Table.PROMPT} SET promptsJson = :promptsJson WHERE website LIKE :website")
     fun updateWithPromptsList(promptsJson: String?, website: String)
+
 
     @Transaction
     @Query("SELECT * FROM ${Table.PROMPT} WHERE website LIKE :website LIMIT 1")
@@ -42,12 +45,15 @@ interface PromptDao {
     suspend fun getAll(): List<Prompt?>
 
 
+    @Transaction
     @Delete
     suspend fun delete(prompt: Prompt?)
 
+    @Transaction
     @Query("DELETE FROM ${Table.PROMPT} WHERE website = :website")
     suspend fun deleteByWebsite(website: String?)
 
+    @Transaction
     @Query("DELETE FROM ${Table.PROMPT}")
     suspend fun deleteAll()
 }
