@@ -11,6 +11,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
 import java.net.HttpURLConnection
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.coroutines.resume
@@ -162,6 +163,14 @@ fun Bitmap?.toByteArray(): ByteArray {
     return byteArrayOutputStream.toByteArray()
 }
 
+// https://stackoverflow.com/questions/4989182/converting-java-bitmap-to-byte-array
+fun convertBitmapToByteArray(bitmap: Bitmap): ByteArray? {
+    val byteBuffer: ByteBuffer = ByteBuffer.allocate(bitmap.byteCount)
+    bitmap.copyPixelsToBuffer(byteBuffer)
+    byteBuffer.rewind()
+    return byteBuffer.array()
+}
+
 fun Context.getBitmapFrom(@DrawableRes image: Int): Bitmap {
     return BitmapFactory.decodeResource(resources, image)
 }
@@ -189,4 +198,18 @@ fun ByteArray?.toBitmap(): Bitmap? {
         /* offset = */ 0,
         /* length = */ this.size
     )
+}
+
+// https://stackoverflow.com/questions/4989182/converting-java-bitmap-to-byte-array
+fun encodeBitmapToBase64String(bitmap: Bitmap?): String? {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    bitmap?.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream)
+    val byteArray = byteArrayOutputStream.toByteArray()
+    return android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
+}
+
+// https://stackoverflow.com/questions/4989182/converting-java-bitmap-to-byte-array
+fun decodeBase64StringToBitmap(string: String?): Bitmap? {
+    val decodedByte: ByteArray = android.util.Base64.decode(string, 0)
+    return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.size)
 }

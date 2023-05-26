@@ -13,7 +13,7 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
-        app:rippleColor="@color/purple_200"
+        app:rippleColor="@color/transparent_purple_50"
         app:strokeColor="@color/purple_500"
         app:strokeWidth="1dp">
 
@@ -42,7 +42,7 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
-        app:rippleColor="@color/purple_200"
+        app:rippleColor="@color/transparent_purple_50"
         app:strokeColor="@color/purple_500"
         app:strokeWidth="1dp">
 
@@ -71,7 +71,7 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
-        app:rippleColor="@color/purple_200"
+        app:rippleColor="@color/transparent_purple_50"
         app:strokeColor="@color/purple_500"
         app:strokeWidth="1dp">
 

@@ -3,15 +3,18 @@ package com.singularitycoder.connectme.downloads
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
+import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
-import com.singularitycoder.connectme.helpers.onSafeClick
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
@@ -64,7 +67,7 @@ class DownloadsFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentDownloadsBinding.setupUI() {
         cardSearch.isVisible = isSelfProfile
-        btnDeleteAllHistory.isVisible = isSelfProfile
+        btnMore.isVisible = isSelfProfile
         rvDownloads.apply {
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = feedAdapter
@@ -91,7 +94,34 @@ class DownloadsFragment : Fragment() {
     private fun FragmentDownloadsBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
-        btnDeleteAllHistory.onSafeClick {
+        btnMore.onSafeClick {
+            val popupMenu = PopupMenu(requireContext(), it.first)
+            val downloadsOptionsList = listOf("Filter", "Sort by")
+            downloadsOptionsList.forEach {
+                popupMenu.menu.add(
+                    0, 1, 1, menuIconWithText(
+                        icon = requireContext().drawable(
+                            if (it == "Filter") {
+                                R.drawable.round_filter_list_24
+                            } else {
+                                R.drawable.round_sort_24
+                            }
+                        )?.changeColor(requireContext(), R.color.purple_500),
+                        title = it
+                    )
+                )
+            }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                when (it?.title?.toString()?.trim()) {
+                    downloadsOptionsList[0] -> {
+                    }
+                    downloadsOptionsList[1] -> {
+                    }
+                }
+                false
+            }
+            popupMenu.show()
         }
 
         feedAdapter.setOnNewsClickListener { it: Download ->

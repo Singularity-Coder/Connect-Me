@@ -22,7 +22,6 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -43,6 +42,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
+import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
@@ -247,42 +247,39 @@ class SearchFragment : Fragment() {
 
 
         ivSearchEngine.onSafeClick {
-            android.widget.PopupMenu(requireContext(), it.first).apply {
-                SearchEngine.values().forEach { it: SearchEngine ->
-                    menu.add(
-                        0, 1, 1, menuIconWithText(
-                            icon = requireContext().drawable(it.icon),
-                            title = it.value,
-                            iconWidth = 24.dpToPx().toInt(),
-                            iconHeight = 24.dpToPx().toInt(),
-                            defaultSpace = "      "
-                        )
+            val popupMenu = android.widget.PopupMenu(requireContext(), it.first)
+            SearchEngine.values().forEach { it: SearchEngine ->
+                popupMenu.menu.add(
+                    0, 1, 1, menuIconWithText(
+                        icon = requireContext().drawable(it.icon),
+                        title = it.value,
+                        iconWidth = 24.dpToPx().toInt(),
+                        iconHeight = 24.dpToPx().toInt(),
+                        defaultSpace = "      "
                     )
-                }
-                setOnMenuItemClickListener { it: MenuItem? ->
-                    view?.setHapticFeedback()
-                    ivSearchEngine.setImageResource(SearchEngine.getEngineBy(it?.title?.toString()).icon)
-                    preferences.edit().putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.getEngineBy(it?.title?.toString()).name).apply()
-                    searchViewModel.getSearchSuggestions(searchQuery)
-                    this.dismiss()
-                    false
-                }
-                show()
+                )
             }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                ivSearchEngine.setImageResource(SearchEngine.getEngineBy(it?.title?.toString()).icon)
+                preferences.edit().putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.getEngineBy(it?.title?.toString()).name).apply()
+                searchViewModel.getSearchSuggestions(searchQuery)
+                popupMenu.dismiss()
+                false
+            }
+            popupMenu.show()
         }
 
         cardAddTab.onSafeClick {
             ibAddTab.performClick()
         }
 
-        cardAddTab.setOnLongClickListener {
+        cardAddTab.onCustomLongClick {
             ibAddTab.performLongClick()
-            true
         }
 
-        ibAddTab.setOnLongClickListener {
+        ibAddTab.onCustomLongClick {
             showAddTabPopupMenu(view = it, menuRes = R.menu.new_tab_popup_menu)
-            true
         }
 
         ibAddTab.onSafeClick {
@@ -435,7 +432,7 @@ class SearchFragment : Fragment() {
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
         TabLayoutMediator(tabLayoutTabs, viewpagerTabs) { tab, position ->
-            tab.text = topicTabsList[position]
+            tab.text = topicTabsList[position] // FIXME update this list when webpage loads
             tab.icon = when (topicTabsList[position]) {
                 NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
                 NewTabType.NEW_PRIVATE_TAB.value -> requireContext().drawable(R.drawable.outline_policy_24)
@@ -584,23 +581,23 @@ class SearchFragment : Fragment() {
         searchViewModel.hasPromptList(website = getHostFrom(url = selectedWebpage?.getWebView()?.url)) {
             searchViewModel.getTextInsight(
                 prompt = """
-                Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
-                prepare a json string with the keyword you found as the key and a sensational question prompt 
-                about the keyword as the value. Add an appropriate emoji before the key. 
-                Do not explain anything. Just give me the json string as your answer.
-            """.trimIndentsAndNewLines(),
-                saveToDb = false,
+                    Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
+                    prepare a json string with the keyword you found as the key and a sensational question prompt 
+                    about the keyword as the value. Add an appropriate emoji before the key. 
+                    Do not explain anything. Just give me the json string as your answer.
+                """.trimIndentsAndNewLines(),
+                isSaveToDb = false,
                 screen = this@SearchFragment.javaClass.simpleName
             )
         }
         searchViewModel.getTextInsight(
             prompt = """Answer questions that are within the scope of this website 
-                ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} only. The scope can include topics and
-                 content related to this website. 
-            """.trimIndentsAndNewLines(),
+                    ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} only. The scope can include topics and
+                     content related to this website. 
+                """.trimIndentsAndNewLines(),
             role = ChatRole.SYSTEM.name.toLowCase(),
-            saveToDb = false,
-            sendResponse = false,
+            isSaveToDb = false,
+            isSendResponse = false,
             screen = this@SearchFragment.javaClass.simpleName
         )
     }
@@ -655,9 +652,8 @@ class SearchFragment : Fragment() {
             /* setSelected = */ true
         )
         tabLayoutTabs.tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
-        tabLayoutTabs.getTabAt(currentTabPosition)?.view?.setOnLongClickListener {
+        tabLayoutTabs.getTabAt(currentTabPosition)?.view?.onCustomLongClick {
             setOnTabClickListener(currentTabPosition = currentTabPosition, tabView = it)
-            true
         }
 
         tabLayoutTabs.getTabAt(currentTabPosition)?.view?.onSafeClick {
@@ -938,52 +934,52 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.showAddTabPopupMenu(
-        view: View,
+        view: View?,
         @MenuRes menuRes: Int
     ) {
-        PopupMenu(requireContext(), view).apply {
+        view ?: return
+        val popupMenu = PopupMenu(requireContext(), view).apply {
             this.menu.invokeSetMenuIconMethod()
             menuInflater.inflate(menuRes, this.menu)
-            setOnMenuItemClickListener { menuItem: MenuItem ->
-                when (menuItem.itemId) {
-                    R.id.menu_item_new_private_disappearing_tab -> {
-                        etSearch.showKeyboard()
-                        addTab(NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value)
-                        etSearch.setSelection(0, etSearch.text.length)
-                        etSearch.setSelectAllOnFocus(true)
-                        false
-                    }
-                    R.id.menu_item_new_private_tab -> {
-                        etSearch.showKeyboard()
-                        addTab(NewTabType.NEW_PRIVATE_TAB.value)
-                        etSearch.setSelection(0, etSearch.text.length)
-                        etSearch.setSelectAllOnFocus(true)
-                        false
-                    }
-                    R.id.menu_item_new_disappearing_tab -> {
-                        etSearch.showKeyboard()
-                        addTab(NewTabType.NEW_DISAPPEARING_TAB.value)
-                        etSearch.setSelection(0, etSearch.text.length)
-                        etSearch.setSelectAllOnFocus(true)
-                        false
-                    }
-                    else -> false
-                }
-            }
-            setOnDismissListener { it: PopupMenu? ->
-            }
-            setMarginBtwMenuIconAndText(
-                context = requireContext(),
-                menu = this.menu,
-                iconMarginDp = 10
-            )
-            this.menu.forEach { it: MenuItem ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    it.iconTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_500)
-                }
-            }
-            show()
         }
+        popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.menu_item_new_private_disappearing_tab -> {
+                    etSearch.showKeyboard()
+                    addTab(NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value)
+                    etSearch.setSelection(0, etSearch.text.length)
+                    etSearch.setSelectAllOnFocus(true)
+                    false
+                }
+                R.id.menu_item_new_private_tab -> {
+                    etSearch.showKeyboard()
+                    addTab(NewTabType.NEW_PRIVATE_TAB.value)
+                    etSearch.setSelection(0, etSearch.text.length)
+                    etSearch.setSelectAllOnFocus(true)
+                    false
+                }
+                R.id.menu_item_new_disappearing_tab -> {
+                    etSearch.showKeyboard()
+                    addTab(NewTabType.NEW_DISAPPEARING_TAB.value)
+                    etSearch.setSelection(0, etSearch.text.length)
+                    etSearch.setSelectAllOnFocus(true)
+                    false
+                }
+                else -> false
+            }
+        }
+        popupMenu.setOnDismissListener { it: PopupMenu? ->
+        }
+        popupMenu.menu.setMarginBtwMenuIconAndText(
+            context = requireContext(),
+            iconMarginDp = 10
+        )
+        popupMenu.menu.forEach { it: MenuItem ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                it.iconTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_500)
+            }
+        }
+        popupMenu.show()
     }
 
     fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile
@@ -999,10 +995,19 @@ class SearchFragment : Fragment() {
         val webViewData = WebViewData(
             url = selectedWebpage?.getWebView()?.url,
             title = selectedWebpage?.getWebView()?.title,
-            favIcon = binding.ivWebappProfile.drawable.toBitmap(),
+            favIcon = selectedWebpage?.getFavicon(),
             certificate = selectedWebpage?.getWebView()?.certificate
         )
         searchViewModel.setWebViewData(webViewData)
+        searchViewModel.addToHistory(
+            History(
+                favicon = encodeBitmapToBase64String(selectedWebpage?.getFavicon()),
+                title = selectedWebpage?.getWebView()?.title,
+                time = timeNow,
+                website = getHostFrom(url = selectedWebpage?.getWebView()?.url),
+                link = selectedWebpage?.getWebView()?.url ?: ""
+            )
+        )
     }
 
     // https://stackoverflow.com/questions/19765938/show-and-hide-a-view-with-a-slide-up-down-animation

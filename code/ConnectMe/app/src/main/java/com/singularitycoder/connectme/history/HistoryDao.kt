@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HistoryDao {
 
+    /** room database will replace data based on primary key */
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(history: History?)
@@ -26,19 +27,19 @@ interface HistoryDao {
 
     @Transaction
     @Query("SELECT * FROM ${Table.HISTORY} WHERE website LIKE :website LIMIT 1")
-    suspend fun getHistoryByWebsite(website: String?): History?
+    suspend fun getItemByWebsite(website: String?): History?
 
     @Query("SELECT * FROM ${Table.HISTORY}")
-    fun getAllLiveData(): LiveData<List<History?>>
+    fun getAllItemsLiveData(): LiveData<List<History?>>
 
     @Query("SELECT * FROM ${Table.HISTORY}")
-    fun getAllStateFlow(): Flow<List<History?>>
+    fun getAllItemsStateFlow(): Flow<List<History?>>
 
     @Query("SELECT * FROM ${Table.HISTORY} WHERE website = :website")
-    fun getAllByWebsiteStateFlow(website: String?): Flow<List<History?>>
+    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<History?>>
 
     @Query("SELECT * FROM ${Table.HISTORY} WHERE website = :website")
-    fun getByWebsiteStateFlow(website: String?): Flow<History?>
+    fun getItemByWebsiteStateFlow(website: String?): Flow<History?>
 
     @Query("SELECT * FROM ${Table.HISTORY}")
     suspend fun getAll(): List<History?>

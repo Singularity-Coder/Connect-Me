@@ -7,6 +7,7 @@
     tools:context=".history.HistoryFragment">
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -78,6 +79,16 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/card_search" />
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_history"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:nestedScrollingEnabled="true"
+                android:scrollbars="none"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toTopOf="@+id/tv_date"
+                tools:listitem="@layout/list_item_history" />
+
             <TextView
                 android:id="@+id/tv_date"
                 style="@style/TextAppearance.AppCompat.Body1"
@@ -94,15 +105,6 @@
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintTop_toBottomOf="@+id/card_search" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_history"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:nestedScrollingEnabled="true"
-                android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@+id/tv_date"
-                tools:listitem="@layout/list_item_history" />
 
             <View
                 android:layout_width="match_parent"

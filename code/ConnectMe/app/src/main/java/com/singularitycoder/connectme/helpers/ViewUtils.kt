@@ -16,7 +16,6 @@ import android.os.SystemClock
 import android.text.*
 import android.text.style.BackgroundColorSpan
 import android.text.style.ImageSpan
-import android.text.style.MetricAffectingSpan
 import android.text.style.StyleSpan
 import android.util.DisplayMetrics
 import android.view.*
@@ -41,7 +40,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import java.util.*
-import kotlin.collections.ArrayList
 
 fun Context.getThemeAttrColor(attributeColor: Int): Int {
     this.theme.resolveAttribute(attributeColor, ConnectMeUtils.typedValue, true)
@@ -775,6 +773,13 @@ fun View.onSafeClick(
     setOnClickListener(onSafeClickListener)
 }
 
+fun View.onCustomLongClick(
+    onCustomLongClick: (view: View?) -> Unit
+) {
+    val onCustomLongClickListener = OnCustomLongClickListener(onCustomLongClick)
+    setOnLongClickListener(onCustomLongClickListener)
+}
+
 class OnSafeClickListener(
     private val delayAfterClick: Long,
     private val onSafeClick: (Pair<View?, Boolean>) -> Unit
@@ -789,10 +794,22 @@ class OnSafeClickListener(
         val elapsedRealtime = SystemClock.elapsedRealtime()
         if (elapsedRealtime - lastClickTime < delayAfterClick) return
         lastClickTime = elapsedRealtime
-        v?.startAnimation(AlphaAnimation(1F, 0.8F))
+//        v?.startAnimation(AlphaAnimation(1F, 0.8F))
 //        v?.setTouchEffect()
         isClicked = !isClicked
         onSafeClick(v to isClicked)
-        v?.setHapticFeedback()
+//        v?.setHapticFeedback()
+    }
+}
+
+class OnCustomLongClickListener(
+    private val onCustomClick: (view: View?) -> Unit
+) : View.OnLongClickListener {
+    override fun onLongClick(v: View?): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            v?.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        }
+        onCustomClick.invoke(v)
+        return false
     }
 }

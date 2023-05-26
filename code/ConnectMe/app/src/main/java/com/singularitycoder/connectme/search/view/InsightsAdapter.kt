@@ -186,36 +186,32 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         private fun ListItemInsightBinding.setupUserActionListeners(insight: Insight?) {
             tvTextResponse.apply {
-                setOnLongClickListener {
+                onCustomLongClick {
                     cardResponse.performLongClick()
-                    false
                 }
                 onSafeClick {
                     cardResponse.performClick()
                 }
             }
             tvTextRequest.apply {
-                setOnLongClickListener {
+                onCustomLongClick {
                     cardRequest.performLongClick()
-                    false
                 }
                 onSafeClick {
                     cardRequest.performClick()
                 }
             }
             cardResponse.apply {
-                setOnLongClickListener {
+                onCustomLongClick {
                     itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
-                    false
                 }
                 onSafeClick {
                     itemClickListener.invoke(insight, bindingAdapterPosition)
                 }
             }
             cardRequest.apply {
-                setOnLongClickListener {
+                onCustomLongClick {
                     itemLongClickListener.invoke(insight, it, bindingAdapterPosition)
-                    false
                 }
                 onSafeClick {
                     itemClickListener.invoke(insight, bindingAdapterPosition)

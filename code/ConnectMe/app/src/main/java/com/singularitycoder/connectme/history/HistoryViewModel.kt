@@ -1,9 +1,9 @@
 package com.singularitycoder.connectme.history
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -11,8 +11,13 @@ class HistoryViewModel @Inject constructor(
     private val historyDao: HistoryDao,
 ) : ViewModel() {
 
-    private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
-    val searchSuggestionResultsStateFlow = _searchSuggestionResultsStateFlow.asStateFlow()
+    fun getAllHistory() = historyDao.getAllItemsStateFlow()
 
-    fun getAllHistoryBy() = historyDao.getAllStateFlow()
+    fun deleteItem(history: History) = viewModelScope.launch {
+        historyDao.delete(history)
+    }
+
+    fun deleteAllHistory() = viewModelScope.launch {
+        historyDao.deleteAll()
+    }
 }

@@ -43,9 +43,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
 import java.lang.reflect.Method
 import java.util.*
 
@@ -153,23 +150,6 @@ fun Context.getVideoThumbnailBitmap(docUri: Uri): Bitmap? {
     } catch (e: Exception) {
         null
     }
-}
-
-// https://stackoverflow.com/questions/33222918/sharing-bitmap-via-android-intent
-fun Context.shareImageAndTextViaApps(
-    uri: Uri,
-    title: String = "",
-    subtitle: String = "",
-    intentTitle: String? = null
-) {
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "image/*"
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        putExtra(Intent.EXTRA_STREAM, uri)
-        putExtra(Intent.EXTRA_SUBJECT, title)
-        putExtra(Intent.EXTRA_TEXT, subtitle)
-    }
-    startActivity(Intent.createChooser(intent, intentTitle ?: "Share to..."))
 }
 
 fun Context.makeCall(phoneNum: String) {
@@ -306,10 +286,11 @@ fun EditText?.hideKeyboard() {
         val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.hideSoftInputFromWindow(this.windowToken, 0)
     }
+    this?.clearFocus()
 }
 
-fun setMarginBtwMenuIconAndText(context: Context, menu: Menu, iconMarginDp: Int) {
-    menu.forEach { item: MenuItem ->
+fun Menu.setMarginBtwMenuIconAndText(context: Context, iconMarginDp: Int) {
+    this.forEach { item: MenuItem ->
         val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, iconMarginDp.toFloat(), context.resources.displayMetrics).toInt()
         if (null != item.icon) {
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
@@ -341,7 +322,7 @@ fun getHtmlFormattedTime(html: String): Spanned {
 }
 
 // https://developer.android.com/training/sharing/send
-fun Context.shareText(
+fun Context.shareTextOrImage(
     text: String?,
     title: String? = null,
     uri: Uri? = null
@@ -349,27 +330,27 @@ fun Context.shareText(
     val share = Intent.createChooser(Intent().apply {
         action = Intent.ACTION_SEND
         putExtra(Intent.EXTRA_TEXT, text)
-
-        // (Optional) Here you're setting the title of the content
-        putExtra(Intent.EXTRA_TITLE, title)
-
-        // (Optional) Here you're passing a content URI to an image to be displayed
-        data = uri
+        putExtra(Intent.EXTRA_TITLE, title) // (Optional) Here you're setting the title of the content
+        if (uri != null) data = uri // (Optional) Here you're passing a content URI to an image to be displayed
         flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        type = if (uri == null) "text/*" else "image/*"
     }, null)
     startActivity(share)
 }
 
-// https://stackoverflow.com/questions/8295773/how-can-i-transform-a-bitmap-into-a-uri
-fun Bitmap?.uri(): Uri {
-    val tempFile = File.createTempFile("temp_image", ".png")
-    val bytes = ByteArrayOutputStream()
-    this?.compress(Bitmap.CompressFormat.PNG, 100, bytes)
-    val bitmapData = bytes.toByteArray()
-    FileOutputStream(tempFile).apply {
-        write(bitmapData)
-        flush()
-        close()
+// https://stackoverflow.com/questions/33222918/sharing-bitmap-via-android-intent
+fun Context.shareImageAndTextViaApps(
+    uri: Uri,
+    title: String = "",
+    subtitle: String = "",
+    intentTitle: String? = null
+) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/*"
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        putExtra(Intent.EXTRA_STREAM, uri)
+        putExtra(Intent.EXTRA_SUBJECT, title)
+        putExtra(Intent.EXTRA_TEXT, subtitle)
     }
-    return Uri.fromFile(tempFile)
+    startActivity(Intent.createChooser(intent, intentTitle ?: "Share to..."))
 }

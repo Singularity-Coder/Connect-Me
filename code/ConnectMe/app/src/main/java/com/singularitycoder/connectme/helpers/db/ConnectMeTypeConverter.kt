@@ -3,6 +3,7 @@ package com.singularitycoder.connectme.helpers.db
 import androidx.room.TypeConverter
 import com.google.gson.reflect.TypeToken
 import com.singularitycoder.connectme.helpers.ConnectMeUtils
+import com.singularitycoder.connectme.search.model.WebApp
 import java.lang.reflect.Type
 
 // Type converters must not contain any arguments in the constructor
@@ -22,4 +23,4 @@ abstract class ConnectMeTypeConverter<T> {
 
 class StringListConverter : ConnectMeTypeConverter<String>()
 class IntListConverter : ConnectMeTypeConverter<Int>()
-//class AppListConverter : FlowTypeConverter<App>()
+class WebAppListConverter : ConnectMeTypeConverter<WebApp>()

@@ -9,6 +9,7 @@ import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.ChatRole
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
+import com.singularitycoder.connectme.helpers.encryption.CipherUtils
 import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
@@ -133,13 +134,13 @@ class SearchViewModel @Inject constructor(
     fun getTextInsight(
         prompt: String?,
         role: String = ChatRole.USER.name.toLowCase(),
-        saveToDb: Boolean = true,
-        sendResponse: Boolean = true,
+        isSaveToDb: Boolean = true,
+        isSendResponse: Boolean = true,
         screen: String? = null
     ) = viewModelScope.launch(IO) {
         try {
             if (networkStatus.isOnline().not()) return@launch
-            if (sendResponse) {
+            if (isSendResponse) {
                 _insightSharedFlow.emit(ApiResult(apiState = ApiState.LOADING, insightType = InsightType.TEXT, screen = screen))
             }
             val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
@@ -158,7 +159,7 @@ class SearchViewModel @Inject constructor(
                 url = "https://api.openai.com/v1/chat/completions",
                 jsonObjectRequest = jsonObjectRequest,
                 onSuccess = { jsonObject: JsonObject? ->
-                    if (sendResponse.not()) return@makeOpenAiPostRequest
+                    if (isSendResponse.not()) return@makeOpenAiPostRequest
                     val insightResponse = ConnectMeUtils.gson.fromJson(jsonObject, InsightObject.Root::class.java)
                     val insight = Insight(
                         created = insightResponse.created,
@@ -173,10 +174,10 @@ class SearchViewModel @Inject constructor(
                             screen = screen
                         )
                     )
-                    if (saveToDb) insightDao.insert(insight)
+                    if (isSaveToDb) insightDao.insert(insight)
                 },
                 onFailure = { errorJsonObject: JsonObject? ->
-                    if (sendResponse.not()) return@makeOpenAiPostRequest
+                    if (isSendResponse.not()) return@makeOpenAiPostRequest
                     val errorObject = ConnectMeUtils.gson.fromJson(errorJsonObject, InsightObject.ErrorObject::class.java)
                     _insightSharedFlow.emit(
                         ApiResult(
@@ -189,7 +190,7 @@ class SearchViewModel @Inject constructor(
                 }
             )
         } catch (_: Exception) {
-            if (sendResponse.not()) return@launch
+            if (isSendResponse.not()) return@launch
             _insightSharedFlow.emit(
                 ApiResult(
                     error = InsightObject.ErrorObject(InsightObject.Error("Something went wrong. Try again!")),
@@ -267,8 +268,8 @@ class SearchViewModel @Inject constructor(
         onSuccess: suspend (jsonObject: JsonObject?) -> Unit,
         onFailure: suspend (errorJsonObject: JsonObject?) -> Unit
     ) {
-        val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "")
-        val decryptedApiSecret = AesEncryption.decrypt(encryptedApiSecret)
+        val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "") ?: ""
+        val decryptedApiSecret = CipherUtils.decrypt3(encryptedApiSecret)
 
         fun HttpURLConnection.setPostRequestContent() = try {
             val input: ByteArray = jsonObjectRequest.toString().toByteArray(Charsets.UTF_8)

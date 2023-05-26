@@ -16,16 +16,12 @@ import androidx.core.view.MenuCompat
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentSearchTabBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
-import com.singularitycoder.connectme.history.History
-import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import okio.internal.commonToUtf8String
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -57,12 +53,10 @@ class SearchTabFragment : Fragment() {
     private val hideProgressHandler by lazy {
         Handler(Looper.getMainLooper())
     }
-    private val searchViewModel by viewModels<SearchViewModel>()
-
-    private var hideProgressRunnable = Runnable {}
 
     //    private var paramTab: String? = null
     private var mobileUserAgent: String? = null
+    private var hideProgressRunnable = Runnable {}
     private var desktopUserAgent: String? = null
     private var isIncognito = false
     private var lastLoadedUrl: String? = null
@@ -92,13 +86,19 @@ class SearchTabFragment : Fragment() {
         binding.setupUserActionListeners()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            binding.webView.webChromeClient = null
+        }
+        binding.webView.webViewClient = WebViewClient()
+    }
+
     // https://guides.codepath.com/android/Working-with-the-WebView
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentSearchTabBinding.setupUI() {
         ConnectMeUtils.webpageIdList.add(tag)
-        searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
-            it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
-        } as? SearchFragment
+        searchFragment = getSearchFragment()
         setupWebView()
     }
 
@@ -142,20 +142,18 @@ class SearchTabFragment : Fragment() {
             return@OnTouchListener false
         })
 
-        webView.setOnLongClickListener {
+        // FIXME some images do not give extra
+        webView.onCustomLongClick {
             val result = webView.hitTestResult
-            result.extra ?: return@setOnLongClickListener false
+            result.extra ?: return@onCustomLongClick
             when (result.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     showWebViewLongClickMenu()
-                    return@setOnLongClickListener true
                 }
                 WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
                     showWebViewLongClickMenu()
-                    return@setOnLongClickListener true
                 }
             }
-            false
         }
 
         webView.setDownloadListener { url: String?, _, contentDisposition: String?, mimeType: String?, _ ->
@@ -273,15 +271,6 @@ class SearchTabFragment : Fragment() {
             if (icon.isRecycled.not()) icon.recycle()
             searchFragment?.getFaviconImageView()?.setImageBitmap(favicon)
             searchFragment?.setWebViewData()
-            searchViewModel.addToHistory(
-                History(
-                    favicon = favicon?.toByteArray()?.toString(Charsets.UTF_8),
-                    title = view?.title,
-                    time = timeNow,
-                    website = getHostFrom(url = view?.url),
-                    link = view?.url
-                )
-            )
         }
 
         override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
@@ -384,66 +373,66 @@ class SearchTabFragment : Fragment() {
     fun getFavicon(): Bitmap? = favicon
 
     private fun FragmentSearchTabBinding.showWebViewPopupMenu(
-        view: View,
+        view: View?,
         @MenuRes menuRes: Int
     ) {
-        PopupMenu(requireContext(), view).apply {
+        view ?: return
+        val popupMenu = PopupMenu(requireContext(), view).apply {
             this.menu.invokeSetMenuIconMethod()
             menuInflater.inflate(menuRes, this.menu)
 //            this.menu.removeItemAt(3)
 //            this.menu.findItem(R.id.menu_item_new_private_disappearing_tab).isVisible = false
             MenuCompat.setGroupDividerEnabled(this.menu, true)
-            setOnMenuItemClickListener { menuItem: MenuItem ->
-                when (menuItem.itemId) {
-                    R.id.menu_item_peek -> {
-                    }
-
-                    R.id.menu_item_open_new_tab -> {
-//            openInNewTab(requireContext(), url, isIncognito)
-                    }
-                    R.id.menu_item_new_private_tab -> {
-                    }
-                    R.id.menu_item_new_disappearing_tab -> {
-                    }
-
-                    R.id.menu_item_copy_link_address -> {
-                        if (webView.hitTestResult.extra.isNullOrBlank().not()) {
-                            requireContext().clipboard()?.text = webView.hitTestResult.extra
-                            binding.root.showSnackBar("Copied: ${requireContext().clipboard()?.text}")
-                        }
-                    }
-                    R.id.menu_item_copy_link_text -> {
-                    }
-
-                    R.id.menu_item_add_to_collection -> {
-                        addToCollection(title = webView.hitTestResult.extra, url = webView.hitTestResult.extra)
-                    }
-                    R.id.menu_item_download_link -> {
-                        downloadFileAsk(url = webView.hitTestResult.extra, contentDisposition = null, mimeType = null)
-                    }
-                    R.id.menu_item_share_link -> {
-                        requireContext().shareUrl(url = webView.hitTestResult.extra, webView = webView)
-                    }
-                    else -> Unit
-                }
-                root.removeView(menuDummyView)
-                false
-            }
-            setOnDismissListener { it: PopupMenu? ->
-                root.removeView(menuDummyView)
-            }
-            setMarginBtwMenuIconAndText(
-                context = requireContext(),
-                menu = this.menu,
-                iconMarginDp = 10
-            )
-            this.menu.forEach { it: MenuItem ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    it.iconTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_500)
-                }
-            }
-            show()
         }
+        popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            when (menuItem.itemId) {
+                R.id.menu_item_peek -> {
+                }
+
+                R.id.menu_item_open_new_tab -> {
+//            openInNewTab(requireContext(), url, isIncognito)
+                }
+                R.id.menu_item_new_private_tab -> {
+                }
+                R.id.menu_item_new_disappearing_tab -> {
+                }
+
+                R.id.menu_item_copy_link_address -> {
+                    if (webView.hitTestResult.extra.isNullOrBlank().not()) {
+                        requireContext().clipboard()?.text = webView.hitTestResult.extra
+                        binding.root.showSnackBar("Copied: ${requireContext().clipboard()?.text}")
+                    }
+                }
+                R.id.menu_item_copy_link_text -> {
+                }
+
+                R.id.menu_item_add_to_collection -> {
+                    addToCollection(title = webView.hitTestResult.extra, url = webView.hitTestResult.extra)
+                }
+                R.id.menu_item_download_link -> {
+                    downloadFileAsk(url = webView.hitTestResult.extra, contentDisposition = null, mimeType = null)
+                }
+                R.id.menu_item_share_link -> {
+                    requireContext().shareUrl(url = webView.hitTestResult.extra, webView = webView)
+                }
+                else -> Unit
+            }
+            root.removeView(menuDummyView)
+            false
+        }
+        popupMenu.setOnDismissListener { it: PopupMenu? ->
+            root.removeView(menuDummyView)
+        }
+        popupMenu.menu.setMarginBtwMenuIconAndText(
+            context = requireContext(),
+            iconMarginDp = 10
+        )
+        popupMenu.menu.forEach { it: MenuItem ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                it.iconTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_500)
+            }
+        }
+        popupMenu.show()
     }
 
     private fun downloadFileAsk(url: String?, contentDisposition: String?, mimeType: String?) {
@@ -479,6 +468,10 @@ class SearchTabFragment : Fragment() {
         if (title == null || url == null) return
         // TODO add to db
     }
+
+    private fun getSearchFragment() = requireActivity().supportFragmentManager.fragments.firstOrNull {
+        it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
+    } as? SearchFragment
 
     class SimpleWebJavascriptInterface {
         @JavascriptInterface

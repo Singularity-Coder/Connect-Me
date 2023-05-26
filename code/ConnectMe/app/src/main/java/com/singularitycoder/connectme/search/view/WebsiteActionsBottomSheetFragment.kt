@@ -2,7 +2,6 @@ package com.singularitycoder.connectme.search.view
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
-import android.net.Uri
 import android.net.http.SslCertificate
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,16 +10,22 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentWebsiteActionsBottomSheetBinding
+import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
+import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.search.model.WebViewData
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
 
 @AndroidEntryPoint
@@ -32,10 +37,12 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
+    private val followingWebsiteViewModel by activityViewModels<FollowingWebsiteViewModel>()
 
     private lateinit var binding: FragmentWebsiteActionsBottomSheetBinding
 
     private var searchFragment: SearchFragment? = null
+    private var webViewData: WebViewData? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentWebsiteActionsBottomSheetBinding.inflate(inflater, container, false)
@@ -57,17 +64,26 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         } as? SearchFragment
         setTransparentBackground()
         setBottomSheetBehaviour()
-        try {
-            val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
-                ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
-            ) as? SearchTabFragment
-            val sslCertificate = selectedWebpage?.getWebView()?.certificate
-            ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
-            tvSiteName.text = getHostFrom(selectedWebpage?.getWebView()?.url)
-            tvLink.text = selectedWebpage?.getWebView()?.title
-            binding.setupWebsiteSecurity(sslCertificate)
-        } catch (_: Exception) {
+
+        val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
+            ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
+        ) as? SearchTabFragment
+        val sslCertificate = selectedWebpage?.getWebView()?.certificate
+        ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())
+        tvSiteName.text = getHostFrom(selectedWebpage?.getWebView()?.url)
+        tvLink.text = selectedWebpage?.getWebView()?.title
+        binding.setupWebsiteSecurity(sslCertificate)
+        lifecycleScope.launch {
+            val isPresent = followingWebsiteViewModel.isItemPresent(getHostFrom(url = selectedWebpage?.getWebView()?.url))
+            withContext(Main) {
+                if (isPresent) {
+                    setButtonStyleToFollowing()
+                } else {
+                    setButtonStyleToFollow()
+                }
+            }
         }
+
         itemHistory.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_history_24))
             tvTitle.text = "History"
@@ -193,6 +209,29 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
+        btnFollow.onSafeClick {
+            lifecycleScope.launch {
+                val followingWebsite = FollowingWebsite(
+                    favicon = encodeBitmapToBase64String(webViewData?.favIcon),
+                    title = webViewData?.title,
+                    time = timeNow,
+                    website = getHostFrom(url = webViewData?.url),
+                    link = webViewData?.url ?: "",
+                    postCount = 8
+                )
+                val isPresent = followingWebsiteViewModel.isItemPresent(getHostFrom(url = webViewData?.url))
+                withContext(Main) {
+                    if (isPresent) {
+                        setButtonStyleToFollow()
+                        followingWebsiteViewModel.deleteItem(followingWebsite)
+                    } else {
+                        setButtonStyleToFollowing()
+                        followingWebsiteViewModel.addFollowingWebsite(followingWebsite)
+                    }
+                }
+            }
+        }
+
         cardSiteSecurity.onSafeClick {
             llSslCertificateDetails.isVisible = llSslCertificateDetails.isVisible.not()
             ivSiteSecurityArrow.setImageDrawable(
@@ -302,10 +341,28 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentWebsiteActionsBottomSheetBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.webViewDataStateFlow) { it: WebViewData ->
+            this@WebsiteActionsBottomSheetFragment.webViewData = it
             ivSiteIcon.setImageBitmap(it.favIcon)
             tvSiteName.text = getHostFrom(it.url)
             tvLink.text = it.title
             binding.setupWebsiteSecurity(sslCertificate = it.certificate)
+        }
+    }
+
+    private fun setButtonStyleToFollowing() {
+        binding.btnFollow.apply {
+            text = "Following"
+            setBackgroundColor(requireContext().color(R.color.purple_50))
+            strokeWidth = 0
+        }
+    }
+
+    private fun setButtonStyleToFollow() {
+        binding.btnFollow.apply {
+            text = "Follow"
+            setBackgroundColor(requireContext().color(R.color.white))
+            strokeWidth = 1.dpToPx().toInt()
+            strokeColor = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
         }
     }
 

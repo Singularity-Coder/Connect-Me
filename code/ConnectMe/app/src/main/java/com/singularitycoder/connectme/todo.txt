@@ -1,14 +1,18 @@
-TODAY
-decryption
-3. Set up default collections - bloatware webapps
-3. Add to history db
-History
-TODO need date strip
-TODO need delete all and some filters
-3. Add to following db
-Room lazy load
-If on backpress webview reached first page then show speed dial
-Fill explore with GPT responses
+TODO THIS WEEK
+proper decryption
+Chat search
+Collections: Set up default collections - bloatware webapps
+    - Save to collections
+Downloads
+    download in internal directory first. Then search for public directory
+    Download filters - file type, file size, sort - ascending, descending
+    handle gif, image, audio, video, file
+    long press download item to see full file name with options to delete, show in chrome, share
+
+
+TODO NEED TO EXPLORE
+1. Room lazy load
+2. If on backpress webview reached first page then show speed dial
 
 
 Basic WebApp Collections
@@ -25,11 +29,6 @@ Basic WebApp Collections
 Explore
 1. News and other useful/subscribed info summaries
 2. find fun info based on the topics at every hour/half hour
-3. Long click to get AI summary
-
-Remainders - help u keep learning abt ur fav hobby
-Look at my calendar prepare plans appropriately - make decisions appropriately - optional switch
-Notes - summarize imp stuff from explore here
 
 
 1. Create 2nd url search bar and split search suggestions
@@ -63,18 +62,6 @@ Settings screen:
 Set custom website for home
 
 
-
-Downloads
-TODO filters
-TODO handle gif, image, audio, video, file
-TODO if image/gif show bottomsheet fullscreen image
-TODO if audio play options in bottomsheet.
-TODO if video play options in fullscreen bottomsheet.
-TODO if file send it to chrome
-TODO long press download item to see full file name with options to delete, show in chrome, share
-
-
-
 TODO
 2. Explore - will be based on time of the day. If its 8 am then show posts of breakfast. If evening then show entertainment stuff. User can customise topics
 3. Profile - share profile through internet through some kind of P2P protocol like torrents do. Users can let other users view their collections. 4 tabs - FOLLOW, FOLLOWING, FOLLOWERS, FOLLOW REQUESTS
@@ -104,7 +91,6 @@ Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
 
 
-
 RSS Reader
 https://code.google.com/archive/p/android-rss/source/default/source
 https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-android
@@ -113,9 +99,11 @@ https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-androi
 P2P Comm
 https://github.com/briar/briar
 
+
 FIXME irritating stuff
 1. full screen chat image save pic,
 2. Close other tabs
+3. Web popups are not working
 
 
 TODO LATER:
@@ -141,6 +129,19 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
     Trackers n Ads blocked - x
     Time saved
 12. default Text select menu options - this is system behav. How to add to context menu?
+13. Remainders - help u keep learning abt ur fav hobby
+14. Look at my calendar prepare plans appropriately - make decisions appropriately - optional switch
+15. Notes - summarize imp stuff from explore here
+16. Fill explore with GPT responses
+17. Long click explore item to get AI summary
+18. Downloads
+    if image/gif show bottomsheet fullscreen image
+    if audio play options in bottomsheet.
+    if video play options in fullscreen bottomsheet.
+    if file send it to chrome
+    file editing features - rename, move to subfolder, create subfolders, etc
+19. Filters for history
+
 
 TODO Checklist
 1. Git Remove DS store - https://stackoverflow.com/questions/9050914/how-can-i-remove-all-files-in-my-git-repo-and-update-push-from-my-local-git-repo

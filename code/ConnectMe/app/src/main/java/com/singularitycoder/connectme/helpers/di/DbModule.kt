@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.singularitycoder.connectme.collections.CollectionsDao
+import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteDao
 import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
 import com.singularitycoder.connectme.history.HistoryDao
@@ -55,4 +57,12 @@ object DbModule {
     @Singleton
     @Provides
     fun injectHistoryDao(db: ConnectMeDatabase): HistoryDao = db.historyDao()
+
+    @Singleton
+    @Provides
+    fun injectWebsiteFollowingDao(db: ConnectMeDatabase): FollowingWebsiteDao = db.websiteFollowingDao()
+
+    @Singleton
+    @Provides
+    fun injectCollectionsDao(db: ConnectMeDatabase): CollectionsDao = db.collectionsDao()
 }

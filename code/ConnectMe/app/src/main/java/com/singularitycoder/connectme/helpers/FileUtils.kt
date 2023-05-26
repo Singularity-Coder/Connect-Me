@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.os.storage.StorageManager
 import android.provider.OpenableColumns
 import androidx.annotation.RequiresApi
@@ -263,4 +264,31 @@ fun Context.availableStorageSpace(
 
 enum class StorageType {
     INTERNAL, EXTERNAL
+}
+
+// https://stackoverflow.com/questions/8295773/how-can-i-transform-a-bitmap-into-a-uri
+fun Bitmap?.uri(): Uri {
+    val tempFile = File.createTempFile("temp_image", ".png")
+    val bytes = ByteArrayOutputStream()
+    this?.compress(Bitmap.CompressFormat.PNG, 100, bytes)
+    val bitmapData = bytes.toByteArray()
+    FileOutputStream(tempFile).apply {
+        write(bitmapData)
+        flush()
+        close()
+    }
+    return Uri.fromFile(tempFile)
+}
+
+// https://developer.android.com/training/data-storage/shared/documents-files
+private fun Uri.toBitmap(context: Context): Bitmap? {
+    return try {
+        val parcelFileDescriptor: ParcelFileDescriptor? = context.contentResolver.openFileDescriptor(this, "r")
+        val fileDescriptor: FileDescriptor? = parcelFileDescriptor?.fileDescriptor
+        val image: Bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+        parcelFileDescriptor?.close()
+        image
+    } catch (_: Exception) {
+        null
+    }
 }

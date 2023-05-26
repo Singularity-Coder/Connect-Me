@@ -99,11 +99,13 @@ fun String?.toFormattedHolidayDate(): String? {
     }
 }
 
-fun Long?.toDeviceActivityDate(): String? {
-    return this?.toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)?.substringBefore(",")?.trim()
+fun Long?.toShortDate(): String? {
+    val timeNowString = (timeNow toTimeOfType DateType.dd_MMM_yyyy_hh_mm_a).substringBefore(",").trim()
+    val calculatedTime = this?.toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)?.substringBefore(",")?.trim()
+    return if (calculatedTime == timeNowString) "Today" else calculatedTime
 }
 
-fun Long?.toDeviceActivityTime(): String? {
+fun Long?.toShortTime(): String? {
     return this?.toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)?.substringAfter(",")?.trim()
 }
 

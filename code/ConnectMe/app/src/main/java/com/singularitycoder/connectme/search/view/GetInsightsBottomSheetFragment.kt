@@ -258,32 +258,31 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
         ivAiSettings.onSafeClick {
             val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
-            PopupMenu(requireContext(), it.first).apply {
-                openAiModelsList.forEach {
-                    menu.add(
-                        /* p0 = */ 0,
-                        /* p1 = */ 1,
-                        /* p2 = */ 1,
-                        /* p3 = */ menuIconWithText(
-                            icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent),
-                            title = it
-                        )
+            val popupMenu = PopupMenu(requireContext(), it.first)
+            openAiModelsList.forEach {
+                popupMenu.menu.add(
+                    /* p0 = */ 0,
+                    /* p1 = */ 1,
+                    /* p2 = */ 1,
+                    /* p3 = */ menuIconWithText(
+                        icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent),
+                        title = it
                     )
-                }
-                setOnMenuItemClickListener { it: MenuItem? ->
-                    view?.setHapticFeedback()
-                    when (it?.title?.toString()?.trim()) {
-                        openAiModelsList[0] -> {
-                            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
-                        }
-                        openAiModelsList[1] -> {
-                            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[1]).apply()
-                        }
-                    }
-                    false
-                }
-                show()
+                )
             }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                when (it?.title?.toString()?.trim()) {
+                    openAiModelsList[0] -> {
+                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
+                    }
+                    openAiModelsList[1] -> {
+                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[1]).apply()
+                    }
+                }
+                false
+            }
+            popupMenu.show()
         }
 
         ivChatMode.onSafeClick {
@@ -292,46 +291,45 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         insightsAdapter.setOnItemLongClickListener { insight: Insight?, view: View?, position: Int ->
-            PopupMenu(requireContext(), view).apply {
-                val menuOptions = listOf("Ask again", "Copy", "Share", "Delete")
-                menuOptions.forEach {
-                    menu.add(
-                        0, 1, 1, menuIconWithText(
-                            icon = when (it.trim()) {
-                                menuOptions[0] -> requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
-                                menuOptions[1] -> requireContext().drawable(R.drawable.baseline_content_copy_24)?.changeColor(requireContext(), R.color.purple_500)
-                                menuOptions[2] -> requireContext().drawable(R.drawable.outline_share_24)?.changeColor(requireContext(), R.color.purple_500)
-                                menuOptions[3] -> requireContext().drawable(R.drawable.outline_delete_24)?.changeColor(requireContext(), R.color.purple_500)
-                                else -> requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), android.R.color.transparent)
-                            },
-                            title = it
-                        )
+            val popupMenu = PopupMenu(requireContext(), view)
+            val menuOptions = listOf("Ask again", "Copy", "Share", "Delete")
+            menuOptions.forEach {
+                popupMenu.menu.add(
+                    0, 1, 1, menuIconWithText(
+                        icon = when (it.trim()) {
+                            menuOptions[0] -> requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
+                            menuOptions[1] -> requireContext().drawable(R.drawable.baseline_content_copy_24)?.changeColor(requireContext(), R.color.purple_500)
+                            menuOptions[2] -> requireContext().drawable(R.drawable.outline_share_24)?.changeColor(requireContext(), R.color.purple_500)
+                            menuOptions[3] -> requireContext().drawable(R.drawable.outline_delete_24)?.changeColor(requireContext(), R.color.purple_500)
+                            else -> requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), android.R.color.transparent)
+                        },
+                        title = it
                     )
-                }
-                setOnMenuItemClickListener { it: MenuItem? ->
-                    view?.setHapticFeedback()
-                    when (it?.title?.toString()?.trim()) {
-                        menuOptions[0] -> {
-                            etAskAnything.setText(insight?.insight)
-                            etAskAnything.setSelection(etAskAnything.text?.length ?: 0)
-                        }
-                        menuOptions[1] -> {
-                            root.context.clipboard()?.text = insight?.insight
-                            root.context.showToast("Copied!")
-                        }
-                        menuOptions[2] -> {
-                            requireContext().shareText(text = insight?.insight)
-                        }
-                        menuOptions[3] -> {
-                            searchViewModel.deleteInsight(insight)
-                            insightsAdapter.insightsList.removeAt(position)
-                            insightsAdapter.notifyItemRemoved(position)
-                        }
-                    }
-                    false
-                }
-                show()
+                )
             }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                when (it?.title?.toString()?.trim()) {
+                    menuOptions[0] -> {
+                        etAskAnything.setText(insight?.insight)
+                        etAskAnything.setSelection(etAskAnything.text?.length ?: 0)
+                    }
+                    menuOptions[1] -> {
+                        root.context.clipboard()?.text = insight?.insight
+                        root.context.showToast("Copied!")
+                    }
+                    menuOptions[2] -> {
+                        requireContext().shareTextOrImage(text = insight?.insight)
+                    }
+                    menuOptions[3] -> {
+                        searchViewModel.deleteInsight(insight)
+                        insightsAdapter.insightsList.removeAt(position)
+                        insightsAdapter.notifyItemRemoved(position)
+                    }
+                }
+                false
+            }
+            popupMenu.show()
         }
 
         insightsAdapter.setOnFullScreenClickListener { insight: Insight?, currentImagePosition: Int ->
@@ -360,7 +358,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             checkPermissionAndStartSpeechToText()
         }
 
-        cardVoiceSearchLayout.onSafeClick {
+        clVoiceSearchLayout.onSafeClick {
             stop()
         }
     }
@@ -582,10 +580,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             override fun onRmsChanged(p0: Float) = Unit
             override fun onBufferReceived(p0: ByteArray?) = Unit
             override fun onEndOfSpeech() = Unit
-
-            override fun onError(p0: Int) {
-                stop()
-            }
+            override fun onError(p0: Int) = Unit
 
             override fun onResults(bundle: Bundle?) {
                 val data = bundle?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -609,7 +604,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             return
         }
         binding.llAskAnything.isVisible = false
-        binding.cardVoiceSearchLayout.isVisible = true
+        binding.clVoiceSearchLayout.isVisible = true
         if (animationDrawable.isRunning.not()) animationDrawable.start()
         binding.tvSpokenText.text = "Speak now"
         val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -624,12 +619,13 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun stop() {
         if (animationDrawable.isRunning) animationDrawable.stop()
         binding.llAskAnything.isVisible = true
-        binding.cardVoiceSearchLayout.isVisible = false
+        binding.clVoiceSearchLayout.isVisible = false
+        speechRecognizer?.stopListening()
     }
 
     private fun stopVoiceSearch() {
         stop()
-        speechRecognizer?.stopListening()
+        speechRecognizer?.destroy()
     }
 
     private fun checkPermissionAndStartSpeechToText() {

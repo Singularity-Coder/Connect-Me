@@ -12,6 +12,7 @@ import com.singularitycoder.connectme.databinding.FragmentAddApiKeyBottomSheetBi
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.Preferences
+import com.singularitycoder.connectme.helpers.encryption.CipherUtils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -76,7 +77,7 @@ class AddApiKeyBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun addApiKey(apiKey: String) {
-        preferences.edit().putString(Preferences.KEY_OPEN_AI_API_SECRET, AesEncryption.encrypt(apiKey)).apply()
+        preferences.edit().putString(Preferences.KEY_OPEN_AI_API_SECRET, CipherUtils.encrypt3(apiKey)).apply()
         GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
     }
 }

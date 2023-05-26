@@ -17,7 +17,7 @@ import com.singularitycoder.connectme.databinding.FragmentMainBinding
 import com.singularitycoder.connectme.downloads.DownloadsFragment
 import com.singularitycoder.connectme.explore.ExploreFragment
 import com.singularitycoder.connectme.feed.FeedFragment
-import com.singularitycoder.connectme.following.FollowingFragment
+import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.Tab
@@ -170,7 +170,7 @@ class MainFragment : Fragment() {
             Tab.COLLECTIONS.ordinal -> CollectionsFragment.newInstance(screenType = Tab.COLLECTIONS.value)
 //            Tab.REMAINDERS.ordinal -> FeedFragment.newInstance(screenType = Tab.REMAINDERS.value)
 //            Tab.NOTES.ordinal -> FeedFragment.newInstance(screenType = Tab.NOTES.value)
-            Tab.FOLLOWING.ordinal -> FollowingFragment.newInstance(screenType = Tab.FOLLOWING.value)
+            Tab.FOLLOWING.ordinal -> FollowingWebsiteFragment.newInstance(screenType = Tab.FOLLOWING.value)
             Tab.HISTORY.ordinal -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
             else -> DownloadsFragment.newInstance(screenType = Tab.DOWNLOADS.value, isSelfProfile = true)
         }

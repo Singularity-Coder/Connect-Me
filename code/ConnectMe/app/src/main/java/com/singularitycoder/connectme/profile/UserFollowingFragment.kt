@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.MainActivity
-import com.singularitycoder.connectme.databinding.FragmentFollowingBinding
+import com.singularitycoder.connectme.databinding.FragmentFollowingWebsiteBinding
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.UserProfile
 import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
@@ -28,7 +28,7 @@ class UserFollowingFragment : Fragment() {
         }
     }
 
-    private lateinit var binding: FragmentFollowingBinding
+    private lateinit var binding: FragmentFollowingWebsiteBinding
 
     private val followingAdapter = UserFollowingAdapter()
     private val followingList = mutableListOf<UserFollowing>()
@@ -41,7 +41,7 @@ class UserFollowingFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentFollowingBinding.inflate(inflater, container, false)
+        binding = FragmentFollowingWebsiteBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -52,7 +52,7 @@ class UserFollowingFragment : Fragment() {
         observeForData()
     }
 
-    private fun FragmentFollowingBinding.setupUI() {
+    private fun FragmentFollowingWebsiteBinding.setupUI() {
         when (profileScreenType) {
             UserProfile.FOLLOW.value -> {
                 cardSearch.isVisible = false
@@ -84,7 +84,7 @@ class UserFollowingFragment : Fragment() {
         followingAdapter.followingList = followingList
     }
 
-    private fun FragmentFollowingBinding.setupUserActionListeners() {
+    private fun FragmentFollowingWebsiteBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
         followingAdapter.setOnClickListener { it: UserFollowing ->

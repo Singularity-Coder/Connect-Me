@@ -123,6 +123,7 @@
         android:autoLink="web"
         android:linksClickable="true"
         android:text="Get API key here: https://platform.openai.com/account/api-keys"
+        android:textColorLink="@color/purple_500"
         app:layout_constraintEnd_toEndOf="@+id/et_api_key"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/et_api_key" />

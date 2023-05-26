@@ -11,7 +11,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/ic_placeholder_rectangle"
+        android:background="@color/white"
         android:scaleType="centerCrop"
         android:theme="@style/CustomRoundedImageView"
         app:cardCornerRadius="10dp"
