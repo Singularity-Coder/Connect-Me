@@ -167,6 +167,7 @@ object BottomSheetTag {
     const val TAG_ADD_API_KEY = "TAG_ADD_API_KEY_BOTTOM_SHEET"
     const val TAG_GET_INSIGHTS = "TAG_GET_INSIGHTS_BOTTOM_SHEET"
     const val TAG_IMAGE_VIEWER = "TAG_IMAGE_VIEWER_BOTTOM_SHEET"
+    const val TAG_CREATE_COLLECTION = "TAG_CREATE_COLLECTION_BOTTOM_SHEET"
 }
 
 enum class QuickActionTabMenu(val value: String) {
@@ -175,20 +176,32 @@ enum class QuickActionTabMenu(val value: String) {
     COLLECT_ALL_TABS(value = "Collect All Tabs"),
     HOME(value = "Home"),
     GET_INSIGHT(value = "Get Insight"),
+    MORE_OPTIONS(value = "More Options"),
     CLOSE_ALL_TABS(value = "Close All Tabs"),
     REFRESH_WEBSITE(value = "Refresh Website"),
     NAVIGATE_FORWARD(value = "Navigate Forward"),
+}
+
+enum class QuickActionTabMenuMoreOptions(
+    val title: String,
+    @DrawableRes val icon: Int
+) {
+    ADD_SHORTCUT(title = "Add shortcut", icon = R.drawable.outline_add_home_24),
+    PRINT(title = "Print", icon = R.drawable.outline_print_24),
+    FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
+    TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
+    ADD_TO_COLLECTIONS(title = "Add to collections", icon = R.drawable.outline_file_download_24),
 }
 
 enum class Tab(val value: String) {
     EXPLORE(value = "Explore"),
     FEED(value = "Feed"),
     COLLECTIONS(value = "Collections"),
-//    REMAINDERS(value = "Remainders"),
-//    NOTES(value = "Notes"),
     FOLLOWING(value = "Following"),
     HISTORY(value = "History"),
     DOWNLOADS(value = "Downloads"),
+//    REMAINDERS(value = "Remainders"),
+//    NOTES(value = "Notes"),
 }
 
 enum class UserProfile(val value: String) {

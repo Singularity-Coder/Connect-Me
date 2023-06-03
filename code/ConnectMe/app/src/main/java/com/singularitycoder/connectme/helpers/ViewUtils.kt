@@ -219,10 +219,16 @@ fun Context.showAlertDialog(
 
 fun Context.showPopupMenu(
     view: View?,
-    menuList: List<String>,
+    title: String? = null,
+    menuList: List<String?>,
     onItemClick: (position: Int) -> Unit
 ) {
     PopupMenu(this, view).apply {
+        if (title != null) {
+            menu.add(Menu.NONE, -1, 0, title).apply {
+                isEnabled = false
+            }
+        }
         menuList.forEach {
             menu.add(it)
         }

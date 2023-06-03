@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".search.view.ImageViewerBottomSheetFragment">
+    tools:context=".search.view.imagePreview.ImageViewerBottomSheetFragment">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/iv_image"

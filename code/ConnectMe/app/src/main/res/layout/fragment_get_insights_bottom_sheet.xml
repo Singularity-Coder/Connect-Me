@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_top_rounded"
     android:orientation="vertical"
-    tools:context=".search.view.AddApiKeyBottomSheetFragment">
+    tools:context=".search.view.addApiKey.AddApiKeyBottomSheetFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_header"
@@ -16,11 +16,11 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_edit_api_key"
+            android:id="@+id/iv_chat_menu"
             android:layout_width="26dp"
             android:layout_height="26dp"
             android:layout_marginStart="16dp"
-            android:src="@drawable/outline_key_24"
+            android:src="@drawable/round_menu_24"
             android:tint="@color/purple_500"
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/divider"
@@ -345,5 +345,66 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_chat_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/cl_header">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_search"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="16dp"
+            android:background="@null"
+            android:drawableStart="@drawable/ic_round_search_24"
+            android:drawablePadding="8dp"
+            android:drawableTint="@android:color/darker_gray"
+            android:enabled="true"
+            android:hint="Search"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:textColor="@color/title_color"
+            android:textColorHint="@android:color/darker_gray"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@+id/ib_clear_search"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/ib_clear_search"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="@null"
+            android:src="@drawable/ic_round_cancel_24"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/et_search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/et_search"
+            app:tint="@android:color/darker_gray" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider_chat_search"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:dividerColor="@color/black_50"
+            app:layout_constraintTop_toBottomOf="@+id/et_search" />
+
+        <ListView
+            android:id="@+id/lv_chat_search"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/divider_chat_search" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

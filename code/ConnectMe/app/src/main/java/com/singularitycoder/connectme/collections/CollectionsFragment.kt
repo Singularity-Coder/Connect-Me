@@ -74,10 +74,9 @@ class CollectionsFragment : Fragment() {
                         title = "Collection $it",
                         websitesList = (0..4).map {
                             WebApp(
-                                imageUrl = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
+                                favicon = dummyFaviconUrls[Random().nextInt(dummyFaviconUrls.size)],
                                 title = "The Random Publications",
-                                source = "Randomness is random.",
-                                time = "5 hours ago",
+                                time = 0L,
                                 link = "https://www.randompub.com",
                             )
                         }

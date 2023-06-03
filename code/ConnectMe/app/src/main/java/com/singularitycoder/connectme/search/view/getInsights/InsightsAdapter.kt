@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.getInsights
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -67,7 +67,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         adapterPosition: Int,
         insight: Insight?
     ) {
-        val viewHolder = recyclerView.findViewHolderForAdapterPosition(adapterPosition) as ThisViewHolder
+        val viewHolder = (recyclerView.findViewHolderForAdapterPosition(adapterPosition) as? ThisViewHolder) ?: return
         val textWithHighlights: Spannable = SpannableString(utteranceId).apply {
             setSpan(StyleSpan(Typeface.BOLD), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
             setSpan(BackgroundColorSpan(Color.YELLOW), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
@@ -85,6 +85,11 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 //                highlightText(query = query, result = text.toString())
             }
         }
+    }
+
+    fun readResponse(recyclerView: RecyclerView) {
+        val viewHolder = (recyclerView.findViewHolderForAdapterPosition(insightsList.lastIndex) as? ThisViewHolder) ?: return
+        viewHolder.getView().tvTextResponse.performClick()
     }
 
     fun removeTextViewSpan(

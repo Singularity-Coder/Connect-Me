@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.websiteActions
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
@@ -21,6 +21,8 @@ import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.search.model.WebViewData
+import com.singularitycoder.connectme.search.view.SearchFragment
+import com.singularitycoder.connectme.search.view.SearchTabFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Main
@@ -95,32 +97,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             tvTitle.text = "Downloads"
             tvSubtitle.text = "Last downloaded on 18 April 2093"
             ivArrow.isVisible = true
-        }
-        itemAddToCollections.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_library_add_24))
-            tvTitle.text = "Add to collections"
-            tvSubtitle.text = "Last added on 18 April 2093"
-            ivArrow.isVisible = true
-        }
-        itemFindInPage.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_find_in_page_24))
-            tvTitle.text = "Find in page"
-            tvSubtitle.text = "Search for text in this web page"
-        }
-        itemAddShortcut.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_add_home_24))
-            tvTitle.text = "Add shortcut"
-            tvSubtitle.text = "Add shortcut to home screen"
-        }
-        itemPrint.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_print_24))
-            tvTitle.text = "Print"
-            tvSubtitle.text = "Print this web page"
-        }
-        itemTranslate.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_translate_24))
-            tvTitle.text = "Translate"
-            tvSubtitle.text = "Translate this web page"
         }
         itemPermissions.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_tune_24))
@@ -248,21 +224,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         itemHistory.root.onSafeClick { }
 
         itemDownloads.root.onSafeClick { }
-
-        itemAddToCollections.root.onSafeClick { }
-
-        itemFindInPage.root.onSafeClick { }
-
-        itemAddShortcut.root.onSafeClick {
-            val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
-                ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
-            ) as? SearchTabFragment
-            requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
-        }
-
-        itemPrint.root.onSafeClick { }
-
-        itemTranslate.root.onSafeClick { }
 
         itemPermissions.root.onSafeClick { }
 

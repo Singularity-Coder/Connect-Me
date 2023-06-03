@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.getInsights
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,7 +8,6 @@ import com.singularitycoder.connectme.databinding.ListItem3TextsRoundBinding
 import com.singularitycoder.connectme.helpers.deviceWidth
 import com.singularitycoder.connectme.helpers.dpToPx
 import com.singularitycoder.connectme.helpers.onSafeClick
-import com.singularitycoder.connectme.helpers.setMargins
 
 class PromptsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 

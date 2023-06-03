@@ -23,7 +23,5 @@ class CollectionsViewModel @Inject constructor(
     }
 
     // https://developer.android.com/kotlin/coroutines/coroutines-best-practices#create-coroutines-data-layer
-//    suspend fun isItemPresent(website: String?): Boolean = coroutineScope {
-//        collectionsDao.isItemPresent(website)
-//    }
+//    suspend fun isItemPresent(website: String?): Boolean = collectionsDao.isItemPresent(website)
 }

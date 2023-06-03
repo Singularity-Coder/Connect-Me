@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.imagePreview
 
 import android.os.Bundle
 import android.view.LayoutInflater

@@ -39,6 +39,10 @@ interface InsightDao {
     @Query("SELECT * FROM ${Table.INSIGHT}")
     suspend fun getAll(): List<Insight?>
 
+    @Transaction
+    @Query("SELECT insight FROM ${Table.INSIGHT} WHERE website LIKE :website")
+    suspend fun getAllInsights(website: String?): List<String?>
+
 
     @Transaction
     @Delete

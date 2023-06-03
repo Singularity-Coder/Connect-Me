@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.imagePreview
 
 import android.content.Context
 import android.content.Intent

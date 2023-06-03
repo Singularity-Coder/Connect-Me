@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_top_rounded"
     app:layout_behavior="@string/bottom_sheet_behavior"
-    tools:context=".search.view.ImageViewerBottomSheetFragment">
+    tools:context=".search.view.imagePreview.ImageViewerBottomSheetFragment">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager_image_viewer"

@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.getInsights
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.SnapHelper
@@ -31,8 +32,13 @@ import com.singularitycoder.connectme.databinding.FragmentGetInsightsBottomSheet
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.search.model.*
+import com.singularitycoder.connectme.search.view.addApiKey.AddApiKeyBottomSheetFragment
+import com.singularitycoder.connectme.search.view.imagePreview.ImageViewerBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.util.*
 import javax.inject.Inject
@@ -64,6 +70,9 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private var insightOnClickPosition: Int = 0
     private var insightOnClick: Insight? = null
     private var speechRecognizer: SpeechRecognizer? = null
+    private var isVoiceSearchQuery: Boolean = false
+    private var apiResult: ApiResult? = null
+    private var insightStringsList: List<String?> = emptyList()
 
     private val recordAudioPermissionResult = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isPermissionGranted: Boolean? ->
         isPermissionGranted ?: return@registerForActivityResult
@@ -86,6 +95,21 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         startVoiceSearch()
     }
 
+    // https://github.com/realm/realm-android-adapters/issues/122
+//    private val recyclerViewDataChangedObserver = object : RecyclerView.AdapterDataObserver() {
+//        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+//            super.onItemRangeInserted(positionStart, itemCount)
+//            if (isVoiceSearchQuery &&
+//                binding.rvInsights.isComputingLayout.not() &&
+//                (apiResult?.apiState == ApiState.SUCCESS || apiResult?.apiState == ApiState.ERROR)
+//            ) {
+//                insightsAdapter.readResponse(recyclerView = binding.rvInsights, position = positionStart)
+//                isVoiceSearchQuery = false
+//                apiResult = null
+//            }
+//        }
+//    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentGetInsightsBottomSheetBinding.inflate(inflater, container, false)
         return binding.root
@@ -104,6 +128,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             textToSpeech.shutdown()
         }
         stopVoiceSearch()
+//        binding.rvInsights.adapter?.unregisterAdapterDataObserver(recyclerViewDataChangedObserver)
         super.onDestroyView()
     }
 
@@ -149,6 +174,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         (etImageSize.editText as? AutoCompleteTextView)?.setAdapter(imageSizeAdapter)
 
         preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
+
+        lifecycleScope.launch {
+            val insightStringsList = searchViewModel.getAllInsightStringsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
+            this@GetInsightsBottomSheetFragment.insightStringsList = insightStringsList
+            withContext(Main) {
+                setSearchList(insightStringsList)
+            }
+        }
     }
 
     private fun FragmentGetInsightsBottomSheetBinding.setupUserActionListeners() {
@@ -251,9 +284,43 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             etImageQuantity.boxStrokeColor = requireContext().color(R.color.black_50)
         }
 
-        ivEditApiKey.onSafeClick {
-            AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
-            dismiss()
+        ivChatMenu.onSafeClick {
+            val chatMenuOptionsList = listOf(
+                Pair("Add API key", R.drawable.outline_key_24),
+                Pair("Search", R.drawable.ic_round_search_24)
+            )
+            val popupMenu = PopupMenu(requireContext(), it.first)
+            chatMenuOptionsList.forEach { it: Pair<String, Int> ->
+                popupMenu.menu.add(
+                    0, 1, 1, menuIconWithText(
+                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
+                        title = it.first
+                    )
+                )
+            }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                when (it?.title?.toString()?.trim()) {
+                    chatMenuOptionsList[0].first -> {
+                        AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
+                        dismiss()
+                    }
+                    chatMenuOptionsList[1].first -> {
+                        clChatSearch.isVisible = clChatSearch.isVisible.not()
+                        scrollViewConversation.isVisible = clChatSearch.isVisible.not()
+                        llAskAnything.isVisible = clChatSearch.isVisible.not()
+                        if (clChatSearch.isVisible) {
+                            doAfter(1.seconds()) {
+                                etSearch.showKeyboard()
+                            }
+                        } else {
+                            etSearch.hideKeyboard()
+                        }
+                    }
+                }
+                false
+            }
+            popupMenu.show()
         }
 
         ivAiSettings.onSafeClick {
@@ -261,10 +328,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             val popupMenu = PopupMenu(requireContext(), it.first)
             openAiModelsList.forEach {
                 popupMenu.menu.add(
-                    /* p0 = */ 0,
-                    /* p1 = */ 1,
-                    /* p2 = */ 1,
-                    /* p3 = */ menuIconWithText(
+                    0, 1, 1, menuIconWithText(
                         icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent),
                         title = it
                     )
@@ -361,28 +425,34 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         clVoiceSearchLayout.onSafeClick {
             stop()
         }
-    }
 
-    private fun FragmentGetInsightsBottomSheetBinding.setChatMode() {
-        if (isTextInsight) {
-            setTextMode()
-        } else {
-            setImageMode()
+//        rvInsights.adapter?.registerAdapterDataObserver(recyclerViewDataChangedObserver)
+
+        lvChatSearch.setOnItemClickListener { adapterView, view, position, id ->
+            requireContext().clipboard()?.text = (view as? TextView)?.text
+            requireContext().showToast("Copied text!")
         }
-    }
 
-    private fun FragmentGetInsightsBottomSheetBinding.setImageMode() {
-        ivChatMode.setImageResource(R.drawable.filter_vintage_black_24dp)
-        ivChatMode.setPadding(5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt())
-        etAskAnything.hint = "Ask for a painting"
-        llImageGenerationOptions.isVisible = true
-    }
+        etSearch.doAfterTextChanged { query: Editable? ->
+            ibClearSearch.isVisible = query.isNullOrBlank().not()
 
-    private fun FragmentGetInsightsBottomSheetBinding.setTextMode() {
-        ivChatMode.setImageResource(R.drawable.title_black_24dp)
-        ivChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
-        etAskAnything.hint = "Ask about this website"
-        llImageGenerationOptions.isVisible = false
+            // TODO u cannot highlight here. Chnage to rv
+            if (query.isNullOrBlank()) {
+                setSearchList(insightStringsList)
+                return@doAfterTextChanged
+            }
+
+            val filteredList = insightStringsList.filter { it?.contains(other = query.toString(), ignoreCase = true) == true }
+            setSearchList(filteredList)
+        }
+
+        ibClearSearch.onSafeClick {
+            etSearch.setText("")
+        }
+
+        etSearch.onImeClick {
+            etSearch.hideKeyboard()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -397,6 +467,13 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 insightsAdapter.notifyItemRemoved(insightsAdapter.insightsList.size)
             }
 
+//            fun readResponseIfRecyclerViewLayoutComputed() {
+//                if (rvInsights.isComputingLayout.not()) {
+//                    insightsAdapter.readResponse(recyclerView = binding.rvInsights)
+//                    isVoiceSearchQuery = false
+//                } else readResponseIfRecyclerViewLayoutComputed()
+//            }
+
             when (it.apiState) {
                 ApiState.LOADING -> {
                     insightsAdapter.insightsList.add(
@@ -406,6 +483,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                         )
                     )
                     insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
+                    return@collectLatestLifecycleFlow
                 }
                 ApiState.SUCCESS -> {
                     removeLoadingItem()
@@ -425,14 +503,22 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 else -> Unit
             }
 
+            this@GetInsightsBottomSheetFragment.apiResult = it
             insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
 //            scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
             rvInsights.scrollToPosition(insightsAdapter.insightsList.lastIndex)
             searchViewModel.resetInsight()
+//            if (isVoiceSearchQuery) readResponseIfRecyclerViewLayoutComputed()
+            if (isVoiceSearchQuery) {
+                doAfter(1.seconds()) {
+                    isVoiceSearchQuery = false
+                    insightsAdapter.readResponse(recyclerView = binding.rvInsights)
+                }
+            }
         }
 
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(
-            flow = searchViewModel.getAllInsightsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
+            flow = searchViewModel.getAllInsightItemsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
         ) { it: List<Insight?> ->
             if (isAllInsightsAdded) return@collectLatestLifecycleFlow
             insightsAdapter.insightsList.addAll(it)
@@ -507,6 +593,28 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
             promptsAdapter.notifyDataSetChanged()
         }
+    }
+
+    private fun FragmentGetInsightsBottomSheetBinding.setChatMode() {
+        if (isTextInsight) {
+            setTextMode()
+        } else {
+            setImageMode()
+        }
+    }
+
+    private fun FragmentGetInsightsBottomSheetBinding.setImageMode() {
+        ivChatMode.setImageResource(R.drawable.filter_vintage_black_24dp)
+        ivChatMode.setPadding(5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt(), 5.dpToPx().toInt())
+        etAskAnything.hint = "Ask for a painting"
+        llImageGenerationOptions.isVisible = true
+    }
+
+    private fun FragmentGetInsightsBottomSheetBinding.setTextMode() {
+        ivChatMode.setImageResource(R.drawable.title_black_24dp)
+        ivChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
+        etAskAnything.hint = "Ask about this website"
+        llImageGenerationOptions.isVisible = false
     }
 
     private fun initTextToSpeech() {
@@ -603,6 +711,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             requireContext().showToast("No Internet")
             return
         }
+        isVoiceSearchQuery = true
         binding.llAskAnything.isVisible = false
         binding.clVoiceSearchLayout.isVisible = true
         if (animationDrawable.isRunning.not()) animationDrawable.start()
@@ -630,6 +739,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun checkPermissionAndStartSpeechToText() {
         recordAudioPermissionResult.launch(Manifest.permission.RECORD_AUDIO)
+    }
+
+    private fun setSearchList(insightStringsList: List<String?>) {
+        val arrayAdapter = ArrayAdapter<String>(
+            requireContext(),
+            R.layout.list_item_chat_search,
+            insightStringsList
+        )
+        binding.lvChatSearch.adapter = arrayAdapter
     }
 
     private fun setBottomSheetBehaviour() {

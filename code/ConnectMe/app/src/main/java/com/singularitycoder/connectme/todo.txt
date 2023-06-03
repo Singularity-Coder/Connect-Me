@@ -1,6 +1,5 @@
 TODO THIS WEEK
 proper decryption
-Chat search
 Collections: Set up default collections - bloatware webapps
     - Save to collections
 Downloads
@@ -8,12 +7,6 @@ Downloads
     Download filters - file type, file size, sort - ascending, descending
     handle gif, image, audio, video, file
     long press download item to see full file name with options to delete, show in chrome, share
-
-
-TODO NEED TO EXPLORE
-1. Room lazy load
-2. If on backpress webview reached first page then show speed dial
-
 
 Basic WebApp Collections
 0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
@@ -25,6 +18,7 @@ Basic WebApp Collections
 6. Tools: Drive, Dropbox, Google Calender
 7. Education: Youtube, Khan Acad, Course Era, MIT MOOC, Udacity
 8. Do anything/everything: ChatGPT, Bing, Google
+
 
 Explore
 1. News and other useful/subscribed info summaries
@@ -49,7 +43,7 @@ TODO on focus show recent searches
 
 
 
-Cmd menu -> Close all private tabs
+Private tab close option -> Close all private tabs
 FIXME: If u r filling form in website then u should not show apps on keyboard visible
 Textsize adjustment in webpage - slider
 zoom in webpage - slider
@@ -100,6 +94,11 @@ P2P Comm
 https://github.com/briar/briar
 
 
+TODO NEED TO EXPLORE
+1. Room lazy load
+2. If on backpress webview reached first page then show speed dial
+
+
 FIXME irritating stuff
 1. full screen chat image save pic,
 2. Close other tabs
@@ -123,7 +122,6 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 7. Unlimited browsers/accounts - Pawxy
 8. Mark as Ad - touch on the element to mark as an Ad - XBrowser
 9. If the prompt requires 3rd party apps to do task, check intents and navigate to that app - app shortcuts - there are ways to fetch all activities and trigger appropriate onses but completing a task seems impossible for now.
-10. If perfomed voice search then automatically read out the response. Since the result will always be the last item, u can get the position from adapter list last item
 11. Privacy report: - Settings
     Data saved - x kb
     Trackers n Ads blocked - x

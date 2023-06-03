@@ -36,7 +36,7 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             itemBinding.apply {
                 tvTitle.text = collection?.title
                 listOf(layoutFollowingApp1, layoutFollowingApp2, layoutFollowingApp3, layoutFollowingApp4).forEachIndexed { index, listItemAppBinding ->
-                    listItemAppBinding.ivAppIcon.load(collection?.websitesList?.get(index)?.imageUrl) {
+                    listItemAppBinding.ivAppIcon.load(collection?.websitesList?.get(index)?.favicon) {
                         placeholder(R.color.black)
                     }
                 }

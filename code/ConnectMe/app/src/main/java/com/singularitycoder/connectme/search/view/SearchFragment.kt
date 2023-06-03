@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -39,17 +40,25 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.collections.Collection
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.search.model.*
+import com.singularitycoder.connectme.search.view.addApiKey.AddApiKeyBottomSheetFragment
+import com.singularitycoder.connectme.search.view.createCollection.CreateCollectionBottomSheetFragment
+import com.singularitycoder.connectme.search.view.getInsights.GetInsightsBottomSheetFragment
+import com.singularitycoder.connectme.search.view.websiteActions.WebsiteActionsBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
 import com.singularitycoder.flowlauncher.helper.pinterestView.PinterestView
 import com.singularitycoder.flowlauncher.helper.quickActionView.Action
 import com.singularitycoder.flowlauncher.helper.quickActionView.QuickActionView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
@@ -850,6 +859,9 @@ class SearchFragment : Fragment() {
         val icon5 = requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
         val action5 = Action(id = QuickActionTabMenu.REFRESH_WEBSITE.ordinal, icon = icon5!!, title = QuickActionTabMenu.REFRESH_WEBSITE.value)
 
+        val icon5dot5 = requireContext().drawable(R.drawable.ic_round_more_horiz_24)?.changeColor(requireContext(), R.color.purple_500)
+        val action5dot5 = Action(id = QuickActionTabMenu.MORE_OPTIONS.ordinal, icon = icon5dot5!!, title = QuickActionTabMenu.MORE_OPTIONS.value)
+
         val icon6 = requireContext().drawable(R.drawable.round_arrow_forward_24)?.changeColor(requireContext(), R.color.purple_500)
         val action6 = Action(id = QuickActionTabMenu.NAVIGATE_FORWARD.ordinal, icon = icon6!!, title = QuickActionTabMenu.NAVIGATE_FORWARD.value)
 
@@ -860,10 +872,11 @@ class SearchFragment : Fragment() {
             addAction(action3)
             addAction(action4)
             addAction(action5)
+            addAction(action5dot5)
             addAction(action6)
             register(binding.btnWebsiteQuickActions)
             setBackgroundColor(requireContext().color(R.color.purple_50))
-            setIndicatorDrawable(createGradientDrawable(width = deviceWidth() / 14, height = deviceWidth() / 14))
+            setIndicatorDrawable(createGradientDrawable(width = deviceWidth() / 11, height = deviceWidth() / 11))
         }
         addFabQuickActionView.setOnActionHoverChangedListener { action: Action?, quickActionView: QuickActionView?, isHovering: Boolean ->
             // FIXME selection issue
@@ -915,6 +928,68 @@ class SearchFragment : Fragment() {
                         GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
                     } else {
                         AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
+                    }
+                }
+                QuickActionTabMenu.MORE_OPTIONS.ordinal -> {
+                    val popupMenu = android.widget.PopupMenu(requireContext(), binding.btnWebsiteQuickActions)
+                    QuickActionTabMenuMoreOptions.values().forEach {
+                        popupMenu.menu.add(
+                            0, 1, 1, menuIconWithText(
+                                icon = requireContext().drawable(it.icon)?.changeColor(requireContext(), R.color.purple_500),
+                                title = it.title
+                            )
+                        )
+                    }
+                    popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                        view?.setHapticFeedback()
+                        when (it?.title?.toString()?.trim()) {
+                            QuickActionTabMenuMoreOptions.FIND_IN_PAGE.title -> {}
+                            QuickActionTabMenuMoreOptions.ADD_SHORTCUT.title -> {
+                                val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                                requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
+                            }
+                            QuickActionTabMenuMoreOptions.PRINT.title -> {}
+                            QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
+                            QuickActionTabMenuMoreOptions.ADD_TO_COLLECTIONS.title -> addToCollections()
+                        }
+                        false
+                    }
+                    popupMenu.show()
+                }
+            }
+        }
+    }
+
+    private fun addToCollections() {
+        lifecycleScope.launch {
+            val collectionTitlesList = ArrayList(searchViewModel.getAllCollections()).apply {
+                add("Create new")
+            }
+            withContext(Main) {
+                requireContext().showPopupMenu(
+                    view = binding.ibAddTab,
+                    title = "Add to Collections",
+                    menuList = collectionTitlesList
+                ) { menuPosition: Int ->
+                    val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    val webApp = WebApp(
+                        favicon = encodeBitmapToBase64String(bitmap = selectedWebpage?.getFavicon()),
+                        title = selectedWebpage?.getWebView()?.title,
+                        time = timeNow,
+                        website = getHostFrom(url = selectedWebpage?.getWebView()?.url),
+                        link = selectedWebpage?.getWebView()?.url ?: ""
+                    )
+                    val collection = Collection(
+                        title = "New Collection ${collectionTitlesList.size}",
+                        websitesList = emptyList()
+                    )
+                    searchViewModel.addWebAppThenAddToCollections(webApp, collection)
+                    if (collectionTitlesList[menuPosition]?.contains("Create new") == true) {
+                        CreateCollectionBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
+                        // Show bottom sheet
+                        // 2. Add to new coll - add webapp -> u know webapp id -> create new coll -> update coll
+                    } else {
+                        // 1. Add to existing coll - add webapp -> u know webapp id -> update coll
                     }
                 }
             }

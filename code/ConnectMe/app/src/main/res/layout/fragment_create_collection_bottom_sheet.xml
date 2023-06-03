@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="-4dp"
-            android:text="Add API Key"
+            android:text="Create collection"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:textColor="@android:color/darker_gray"
@@ -41,11 +41,11 @@
             app:layout_constraintTop_toBottomOf="@+id/iv_drag_handle" />
 
         <Button
-            android:id="@+id/btn_done"
+            android:id="@+id/btn_create"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Done"
+            android:text="Create"
             android:textAllCaps="false"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/divider"
@@ -61,22 +61,21 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/et_api_key"
+        android:id="@+id/et_enter_collection_name"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
-        android:layout_marginEnd="8dp"
-        android:hint="Paste OpenAI API Key"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter collection name"
         app:boxBackgroundColor="@color/black_50"
         app:boxStrokeWidth="0dp"
-        app:counterEnabled="false"
+        app:counterEnabled="true"
+        app:counterMaxLength="50"
         app:endIconMode="clear_text"
         app:errorEnabled="false"
         app:helperTextEnabled="false"
-        app:layout_constraintEnd_toStartOf="@+id/card_paste_api_key"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cl_header"
         app:shapeAppearance="@style/RoundSmall"
         app:startIconContentDescription="OpenAI API Key">
@@ -84,52 +83,13 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clickable="false"
-            android:cursorVisible="false"
-            android:focusable="false"
             android:inputType="textLongMessage"
-            android:maxLength="100"
+            android:maxLength="50"
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_paste_api_key"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="16dp"
-        app:cardBackgroundColor="@color/purple_50"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/et_api_key">
-
-        <ImageButton
-            android:id="@+id/ib_paste_api_key"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@null"
-            android:src="@drawable/round_content_paste_24"
-            app:tint="@color/purple_500" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <TextView
-        android:id="@+id/tv_api_key_link"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:autoLink="web"
-        android:linksClickable="true"
-        android:text="Get API key here: https://platform.openai.com/account/api-keys"
-        android:textColorLink="@color/purple_500"
-        app:layout_constraintEnd_toEndOf="@+id/et_api_key"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_api_key" />
-
     <View
         android:layout_width="match_parent"
-        android:layout_height="32dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_api_key_link" />
+        android:layout_height="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/et_enter_collection_name" />
 </androidx.constraintlayout.widget.ConstraintLayout>

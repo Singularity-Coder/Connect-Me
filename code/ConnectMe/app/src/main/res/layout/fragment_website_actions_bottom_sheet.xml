@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_top_rounded"
     android:orientation="vertical"
-    tools:context=".search.view.WebsiteActionsBottomSheetFragment">
+    tools:context=".search.view.websiteActions.WebsiteActionsBottomSheetFragment">
 
     <ImageView
         android:id="@+id/iv_drag_handle"
@@ -327,26 +327,6 @@
 
                     <include
                         android:id="@+id/item_downloads"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_add_to_collections"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_find_in_page"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_add_shortcut"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_print"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_translate"
                         layout="@layout/list_item_website_action" />
 
                     <include

@@ -26,8 +26,5 @@ class FollowingWebsiteViewModel @Inject constructor(
         followingWebsiteDao.insert(followingWebsite)
     }
 
-    // https://developer.android.com/kotlin/coroutines/coroutines-best-practices#create-coroutines-data-layer
-    suspend fun isItemPresent(website: String?): Boolean = coroutineScope {
-        followingWebsiteDao.isItemPresent(website)
-    }
+    suspend fun isItemPresent(website: String?): Boolean = followingWebsiteDao.isItemPresent(website)
 }

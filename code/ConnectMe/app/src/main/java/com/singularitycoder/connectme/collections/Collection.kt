@@ -10,8 +10,7 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.COLLECTION)
 @Parcelize
 data class Collection(
-    @PrimaryKey val id: Long = 0,
-    val title: String = "",
+    @PrimaryKey val title: String = "",
     val websitesList: List<WebApp> = emptyList()
 ) : Parcelable
 

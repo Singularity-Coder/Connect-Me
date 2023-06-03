@@ -44,6 +44,13 @@ interface CollectionsDao {
     @Query("SELECT * FROM ${Table.COLLECTION}")
     suspend fun getAll(): List<Collection?>
 
+    @Query("SELECT title FROM ${Table.COLLECTION}")
+    suspend fun getAllTitles(): List<String?>
+
+    // https://developer.android.com/topic/performance/sqlite-performance-best-practices
+    @Query("SELECT DISTINCT title FROM ${Table.COLLECTION}")
+    suspend fun getAllUniqueTitles(): List<String?>
+
 
     @Transaction
     @Delete

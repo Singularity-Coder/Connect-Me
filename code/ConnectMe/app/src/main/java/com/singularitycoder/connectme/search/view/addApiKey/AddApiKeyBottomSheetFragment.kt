@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view
+package com.singularitycoder.connectme.search.view.addApiKey
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -13,6 +13,7 @@ import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.encryption.CipherUtils
+import com.singularitycoder.connectme.search.view.getInsights.GetInsightsBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
