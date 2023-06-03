@@ -355,10 +355,10 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/cl_header">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white" />
+        <!--        <View-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:background="@color/white" />-->
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_search"
@@ -400,11 +400,14 @@
             app:dividerColor="@color/black_50"
             app:layout_constraintTop_toBottomOf="@+id/et_search" />
 
-        <ListView
-            android:id="@+id/lv_chat_search"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_chat_search"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white"
-            app:layout_constraintTop_toBottomOf="@+id/divider_chat_search" />
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="true"
+            android:scrollbars="none"
+            app:layout_constraintTop_toBottomOf="@+id/divider_chat_search"
+            tools:listitem="@layout/list_item_chat_search" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

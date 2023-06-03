@@ -64,6 +64,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val insightsAdapter = InsightsAdapter()
+    private val chatSearchAdapter = ChatSearchAdapter()
     private val promptsAdapter = PromptsAdapter()
     private var isTextInsight: Boolean = true
     private var isAllInsightsAdded: Boolean = false
@@ -156,6 +157,11 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             adapter = insightsAdapter
         }
 
+        rvChatSearch.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = chatSearchAdapter
+        }
+
         rvDefaultPrompts.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = promptsAdapter
@@ -176,8 +182,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
 
         lifecycleScope.launch {
-            val insightStringsList = searchViewModel.getAllInsightStringsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
-            this@GetInsightsBottomSheetFragment.insightStringsList = insightStringsList
+            getInsightStringsList()
             withContext(Main) {
                 setSearchList(insightStringsList)
             }
@@ -306,6 +311,12 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                         dismiss()
                     }
                     chatMenuOptionsList[1].first -> {
+                        lifecycleScope.launch {
+                            getInsightStringsList()
+                            withContext(Main) {
+                                setSearchList(insightStringsList)
+                            }
+                        }
                         clChatSearch.isVisible = clChatSearch.isVisible.not()
                         scrollViewConversation.isVisible = clChatSearch.isVisible.not()
                         llAskAnything.isVisible = clChatSearch.isVisible.not()
@@ -428,22 +439,24 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
 //        rvInsights.adapter?.registerAdapterDataObserver(recyclerViewDataChangedObserver)
 
-        lvChatSearch.setOnItemClickListener { adapterView, view, position, id ->
-            requireContext().clipboard()?.text = (view as? TextView)?.text
+        chatSearchAdapter.setOnItemClickListener { it: String? ->
+            requireContext().clipboard()?.text = it
             requireContext().showToast("Copied text!")
         }
 
         etSearch.doAfterTextChanged { query: Editable? ->
             ibClearSearch.isVisible = query.isNullOrBlank().not()
 
-            // TODO u cannot highlight here. Chnage to rv
             if (query.isNullOrBlank()) {
                 setSearchList(insightStringsList)
+                chatSearchAdapter.query = ""
                 return@doAfterTextChanged
             }
 
             val filteredList = insightStringsList.filter { it?.contains(other = query.toString(), ignoreCase = true) == true }
             setSearchList(filteredList)
+
+            chatSearchAdapter.query = query.toString().toLowCase()
         }
 
         ibClearSearch.onSafeClick {
@@ -741,13 +754,15 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         recordAudioPermissionResult.launch(Manifest.permission.RECORD_AUDIO)
     }
 
+    private suspend fun getInsightStringsList() {
+        val insightStringsList = searchViewModel.getAllInsightStringsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
+        this@GetInsightsBottomSheetFragment.insightStringsList = insightStringsList
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     private fun setSearchList(insightStringsList: List<String?>) {
-        val arrayAdapter = ArrayAdapter<String>(
-            requireContext(),
-            R.layout.list_item_chat_search,
-            insightStringsList
-        )
-        binding.lvChatSearch.adapter = arrayAdapter
+        chatSearchAdapter.chatSearchList = insightStringsList
+        chatSearchAdapter.notifyDataSetChanged()
     }
 
     private fun setBottomSheetBehaviour() {
