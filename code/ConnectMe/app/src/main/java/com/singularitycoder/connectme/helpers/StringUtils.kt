@@ -210,6 +210,7 @@ fun encodeBitmapToBase64String(bitmap: Bitmap?): String? {
 
 // https://stackoverflow.com/questions/4989182/converting-java-bitmap-to-byte-array
 fun decodeBase64StringToBitmap(string: String?): Bitmap? {
+    string ?: return null
     val decodedByte: ByteArray = android.util.Base64.decode(string, 0)
     return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.size)
 }

@@ -8,7 +8,7 @@
         android:id="@+id/card_app_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/purple_50"
+        android:backgroundTint="@color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,7 +21,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:scaleType="centerCrop"
-            android:src="@color/purple_50" />
+            android:src="@color/white" />
     </com.google.android.material.card.MaterialCardView>
 
     <TextView
@@ -29,7 +29,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:ellipsize="end"
         android:fontFamily="sans-serif-condensed"
         android:lines="1"
         android:text="App"

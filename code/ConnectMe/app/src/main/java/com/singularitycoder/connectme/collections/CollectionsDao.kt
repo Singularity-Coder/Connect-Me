@@ -11,15 +11,15 @@ interface CollectionsDao {
     /** room database will replace data based on primary key */
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(collection: Collection?)
+    suspend fun insert(collectionWebPage: CollectionWebPage?)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(list: List<Collection?>)
+    suspend fun insertAll(list: List<CollectionWebPage?>)
 
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(collection: Collection?)
+    suspend fun update(collectionWebPage: CollectionWebPage?)
 
 //    @Query("UPDATE ${Table.COLLECTION} SET link = :link WHERE website LIKE :website")
 //    fun updateWithPromptsList(link: String?, website: String)
@@ -27,34 +27,37 @@ interface CollectionsDao {
 
 //    @Transaction
 //    @Query("SELECT * FROM ${Table.COLLECTION} WHERE website LIKE :website LIMIT 1")
-//    suspend fun getItemByWebsite(website: String?): Collection?
+//    suspend fun getItemByWebsite(website: String?): CollectionWebPage?
 
     @Query("SELECT * FROM ${Table.COLLECTION}")
-    fun getAllItemsLiveData(): LiveData<List<Collection?>>
+    fun getAllItemsLiveData(): LiveData<List<CollectionWebPage?>>
 
     @Query("SELECT * FROM ${Table.COLLECTION}")
-    fun getAllItemsStateFlow(): Flow<List<Collection?>>
+    fun getAllItemsStateFlow(): Flow<List<CollectionWebPage?>>
 
 //    @Query("SELECT * FROM ${Table.COLLECTION} WHERE website = :website")
-//    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<Collection?>>
+//    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<CollectionWebPage?>>
 
 //    @Query("SELECT * FROM ${Table.COLLECTION} WHERE website = :website")
-//    fun getByItemWebsiteStateFlow(website: String?): Flow<Collection?>
+//    fun getByItemWebsiteStateFlow(website: String?): Flow<CollectionWebPage?>
 
     @Query("SELECT * FROM ${Table.COLLECTION}")
-    suspend fun getAll(): List<Collection?>
+    suspend fun getAll(): List<CollectionWebPage?>
 
     @Query("SELECT title FROM ${Table.COLLECTION}")
     suspend fun getAllTitles(): List<String?>
 
+    @Query("SELECT collectionTitle FROM ${Table.COLLECTION}")
+    suspend fun getAllCollectionTitles(): List<String?>
+
     // https://developer.android.com/topic/performance/sqlite-performance-best-practices
-    @Query("SELECT DISTINCT title FROM ${Table.COLLECTION}")
+    @Query("SELECT DISTINCT collectionTitle FROM ${Table.COLLECTION}")
     suspend fun getAllUniqueTitles(): List<String?>
 
 
     @Transaction
     @Delete
-    suspend fun delete(collection: Collection?)
+    suspend fun delete(collectionWebPage: CollectionWebPage?)
 
 //    @Transaction
 //    @Query("DELETE FROM ${Table.COLLECTION} WHERE website = :website")

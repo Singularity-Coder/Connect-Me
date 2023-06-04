@@ -1,6 +1,7 @@
 package com.singularitycoder.connectme.helpers
 
 import android.app.Activity
+import android.app.Dialog
 import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
@@ -30,6 +31,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.palette.graphics.Palette
@@ -118,6 +120,14 @@ fun BottomSheetDialogFragment.setTransparentBackground() {
             bottomSheet?.setBackgroundResource(android.R.color.transparent)
         }
     }
+}
+
+/** https://stackoverflow.com/questions/48002290/show-entire-bottom-sheet-with-edittext-above-keyboard
+ * This is for adjusting the input field properly when keyboard visible */
+fun BottomSheetDialogFragment.enableSoftInput() {
+    dialog?.window?.setSoftInputMode(
+        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+    )
 }
 
 fun TextView.showHideIcon(

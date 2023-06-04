@@ -28,6 +28,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,7 +41,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
-import com.singularitycoder.connectme.collections.Collection
+import com.singularitycoder.connectme.collections.CollectionWebPage
+import com.singularitycoder.connectme.collections.CollectionsViewModel
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
@@ -81,6 +83,7 @@ class SearchFragment : Fragment() {
 
     private val topicTabsList = mutableListOf<String>()
     private val searchViewModel by activityViewModels<SearchViewModel>()
+    private val collectionsViewModel by viewModels<CollectionsViewModel>()
     private val iconTextActionAdapter by lazy { IconTextActionAdapter() }
 
     private var searchQuery: String = ""
@@ -253,7 +256,6 @@ class SearchFragment : Fragment() {
         cardSearchSuggestions.setOnVisibilityChangedListener { it: Boolean ->
             viewSearchSuggestionsScrim.isVisible = it
         }
-
 
         ivSearchEngine.onSafeClick {
             val popupMenu = android.widget.PopupMenu(requireContext(), it.first)
@@ -962,7 +964,7 @@ class SearchFragment : Fragment() {
 
     private fun addToCollections() {
         lifecycleScope.launch {
-            val collectionTitlesList = ArrayList(searchViewModel.getAllCollections()).apply {
+            val collectionTitlesList = collectionsViewModel.getAllUniqueCollectionTitles().toArrayList().apply {
                 add("Create new")
             }
             withContext(Main) {
@@ -972,24 +974,18 @@ class SearchFragment : Fragment() {
                     menuList = collectionTitlesList
                 ) { menuPosition: Int ->
                     val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
-                    val webApp = WebApp(
+                    val collectionWebPage = CollectionWebPage(
+                        collectionTitle = collectionTitlesList[menuPosition] ?: "",
                         favicon = encodeBitmapToBase64String(bitmap = selectedWebpage?.getFavicon()),
                         title = selectedWebpage?.getWebView()?.title,
                         time = timeNow,
-                        website = getHostFrom(url = selectedWebpage?.getWebView()?.url),
                         link = selectedWebpage?.getWebView()?.url ?: ""
                     )
-                    val collection = Collection(
-                        title = "New Collection ${collectionTitlesList.size}",
-                        websitesList = emptyList()
-                    )
-                    searchViewModel.addWebAppThenAddToCollections(webApp, collection)
                     if (collectionTitlesList[menuPosition]?.contains("Create new") == true) {
-                        CreateCollectionBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
-                        // Show bottom sheet
-                        // 2. Add to new coll - add webapp -> u know webapp id -> create new coll -> update coll
+                        CreateCollectionBottomSheetFragment.newInstance(collectionWebPage).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
                     } else {
-                        // 1. Add to existing coll - add webapp -> u know webapp id -> update coll
+                        collectionsViewModel.addToCollections(collectionWebPage)
+                        requireContext().showToast("Added to ${collectionTitlesList[menuPosition]}")
                     }
                 }
             }

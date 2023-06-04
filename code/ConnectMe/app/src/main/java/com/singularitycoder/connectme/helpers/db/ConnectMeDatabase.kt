@@ -22,7 +22,7 @@ import com.singularitycoder.connectme.search.model.WebApp
         Prompt::class,
         History::class,
         FollowingWebsite::class,
-        com.singularitycoder.connectme.collections.Collection::class,
+        com.singularitycoder.connectme.collections.CollectionWebPage::class,
     ],
     version = 1,
     exportSchema = false

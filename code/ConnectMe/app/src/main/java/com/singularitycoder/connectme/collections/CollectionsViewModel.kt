@@ -3,7 +3,6 @@ package com.singularitycoder.connectme.collections
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -14,12 +13,20 @@ class CollectionsViewModel @Inject constructor(
 
     fun getAllCollections() = collectionsDao.getAllItemsStateFlow()
 
-    fun deleteItem(collection: Collection?) = viewModelScope.launch {
-        collectionsDao.delete(collection)
+    suspend fun getAllCollectionTitles() = collectionsDao.getAllCollectionTitles()
+
+    suspend fun getAllUniqueCollectionTitles() = collectionsDao.getAllUniqueTitles()
+
+    fun addToCollections(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
+        collectionsDao.insert(collectionWebPage)
     }
 
-    fun addCollection(collection: Collection?) = viewModelScope.launch {
-        collectionsDao.insert(collection)
+    fun updateCollection(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
+        collectionsDao.update(collectionWebPage)
+    }
+
+    fun deleteItem(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
+        collectionsDao.delete(collectionWebPage)
     }
 
     // https://developer.android.com/kotlin/coroutines/coroutines-best-practices#create-coroutines-data-layer

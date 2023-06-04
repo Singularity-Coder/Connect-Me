@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.singularitycoder.connectme.collections.CollectionsDao
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.ChatRole
 import com.singularitycoder.connectme.helpers.constants.Preferences
@@ -19,7 +18,6 @@ import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.history.HistoryDao
 import com.singularitycoder.connectme.search.dao.InsightDao
 import com.singularitycoder.connectme.search.dao.PromptDao
-import com.singularitycoder.connectme.search.dao.WebAppDao
 import com.singularitycoder.connectme.search.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
@@ -44,8 +42,6 @@ class SearchViewModel @Inject constructor(
     private val insightDao: InsightDao,
     private val promptDao: PromptDao,
     private val historyDao: HistoryDao,
-    private val collectionsDao: CollectionsDao,
-    private val webAppDao: WebAppDao,
 ) : ViewModel() {
 
     private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
@@ -117,24 +113,6 @@ class SearchViewModel @Inject constructor(
 
     fun addToHistory(history: History) = viewModelScope.launch {
         historyDao.insert(history)
-    }
-
-    fun addToCollections(collection: com.singularitycoder.connectme.collections.Collection) = viewModelScope.launch {
-        collectionsDao.insert(collection)
-    }
-
-    fun addWebAppThenAddToCollections(
-        webApp: WebApp?,
-        collection: com.singularitycoder.connectme.collections.Collection
-    ) = viewModelScope.launch {
-        webAppDao.insert(webApp)
-        collectionsDao.insert(collection)
-    }
-
-    suspend fun getAllCollections() = collectionsDao.getAllTitles()
-
-    fun addWebApp(webApp: WebApp?) = viewModelScope.launch {
-        webAppDao.insert(webApp)
     }
 
     fun resetInsight() = viewModelScope.launch(IO) {

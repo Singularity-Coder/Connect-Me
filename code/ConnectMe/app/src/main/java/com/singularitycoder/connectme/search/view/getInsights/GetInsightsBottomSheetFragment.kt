@@ -136,11 +136,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     // https://stackoverflow.com/questions/15543186/how-do-i-create-colorstatelist-programmatically
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentGetInsightsBottomSheetBinding.setupUI() {
-        /** https://stackoverflow.com/questions/48002290/show-entire-bottom-sheet-with-edittext-above-keyboard
-         * This is for adjusting the input field properly when keyboard visible */
-        dialog?.window?.setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-        )
+        enableSoftInput()
 
         setTransparentBackground()
 
@@ -317,6 +313,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                                 setSearchList(insightStringsList)
                             }
                         }
+                        etSearch.setText("")
                         clChatSearch.isVisible = clChatSearch.isVisible.not()
                         scrollViewConversation.isVisible = clChatSearch.isVisible.not()
                         llAskAnything.isVisible = clChatSearch.isVisible.not()
