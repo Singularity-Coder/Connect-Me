@@ -1,8 +1,6 @@
 TODO THIS WEEK
-Collection detail screen
 closing session saves to collection - timestamp
 Export collection to sqlite db and csv file
-Apply blue filter on  collections icons
 
 proper decryption
 Downloads
@@ -131,6 +129,8 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
     if file send it to chrome
     file editing features - rename, move to subfolder, create subfolders, etc
 19. Filters for history
+20. Apply blue filter on  collections icons
+
 
 
 TODO Checklist

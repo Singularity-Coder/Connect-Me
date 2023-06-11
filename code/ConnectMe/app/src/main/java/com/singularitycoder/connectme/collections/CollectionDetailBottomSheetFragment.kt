@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -15,11 +17,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionDetailBottomSheetBinding
-import com.singularitycoder.connectme.helpers.collectLatestLifecycleFlow
-import com.singularitycoder.connectme.helpers.enableSoftInput
-import com.singularitycoder.connectme.helpers.onSafeClick
-import com.singularitycoder.connectme.helpers.setTransparentBackground
+import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.history.History
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -79,6 +79,35 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentCollectionDetailBottomSheetBinding.setupUserActionListeners() {
         collectionDetailsAdapter.setOnItemClickListener { it: CollectionWebPage? ->
 
+        }
+
+        collectionDetailsAdapter.setOnLongClickListener { collectionWebPage: CollectionWebPage?, view: View? ->
+            val popupMenu = PopupMenu(requireContext(), view)
+            val optionsList = listOf(
+                Pair("Share", R.drawable.outline_share_24),
+                Pair("Delete", R.drawable.outline_delete_24)
+            )
+            optionsList.forEach {
+                popupMenu.menu.add(
+                    0, 1, 1, menuIconWithText(
+                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
+                        title = it.first
+                    )
+                )
+            }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                when (it?.title?.toString()?.trim()) {
+                    optionsList[0].first -> {
+                        requireContext().shareTextOrImage(text = collectionWebPage?.title, title = collectionWebPage?.link)
+                    }
+                    optionsList[1].first -> {
+                        collectionsViewModel.deleteItem(collectionWebPage)
+                    }
+                }
+                false
+            }
+            popupMenu.show()
         }
 
         btnLaunch.onSafeClick {

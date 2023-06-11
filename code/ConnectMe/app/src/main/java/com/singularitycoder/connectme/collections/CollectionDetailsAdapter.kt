@@ -1,6 +1,7 @@
 package com.singularitycoder.connectme.collections
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -8,12 +9,16 @@ import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemHistoryBinding
 import com.singularitycoder.connectme.helpers.decodeBase64StringToBitmap
+import com.singularitycoder.connectme.helpers.onCustomLongClick
+import com.singularitycoder.connectme.helpers.onSafeClick
 import com.singularitycoder.connectme.helpers.toIntuitiveDateTime
+import com.singularitycoder.connectme.history.History
 
 class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var webPageList = emptyList<CollectionWebPage?>()
     private var itemClickListener: (collectionWebPage: CollectionWebPage?) -> Unit = {}
+    private var itemLongClickListener: (collectionWebPage: CollectionWebPage?, view: View?) -> Unit = { _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -32,6 +37,10 @@ class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
         itemClickListener = listener
     }
 
+    fun setOnLongClickListener(listener: (collectionWebPage: CollectionWebPage?, view: View?) -> Unit) {
+        itemLongClickListener = listener
+    }
+
     inner class ThisViewHolder(
         private val itemBinding: ListItemHistoryBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
@@ -46,8 +55,11 @@ class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
                     placeholder(R.color.white)
                     error(R.color.md_red_900)
                 }
-                root.setOnClickListener {
+                root.onSafeClick {
                     itemClickListener.invoke(collectionWebPage)
+                }
+                root.onCustomLongClick {
+                    itemLongClickListener.invoke(collectionWebPage, it)
                 }
             }
         }
