@@ -35,6 +35,9 @@ interface CollectionsDao {
     @Query("SELECT * FROM ${Table.COLLECTION}")
     fun getAllItemsStateFlow(): Flow<List<CollectionWebPage?>>
 
+    @Query("SELECT * FROM ${Table.COLLECTION} WHERE collectionTitle = :collectionTitle")
+    fun getAllItemsByCollectionTitleStateFlow(collectionTitle: String?): Flow<List<CollectionWebPage?>>
+
 //    @Query("SELECT * FROM ${Table.COLLECTION} WHERE website = :website")
 //    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<CollectionWebPage?>>
 

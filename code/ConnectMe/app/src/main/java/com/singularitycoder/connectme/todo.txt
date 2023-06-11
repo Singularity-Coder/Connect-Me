@@ -1,7 +1,8 @@
 TODO THIS WEEK
-Export collection to sqlite db and csv file
-closing session saves to collection - timestamp
 Collection detail screen
+closing session saves to collection - timestamp
+Export collection to sqlite db and csv file
+Apply blue filter on  collections icons
 
 proper decryption
 Downloads
@@ -9,6 +10,7 @@ Downloads
     Download filters - file type, file size, sort - ascending, descending
     handle gif, image, audio, video, file
     long press download item to see full file name with options to delete, show in chrome, share
+ - open tabs from collection
 
 Explore
 1. News and other useful/subscribed info summaries

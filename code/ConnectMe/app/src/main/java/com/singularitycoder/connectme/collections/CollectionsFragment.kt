@@ -61,7 +61,10 @@ class CollectionsFragment : Fragment() {
     private fun FragmentCollectionsBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
-        collectionsAdapter.setOnNewsClickListener { it: LinksCollection? ->
+        collectionsAdapter.setOnItemClickListener { it: LinksCollection? ->
+            CollectionDetailBottomSheetFragment.newInstance(
+                collectionTitle = it?.title
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
         }
 
         ibClearSearch.onSafeClick {

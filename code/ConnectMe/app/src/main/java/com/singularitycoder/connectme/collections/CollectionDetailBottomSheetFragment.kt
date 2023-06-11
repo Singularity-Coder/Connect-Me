@@ -1,43 +1,51 @@
 package com.singularitycoder.connectme.collections
 
-import android.os.Build
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
+import android.widget.FrameLayout
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.databinding.FragmentCollectionDetailBottomSheetBinding
+import com.singularitycoder.connectme.helpers.collectLatestLifecycleFlow
 import com.singularitycoder.connectme.helpers.enableSoftInput
+import com.singularitycoder.connectme.helpers.onSafeClick
 import com.singularitycoder.connectme.helpers.setTransparentBackground
+import com.singularitycoder.connectme.history.History
 import dagger.hilt.android.AndroidEntryPoint
 
-private const val ARG_PARAM_COLLECTION_WEB_PAGE = "ARG_PARAM_COLLECTION_WEB_PAGE"
+private const val ARG_PARAM_COLLECTION_TITLE = "ARG_PARAM_COLLECTION_TITLE"
 
 @AndroidEntryPoint
 class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(collectionWebPage: CollectionWebPage? = null) = CollectionDetailBottomSheetFragment().apply {
-            arguments = Bundle().apply { putParcelable(ARG_PARAM_COLLECTION_WEB_PAGE, collectionWebPage) }
+        fun newInstance(collectionTitle: String?) = CollectionDetailBottomSheetFragment().apply {
+            arguments = Bundle().apply { putString(ARG_PARAM_COLLECTION_TITLE, collectionTitle) }
         }
     }
 
     private lateinit var binding: FragmentCollectionDetailBottomSheetBinding
 
-    private var collectionWebPage: CollectionWebPage? = null
+    private var collectionTitle: String? = null
+    private var webPageList = listOf<CollectionWebPage?>()
 
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
+    private val collectionDetailsAdapter: CollectionDetailsAdapter by lazy { CollectionDetailsAdapter() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        collectionWebPage = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getParcelable(ARG_PARAM_COLLECTION_WEB_PAGE, CollectionWebPage::class.java)
-        } else {
-            arguments?.getParcelable(ARG_PARAM_COLLECTION_WEB_PAGE)
-        }
+        collectionTitle = arguments?.getString(ARG_PARAM_COLLECTION_TITLE)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -47,17 +55,95 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUI()
+        binding.setupUI()
         binding.setupUserActionListeners()
+        binding.observeForData()
     }
 
-    private fun setupUI() {
+    private fun FragmentCollectionDetailBottomSheetBinding.setupUI() {
         enableSoftInput()
 
         setTransparentBackground()
+
+        setBottomSheetBehaviour()
+
+        tvHeader.text = collectionTitle
+
+        rvCollections.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = collectionDetailsAdapter
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentCollectionDetailBottomSheetBinding.setupUserActionListeners() {
+        collectionDetailsAdapter.setOnItemClickListener { it: CollectionWebPage? ->
 
+        }
+
+        btnLaunch.onSafeClick {
+
+        }
+
+        ibClearSearch.onSafeClick {
+            etSearch.setText("")
+        }
+
+        etSearch.doAfterTextChanged { query: Editable? ->
+            ibClearSearch.isVisible = query.isNullOrBlank().not()
+            if (query.isNullOrBlank()) {
+                collectionDetailsAdapter.webPageList = webPageList
+                collectionDetailsAdapter.notifyDataSetChanged()
+                return@doAfterTextChanged
+            }
+
+            collectionDetailsAdapter.webPageList = webPageList.filter { it?.title?.contains(other = query, ignoreCase = true) == true }
+            collectionDetailsAdapter.notifyDataSetChanged()
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun FragmentCollectionDetailBottomSheetBinding.observeForData() {
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(
+            flow = collectionsViewModel.getCollectionsByCollectionTitles(collectionTitle)
+        ) { it: List<CollectionWebPage?> ->
+            this@CollectionDetailBottomSheetFragment.webPageList = it
+            collectionDetailsAdapter.webPageList = it
+            collectionDetailsAdapter.notifyDataSetChanged()
+        }
+    }
+
+    private fun setBottomSheetBehaviour() {
+        val bottomSheetDialog = dialog as BottomSheetDialog
+        val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout? ?: return
+        val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet)
+//        bottomSheet.layoutParams.height = deviceHeight()
+//        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        var oldState = BottomSheetBehavior.STATE_HIDDEN
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                println("bottom sheet state: ${behavior.state}")
+                when (newState) {
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        behavior.state = BottomSheetBehavior.STATE_HIDDEN
+                    }
+                    BottomSheetBehavior.STATE_DRAGGING -> Unit
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        oldState = BottomSheetBehavior.STATE_EXPANDED
+                    }
+                    BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
+                    BottomSheetBehavior.STATE_HIDDEN -> Unit
+                    BottomSheetBehavior.STATE_SETTLING -> {
+                        if (oldState == BottomSheetBehavior.STATE_EXPANDED) {
+                            behavior.state = BottomSheetBehavior.STATE_HIDDEN
+                        }
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // React to dragging events
+            }
+        })
     }
 }

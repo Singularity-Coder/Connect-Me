@@ -180,6 +180,7 @@ object BottomSheetTag {
     const val TAG_GET_INSIGHTS = "TAG_GET_INSIGHTS_BOTTOM_SHEET"
     const val TAG_IMAGE_VIEWER = "TAG_IMAGE_VIEWER_BOTTOM_SHEET"
     const val TAG_CREATE_COLLECTION = "TAG_CREATE_COLLECTION_BOTTOM_SHEET"
+    const val TAG_COLLECTION_DETAIL = "TAG_COLLECTION_DETAIL_BOTTOM_SHEET"
 }
 
 enum class QuickActionTabMenu(val value: String) {

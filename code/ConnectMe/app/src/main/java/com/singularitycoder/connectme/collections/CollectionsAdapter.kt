@@ -13,7 +13,7 @@ import com.singularitycoder.connectme.helpers.decodeBase64StringToBitmap
 class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var collectionsList = emptyList<LinksCollection?>()
-    private var newsClickListener: (linksCollection: LinksCollection?) -> Unit = {}
+    private var itemClickListener: (linksCollection: LinksCollection?) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemCollectionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -28,8 +28,8 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setOnNewsClickListener(listener: (linksCollection: LinksCollection?) -> Unit) {
-        newsClickListener = listener
+    fun setOnItemClickListener(listener: (linksCollection: LinksCollection?) -> Unit) {
+        itemClickListener = listener
     }
 
     inner class ThisViewHolder(
@@ -56,7 +56,7 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     }
                 }
                 root.setOnClickListener {
-                    newsClickListener.invoke(linksCollection)
+                    itemClickListener.invoke(linksCollection)
                 }
             }
         }
