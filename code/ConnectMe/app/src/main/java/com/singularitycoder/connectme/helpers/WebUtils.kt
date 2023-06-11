@@ -17,6 +17,7 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.webkit.URLUtil
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
@@ -24,6 +25,7 @@ import androidx.core.content.FileProvider
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
+import com.singularitycoder.connectme.search.view.SearchTabFragment
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -326,15 +328,16 @@ fun WebView.loadLocallyArchivedWebsite(archiveFilePath: String, fileName: String
 }
 
 // https://github.com/Singularity-Coder/Instant-Android/tree/master/kotlin/AndroidStorageMadness
-fun Context.getRealUrlFromWebView(
+fun Context.onWebPageLoaded(
     url: String,
-    onRealUrlReady: (url: String) -> Unit,
+    onRealUrlReady: (webView: WebView?, favicon: Bitmap?) -> Unit,
 ) {
     WebView(this).apply {
-        webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView, realUrl: String) {
-                println("real url: $realUrl")
-                onRealUrlReady.invoke(realUrl)
+        webChromeClient = object : WebChromeClient() {
+            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
+                val favicon = icon?.copy(icon.config, true)
+                if (icon?.isRecycled?.not() == true) icon.recycle()
+                onRealUrlReady.invoke(view, favicon)
             }
         }
         loadUrl(url)
@@ -485,6 +488,7 @@ fun WebView.screenshot(): Bitmap {
 }
 
 // https://www.baeldung.com/java-validate-url
+@Throws(MalformedURLException::class, URISyntaxException::class)
 fun String?.isValidURL(): Boolean {
     return try {
         this ?: return false

@@ -38,6 +38,10 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fun setData(linksCollection: LinksCollection?) {
             itemBinding.apply {
                 tvTitle.text = linksCollection?.title
+                tvCount.apply {
+                    isVisible = true
+                    text = "(${linksCollection?.count})"
+                }
                 listOf(layoutFollowingApp1, layoutFollowingApp2, layoutFollowingApp3, layoutFollowingApp4).forEachIndexed { index, listItemAppBinding ->
                     if ((linksCollection?.linkList?.lastIndex ?: 0) >= index) {
                         listItemAppBinding.root.isVisible = true

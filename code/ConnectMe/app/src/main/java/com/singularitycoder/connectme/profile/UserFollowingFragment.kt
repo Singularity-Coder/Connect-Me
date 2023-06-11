@@ -11,7 +11,7 @@ import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.databinding.FragmentFollowingWebsiteBinding
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.UserProfile
-import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
+import com.singularitycoder.connectme.helpers.constants.DUMMY_FACE_URLS_2
 import com.singularitycoder.connectme.helpers.showScreen
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -72,7 +72,7 @@ class UserFollowingFragment : Fragment() {
         (0..30).forEach { it: Int ->
             followingList.add(
                 UserFollowing(
-                    imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
+                    imageUrl = DUMMY_FACE_URLS_2[Random().nextInt(DUMMY_FACE_URLS_2.size)],
                     title = "Cringe Lord $it",
                     source = "Cringe Lord $it",
                     time = "5 hours ago",

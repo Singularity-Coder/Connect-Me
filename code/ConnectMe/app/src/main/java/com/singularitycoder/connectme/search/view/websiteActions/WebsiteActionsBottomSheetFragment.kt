@@ -61,13 +61,13 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
     // https://stackoverflow.com/questions/15543186/how-do-i-create-colorstatelist-programmatically
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUI() {
-        searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
+        searchFragment = activity?.supportFragmentManager?.fragments?.firstOrNull {
             it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
         } as? SearchFragment
         setTransparentBackground()
         setBottomSheetBehaviour()
 
-        val selectedWebpage = requireActivity().supportFragmentManager.findFragmentByTag(
+        val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(
             ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
         ) as? SearchTabFragment
         val sslCertificate = selectedWebpage?.getWebView()?.certificate

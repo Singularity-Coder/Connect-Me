@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.dummyFaceUrls2
+import com.singularitycoder.connectme.helpers.constants.DUMMY_FACE_URLS_2
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
@@ -76,7 +76,7 @@ class DownloadsFragment : Fragment() {
             (0..30).forEach { it: Int ->
                 feedList.add(
                     Download(
-                        imageUrl = dummyFaceUrls2[Random().nextInt(dummyFaceUrls2.size)],
+                        imageUrl = DUMMY_FACE_URLS_2[Random().nextInt(DUMMY_FACE_URLS_2.size)],
                         title = "Cringe Lord lords it over and gives it back to others $it",
                         source = "Cringe Lord lords it over and gives it back to others $it",
                         time = if (isSelfProfile) "58 Mb • 5 hr ago" else "58 Mb",

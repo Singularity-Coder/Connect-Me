@@ -20,7 +20,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(collectionWebPage: CollectionWebPage?) = CollectionDetailBottomSheetFragment().apply {
+        fun newInstance(collectionWebPage: CollectionWebPage? = null) = CollectionDetailBottomSheetFragment().apply {
             arguments = Bundle().apply { putParcelable(ARG_PARAM_COLLECTION_WEB_PAGE, collectionWebPage) }
         }
     }

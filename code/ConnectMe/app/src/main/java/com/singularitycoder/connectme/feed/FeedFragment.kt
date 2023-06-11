@@ -9,10 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
-import com.singularitycoder.connectme.helpers.CodeExecutor
-import com.singularitycoder.connectme.helpers.constants.dummyImageUrls
+import com.singularitycoder.connectme.helpers.constants.DUMMY_IMAGE_URLS
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -73,7 +71,7 @@ class FeedFragment : Fragment() {
             (0..30).forEach { it: Int ->
                 feedList.add(
                     Feed(
-                        imageUrl = dummyImageUrls[Random().nextInt(dummyImageUrls.size)],
+                        imageUrl = DUMMY_IMAGE_URLS[Random().nextInt(DUMMY_IMAGE_URLS.size)],
                         title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
                         source = "www.news.com",
                         time = "5 hours ago",

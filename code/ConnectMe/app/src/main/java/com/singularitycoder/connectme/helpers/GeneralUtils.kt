@@ -261,14 +261,14 @@ fun Activity.hideKeyboard() {
 }
 
 // https://stackoverflow.com/questions/4745988/how-do-i-detect-if-software-keyboard-is-visible-on-android-device-or-not
-val View.isKeyboardVisible: Boolean
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+fun View?.isKeyboardVisible(): Boolean {
+    this ?: return false
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         WindowInsetsCompat
             .toWindowInsetsCompat(rootWindowInsets)
             .isVisible(WindowInsetsCompat.Type.ime())
-    } else {
-        false
-    }
+    } else false
+}
 
 /** Request focus before showing keyboard - editText.requestFocus() */
 fun EditText?.showKeyboard() {

@@ -7,6 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.singularitycoder.connectme.collections.CollectionsDao
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteDao
 import com.singularitycoder.connectme.helpers.constants.Db
+import com.singularitycoder.connectme.helpers.constants.DEFAULT_WEB_APPS
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
 import com.singularitycoder.connectme.history.HistoryDao
 import com.singularitycoder.connectme.search.dao.InsightDao
@@ -29,17 +30,18 @@ object DbModule {
     @Singleton
     @Provides
     fun injectConnectMeDatabase(@ApplicationContext context: Context): ConnectMeDatabase {
-        return Room.databaseBuilder(context, ConnectMeDatabase::class.java, Db.CONNECT_ME)
+        fun getRoomDb(): ConnectMeDatabase = Room.databaseBuilder(context, ConnectMeDatabase::class.java, Db.CONNECT_ME)
             .addCallback(object : RoomDatabase.Callback() {
-                // https://medium.com/androiddevelopers/7-pro-tips-for-room-fbadea4bfbd1
+                // prepopulate the database after onCreate was called - https://medium.com/androiddevelopers/7-pro-tips-for-room-fbadea4bfbd1
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
                     CoroutineScope(IO).launch {
-//                        collectionsDao().insert(DEFAULT_WEB_APPS) // prepopulate default webapps
+                        getRoomDb().collectionsDao().insertAll(DEFAULT_WEB_APPS) // prepopulate default webapps
                     }
                 }
             })
             .build()
+        return getRoomDb()
     }
 
     @Singleton

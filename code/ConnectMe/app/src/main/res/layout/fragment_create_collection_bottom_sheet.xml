@@ -51,6 +51,16 @@
             app:layout_constraintBottom_toTopOf="@+id/divider"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <ProgressBar
+            android:id="@+id/progress_circular"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/divider"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/divider"
             android:layout_width="match_parent"
@@ -61,14 +71,69 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/et_enter_collection_name"
+        android:id="@+id/et_enter_link"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
+        android:hint="Enter link"
+        android:visibility="gone"
+        app:boxBackgroundColor="@color/black_50"
+        app:boxStrokeWidth="0dp"
+        app:counterEnabled="false"
+        app:endIconMode="clear_text"
+        app:errorEnabled="false"
+        app:helperTextEnabled="false"
+        app:layout_constraintTop_toBottomOf="@+id/cl_header"
+        app:shapeAppearance="@style/RoundSmall"
+        app:startIconContentDescription="OpenAI API Key">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/et_choose_collection"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Choose Collection"
+        android:visibility="gone"
+        app:boxBackgroundColor="@color/black_50"
+        app:boxStrokeWidth="0dp"
+        app:counterEnabled="false"
+        app:errorEnabled="false"
+        app:helperTextEnabled="false"
+        app:layout_constraintTop_toBottomOf="@+id/et_enter_link"
+        app:shapeAppearance="@style/RoundSmall"
+        app:startIconContentDescription="OpenAI API Key">
+
+        <AutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:completionThreshold="1"
+            android:inputType="none"
+            android:textColor="@color/title_color" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/et_enter_collection_name"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="16dp"
         android:hint="Enter collection name"
+        android:visibility="visible"
         app:boxBackgroundColor="@color/black_50"
         app:boxStrokeWidth="0dp"
         app:counterEnabled="true"
@@ -76,7 +141,7 @@
         app:endIconMode="clear_text"
         app:errorEnabled="false"
         app:helperTextEnabled="false"
-        app:layout_constraintTop_toBottomOf="@+id/cl_header"
+        app:layout_constraintTop_toBottomOf="@+id/et_choose_collection"
         app:shapeAppearance="@style/RoundSmall"
         app:startIconContentDescription="OpenAI API Key">
 

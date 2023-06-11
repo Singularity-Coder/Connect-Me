@@ -175,7 +175,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         val imageSizeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listOf("256x256", "512x512", "1024x1024"))
         (etImageSize.editText as? AutoCompleteTextView)?.setAdapter(imageSizeAdapter)
 
-        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
+        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
 
         lifecycleScope.launch {
             getInsightStringsList()
@@ -199,6 +199,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             rvDefaultPrompts.isVisible = false
             if (prompt.first.trim().contains(other = "Translate to ...", ignoreCase = true)) {
                 etAskAnything.setText("Translate content to ")
+                etAskAnything.setSelection(etAskAnything.text?.length ?: 0)
                 etAskAnything.showKeyboard()
             } else {
                 searchViewModel.getTextInsight(
@@ -334,7 +335,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         ivAiSettings.onSafeClick {
             val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
             val popupMenu = PopupMenu(requireContext(), it.first)
-            openAiModelsList.forEach {
+            OPEN_AI_MODELS_LIST.forEach {
                 popupMenu.menu.add(
                     0, 1, 1, menuIconWithText(
                         icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent),
@@ -345,11 +346,11 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
                 view?.setHapticFeedback()
                 when (it?.title?.toString()?.trim()) {
-                    openAiModelsList[0] -> {
-                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0]).apply()
+                    OPEN_AI_MODELS_LIST[0] -> {
+                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
                     }
-                    openAiModelsList[1] -> {
-                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[1]).apply()
+                    OPEN_AI_MODELS_LIST[1] -> {
+                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[1]).apply()
                     }
                 }
                 false
@@ -552,7 +553,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             var localItemAddedPosition = 0
 
             val apiPromptKeysList = dynamicPromptMap.keys.toList()
-            val localPromptKeysList = localTextPromptsMap.keys.toList()
+            val localPromptKeysList = LOCAL_TEXT_PROMPTS_MAP.keys.toList()
 
             val apiQuotient = if (dynamicPromptMap.isEmpty().not()) apiPromptKeysList.size / 3 else 0
             val localQuotient = localPromptKeysList.size / 3
@@ -594,9 +595,9 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             tripleLocalPromptKeysList.forEach { key: Triple<String, String, String> ->
                 promptsAdapter.promptList.add(
                     Triple(
-                        Pair(first = key.first, second = localTextPromptsMap.get(key.first).toString()),
-                        Pair(first = key.second, second = localTextPromptsMap.get(key.second).toString()),
-                        Pair(first = key.third, second = localTextPromptsMap.get(key.third).toString())
+                        Pair(first = key.first, second = LOCAL_TEXT_PROMPTS_MAP.get(key.first).toString()),
+                        Pair(first = key.second, second = LOCAL_TEXT_PROMPTS_MAP.get(key.second).toString()),
+                        Pair(first = key.third, second = LOCAL_TEXT_PROMPTS_MAP.get(key.third).toString())
                     )
                 )
             }
@@ -623,7 +624,8 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentGetInsightsBottomSheetBinding.setTextMode() {
         ivChatMode.setImageResource(R.drawable.title_black_24dp)
         ivChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
-        etAskAnything.hint = "Ask about this website"
+        val website = getHostFrom(searchViewModel.getWebViewData().url).replace("www.", "")
+        etAskAnything.hint = "Ask about $website"
         llImageGenerationOptions.isVisible = false
     }
 

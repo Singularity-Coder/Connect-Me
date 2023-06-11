@@ -24,6 +24,7 @@ data class CollectionWebPage(
 
 data class LinksCollection(
     val title: String? = "",
+    val count: Int? = 0,
     val linkList: List<CollectionWebPage?> = listOf()
 )
 

@@ -1,31 +1,20 @@
 TODO THIS WEEK
+Export collection to sqlite db and csv file
+closing session saves to collection - timestamp
+Collection detail screen
+
 proper decryption
-Collections: Set up default collections - bloatware webapps
-    - Save to collections
 Downloads
     download in internal directory first. Then search for public directory
     Download filters - file type, file size, sort - ascending, descending
     handle gif, image, audio, video, file
     long press download item to see full file name with options to delete, show in chrome, share
 
-Basic WebApp Collections
-0. Calling & Messaging: Meet, Teams, WhatsApp, iMessage,
-1. Writing: Google docs, sheets, Slides, Notion
-2. Notetaking: Keep, Notion
-3. Entertainment: Youtube, Netflix, Hotstar
-4. Mail: Gmail
-5. Directions: Maps,
-6. Tools: Drive, Dropbox, Google Calender
-7. Education: Youtube, Khan Acad, Course Era, MIT MOOC, Udacity
-8. Do anything/everything: ChatGPT, Bing, Google
-
-
 Explore
 1. News and other useful/subscribed info summaries
 2. find fun info based on the topics at every hour/half hour
 
 
-1. Create 2nd url search bar and split search suggestions
 1. Website actions - start with - find in page, then all others - get from Lineage OS
 2. Add to collection db
 4. Configure home screen - set either website or show new tab screen
@@ -103,6 +92,7 @@ FIXME irritating stuff
 1. full screen chat image save pic,
 2. Close other tabs
 3. Web popups are not working
+4. Crunchyroll is behaving weirdly
 
 
 TODO LATER:

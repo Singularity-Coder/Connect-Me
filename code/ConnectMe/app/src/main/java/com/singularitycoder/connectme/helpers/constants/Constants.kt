@@ -10,7 +10,7 @@ import com.singularitycoder.connectme.search.view.SearchFragment
 
 const val FILE_PROVIDER = "com.singularitycoder.connectme.fileprovider"
 
-val dummyImageUrls = listOf(
+val DUMMY_IMAGE_URLS = listOf(
     "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/167587/pexels-photo-167587.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -19,7 +19,7 @@ val dummyImageUrls = listOf(
     "https://images.pexels.com/photos/2922672/pexels-photo-2922672.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
 )
 
-val dummyFavicons = listOf(
+val DUMMY_FAVICONS = listOf(
     R.drawable.google,
     R.drawable.facebook,
     R.drawable.twitter,
@@ -27,7 +27,7 @@ val dummyFavicons = listOf(
     R.drawable.github,
 )
 
-val dummyFaviconUrls = listOf(
+val DUMMY_FAVICON_URLS = listOf(
     "https://play-lh.googleusercontent.com/aFWiT2lTa9CYBpyPjfgfNHd0r5puwKRGj2rHpdPTNrz2N9LXgN_MbLjePd1OTc0E8Rl1=w480-h960-rw",
     "https://play-lh.googleusercontent.com/eN0IexSzxpUDMfFtm-OyM-nNs44Y74Q3k51bxAMhTvrTnuA4OGnTi_fodN4cl-XxDQc=w480-h960-rw",
     "https://play-lh.googleusercontent.com/PCpXdqvUWfCW1mXhH1Y_98yBpgsWxuTSTofy3NGMo9yBTATDyzVkqU580bfSln50bFU=w480-h960-rw",
@@ -38,7 +38,7 @@ val dummyFaviconUrls = listOf(
     "https://play-lh.googleusercontent.com/5HArxowfNkgY9plIJWLDNi3vtH1oRdZJuW5Iv3dt4dfacjzqiQzE8tElzK7mzhXrz1o=w480-h960-rw"
 )
 
-val dummyFaceUrls = listOf(
+val DUMMY_FACE_URLS = listOf(
     "https://images.pexels.com/photos/3586798/pexels-photo-3586798.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/3283568/pexels-photo-3283568.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/4355346/pexels-photo-4355346.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -53,7 +53,7 @@ val dummyFaceUrls = listOf(
     "https://images.pexels.com/photos/4926674/pexels-photo-4926674.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
 )
 
-val dummyFaceUrls2 = listOf(
+val DUMMY_FACE_URLS_2 = listOf(
     "https://i.pinimg.com/564x/cb/e6/05/cbe6059b1c305ab05774c5f08d832f51.jpg",
     "https://cdna.artstation.com/p/assets/images/images/002/938/926/large/j-won-han-2323412232323123123121232.jpg?1467542066",
     "https://cdnb.artstation.com/p/assets/images/images/028/780/283/large/kuishi-xu-4e2dfed68776d0f11b5a42db537a6dd.jpg?1595487972",
@@ -70,13 +70,25 @@ val dummyFaceUrls2 = listOf(
     "https://i.pinimg.com/564x/c7/90/f6/c790f67e19d50cb35be9d2a99c8304c8.jpg"
 )
 
-val openAiModelsList = listOf("gpt-4", "gpt-3.5-turbo")
+// https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
+val TOP_LEVEL_DOMAINS = listOf(
+    ".com",
+    ".org",
+    ".net",
+    ".int",
+    ".edu",
+    ".gov",
+    ".mil",
+    ".arpa",
+)
+
+val OPEN_AI_MODELS_LIST = listOf("gpt-4", "gpt-3.5-turbo")
 
 // Many of them dont work with GPT either because its not connected to internet or denies it. Need to find OS model.
 // https://consumeraffairs.nic.in/organisation-and-units/division/consumer-protection-unit/consumer-rights
 // Let's work this out in a step by step way to be sure we have the right answer
 // Let's think step by step
-val localTextPromptsMap = mapOf(
+val LOCAL_TEXT_PROMPTS_MAP = mapOf(
     "🛡️ Safety report" to """
         1. When was the website created?
         2. Is the content of this website AI generated? If so which part?
