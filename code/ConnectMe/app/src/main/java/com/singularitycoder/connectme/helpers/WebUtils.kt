@@ -583,3 +583,24 @@ fun getHostFrom(url: String?): String = try {
 } catch (e: Exception) {
     ""
 }
+
+/**
+  Tests:
+  https://video.google.co.uk
+  https://twitter.com
+  https://en.m.wikipedia.org
+ * */
+fun getDomainFrom(host: String?): String {
+    var website = host?.replace(".m.", ".") ?: "" // This trims mobile subdomain
+    if (website.filter { it == '.' }.length > 1) {
+        repeat(website.filter { it == '.' }.length - 1) {
+            website = website.substringBeforeLast(".") // This trims top-level domains etc
+        }
+    } else {
+        website = website.substringBeforeLast(".")
+    }
+    if (website.filter { it == '.' }.isNotBlank()) {
+        website = website.substringAfter(".") // This trims subdomains if any exist
+    }
+    return website
+}
