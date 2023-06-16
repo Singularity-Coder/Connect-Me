@@ -1,5 +1,6 @@
 package com.singularitycoder.connectme.helpers
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -22,10 +23,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
+import androidx.core.text.HtmlCompat
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
-import com.singularitycoder.connectme.search.view.SearchTabFragment
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -330,14 +331,35 @@ fun WebView.loadLocallyArchivedWebsite(archiveFilePath: String, fileName: String
 // https://github.com/Singularity-Coder/Instant-Android/tree/master/kotlin/AndroidStorageMadness
 fun Context.onWebPageLoaded(
     url: String,
-    onRealUrlReady: (webView: WebView?, favicon: Bitmap?) -> Unit,
+    onLoaded: (webView: WebView?, favicon: Bitmap?) -> Unit,
 ) {
     WebView(this).apply {
         webChromeClient = object : WebChromeClient() {
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 val favicon = icon?.copy(icon.config, true)
                 if (icon?.isRecycled?.not() == true) icon.recycle()
-                onRealUrlReady.invoke(view, favicon)
+                onLoaded.invoke(view, favicon)
+            }
+        }
+        loadUrl(url)
+    }
+}
+
+@SuppressLint("SetJavaScriptEnabled")
+fun Context.getHtmlOnWebPageLoad(
+    url: String,
+    onLoaded: (webView: WebView?, html: String?) -> Unit,
+) {
+    WebView(this).apply {
+        settings.javaScriptEnabled = true
+        webViewClient = object : WebViewClient() {
+            override fun onPageFinished(webView: WebView?, url: String?) {
+                // https://stackoverflow.com/questions/8200945/how-to-get-html-content-from-a-webview
+                webView?.evaluateJavascript("document.documentElement.outerHTML") { htmlString: String? ->
+                    val html = htmlString?.replace("\\u003C", "<")
+                    onLoaded.invoke(webView, html)
+//                    val result = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                }
             }
         }
         loadUrl(url)

@@ -624,7 +624,20 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentGetInsightsBottomSheetBinding.setTextMode() {
         ivChatMode.setImageResource(R.drawable.title_black_24dp)
         ivChatMode.setPadding(4.dpToPx().toInt(), 4.dpToPx().toInt(), 4.dpToPx().toInt(), 2.dpToPx().toInt())
-        val website = getHostFrom(searchViewModel.getWebViewData().url).replace("www.", "")
+        var website = getHostFrom(searchViewModel.getWebViewData().url)
+        if (website.filter { it == '.' }.length > 1) {
+            repeat(website.filter { it == '.' }.length - 1) {
+                website = website.substringBeforeLast(".") // This trims top-level domains etc
+            }
+        } else {
+            website = website.substringBeforeLast(".")
+        }
+        if (website.filter { it == '.' }.isNotBlank()) {
+            website = website.substringAfter(".") // This trims subdomains if any exist
+        }
+        // Tests:
+        // https://video.google.co.uk
+        // https://twitter.com
         etAskAnything.hint = "Ask about $website"
         llImageGenerationOptions.isVisible = false
     }

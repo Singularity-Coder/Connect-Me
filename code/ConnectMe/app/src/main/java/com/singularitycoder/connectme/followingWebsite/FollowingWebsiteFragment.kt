@@ -4,17 +4,19 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentFollowingWebsiteBinding
-import com.singularitycoder.connectme.helpers.collectLatestLifecycleFlow
-import com.singularitycoder.connectme.helpers.onSafeClick
+import com.singularitycoder.connectme.helpers.*
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -69,6 +71,36 @@ class FollowingWebsiteFragment : Fragment() {
 
         followingWebsiteAdapter.setOnClickListener { it: FollowingWebsite? ->
 
+        }
+
+        followingWebsiteAdapter.setOnLongClickListener { followingWebsite: FollowingWebsite? ->
+            val popupMenu = PopupMenu(requireContext(), view)
+            val optionsList = listOf(
+                Pair("Share", R.drawable.outline_share_24),
+                Pair("Copy link", R.drawable.baseline_content_copy_24),
+            )
+            optionsList.forEach { it: Pair<String, Int> ->
+                popupMenu.menu.add(
+                    0, 1, 1, menuIconWithText(
+                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
+                        title = it.first
+                    )
+                )
+            }
+            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+                view?.setHapticFeedback()
+                when (it?.title?.toString()?.trim()) {
+                    optionsList[0].first -> {
+                        requireContext().shareTextOrImage(text = followingWebsite?.title, title = followingWebsite?.link)
+                    }
+                    optionsList[1].first -> {
+                        requireContext().clipboard()?.text = followingWebsite?.link
+                        requireContext().showToast("Copied link")
+                    }
+                }
+                false
+            }
+            popupMenu.show()
         }
 
         followingWebsiteAdapter.setOnFollowClickListener { it: FollowingWebsite? ->

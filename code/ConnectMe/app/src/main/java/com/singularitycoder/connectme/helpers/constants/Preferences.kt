@@ -3,7 +3,7 @@ package com.singularitycoder.connectme.helpers.constants
 object Preferences {
     const val PREFERENCE_STORAGE_NAME = "connect_me_preferences"
 
-    const val KEY_OPEN_AI_API_SECRET = "KEY_OPEN_AI_API_SECRET"
+    const val KEY_OPEN_AI_API_KEY = "KEY_OPEN_AI_API_SECRET"
     const val KEY_OPEN_AI_MODEL = "KEY_OPEN_AI_MODEL"
 
     const val KEY_SEARCH_SUGGESTION_PROVIDER = "KEY_SEARCH_SUGGESTION_PROVIDER"

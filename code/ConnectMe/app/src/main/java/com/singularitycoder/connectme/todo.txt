@@ -1,8 +1,6 @@
 TODO THIS WEEK
 closing session saves to collection - timestamp
 Export collection to sqlite db and csv file
-
-proper decryption
 Downloads
     download in internal directory first. Then search for public directory
     Download filters - file type, file size, sort - ascending, descending
@@ -75,9 +73,11 @@ Use javascript interface to provide haptic feedback on button taps inside webvie
 
 
 RSS Reader
+https://zapier.com/blog/how-to-find-rss-feed-url/
+https://gitlab.com/spacecowboy/Feeder
+https://zapier.com/blog/how-to-find-rss-feed-url/
 https://code.google.com/archive/p/android-rss/source/default/source
 https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-android
-
 
 P2P Comm
 https://github.com/briar/briar
@@ -132,10 +132,14 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 20. Apply blue filter on  collections icons
 
 
+TODO Interesting
+1. https://medium.com/@joseph.pyram/9-parts-of-a-url-that-you-should-know-89fea8e11713
+
 
 TODO Checklist
 1. Git Remove DS store - https://stackoverflow.com/questions/9050914/how-can-i-remove-all-files-in-my-git-repo-and-update-push-from-my-local-git-repo
-2. File IO
+2. File IO - FileOutputStream, ParcelFileDescriptor
 3. Room Foreign Key
 4. Room Relations
-5. RSA/AES encryption decryption
+5. Room Lazy load
+6. RSA/AES encryption decryption

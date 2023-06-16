@@ -9,6 +9,7 @@ import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.ChatRole
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
+import com.singularitycoder.connectme.helpers.encryption.AesCbcWithIntegrity
 import com.singularitycoder.connectme.helpers.encryption.CipherUtils
 import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSuggestionProvider
@@ -33,6 +34,9 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 @HiltViewModel
@@ -270,8 +274,8 @@ class SearchViewModel @Inject constructor(
         onSuccess: suspend (jsonObject: JsonObject?) -> Unit,
         onFailure: suspend (errorJsonObject: JsonObject?) -> Unit
     ) {
-        val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "") ?: ""
-        val decryptedApiSecret = CipherUtils.decrypt3(encryptedApiSecret)
+        val encryptedApiKey = preferences.getString(Preferences.KEY_OPEN_AI_API_KEY, "") ?: ""
+        val decryptedApiKey = AesCbcWithIntegrity.decryptString(encryptedApiKey, AesCbcWithIntegrity.AES_SECRET_KEY)
 
         fun HttpURLConnection.setPostRequestContent() = try {
             val input: ByteArray = jsonObjectRequest.toString().toByteArray(Charsets.UTF_8)
@@ -282,17 +286,21 @@ class SearchViewModel @Inject constructor(
         } catch (_: Exception) {
         }
 
-        val connection: HttpURLConnection = (URL(url).openConnection() as HttpURLConnection).apply {
-            requestMethod = HttpMethod.POST.name
-            setRequestProperty("Content-Type", "application/json; utf-8")
-            setRequestProperty("Accept", "application/json")
-            setRequestProperty("Authorization", "Bearer $decryptedApiSecret")
-            doOutput = true
-            instanceFollowRedirects = true
-            readTimeout = 10.seconds().toInt()
-            connectTimeout = 10.seconds().toInt()
-            setPostRequestContent()
-            connect()
+        // https://stackoverflow.com/questions/71025062/what-is-suspendcoroutine
+        val connection: HttpURLConnection = suspendCoroutine { it: Continuation<HttpURLConnection> ->
+            val httpURLConnection = (URL(url).openConnection() as HttpURLConnection).apply {
+                requestMethod = HttpMethod.POST.name
+                setRequestProperty("Content-Type", "application/json; utf-8")
+                setRequestProperty("Accept", "application/json")
+                setRequestProperty("Authorization", "Bearer $decryptedApiKey")
+                doOutput = true
+                instanceFollowRedirects = true
+                readTimeout = 10.seconds().toInt()
+                connectTimeout = 10.seconds().toInt()
+                setPostRequestContent()
+                connect()
+            }
+            it.resume(httpURLConnection)
         }
 
         when (connection.responseCode) {

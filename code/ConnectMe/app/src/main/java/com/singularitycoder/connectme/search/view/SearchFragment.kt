@@ -933,7 +933,7 @@ class SearchFragment : Fragment() {
                         binding.root.showSnackBar("Not a valid website!")
                         return@setOnActionSelectedListener
                     }
-                    val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_SECRET, "")
+                    val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_KEY, "")
                     if (encryptedApiSecret.isNullOrBlank().not()) {
                         GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
                     } else {

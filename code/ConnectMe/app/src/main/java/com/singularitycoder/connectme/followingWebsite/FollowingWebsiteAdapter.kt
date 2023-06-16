@@ -1,6 +1,7 @@
 package com.singularitycoder.connectme.followingWebsite
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -8,12 +9,15 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemFollowingBinding
 import com.singularitycoder.connectme.helpers.decodeBase64StringToBitmap
 import com.singularitycoder.connectme.helpers.getHostFrom
+import com.singularitycoder.connectme.helpers.onCustomLongClick
 import com.singularitycoder.connectme.helpers.onSafeClick
+import com.singularitycoder.connectme.history.History
 
 class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var followingWebsiteList = emptyList<FollowingWebsite?>()
     private var itemClickListener: (followingWebsite: FollowingWebsite?) -> Unit = {}
+    private var itemLongClickListener: (followingWebsite: FollowingWebsite?) -> Unit = {}
     private var followClickListener: (followingWebsite: FollowingWebsite?) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -33,6 +37,10 @@ class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
         itemClickListener = listener
     }
 
+    fun setOnLongClickListener(listener: (followingWebsite: FollowingWebsite?) -> Unit) {
+        itemLongClickListener = listener
+    }
+
     fun setOnFollowClickListener(listener: (followingWebsite: FollowingWebsite?) -> Unit) {
         followClickListener = listener
     }
@@ -46,10 +54,13 @@ class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
                     placeholder(R.drawable.ic_placeholder_rectangle)
                     error(R.drawable.ic_placeholder_rectangle)
                 }
-                tvFollowingSite.text = getHostFrom(url = followingWebsite?.link)
+                tvFollowingSite.text = getHostFrom(url = followingWebsite?.link).replace("www.", "")
                 tvPostsToday.text = "Posted ${followingWebsite?.postCount} articles today"
                 root.onSafeClick {
                     itemClickListener.invoke(followingWebsite)
+                }
+                root.onCustomLongClick {
+                    itemLongClickListener.invoke(followingWebsite)
                 }
                 btnFollow.onSafeClick {
                     followClickListener.invoke(followingWebsite)

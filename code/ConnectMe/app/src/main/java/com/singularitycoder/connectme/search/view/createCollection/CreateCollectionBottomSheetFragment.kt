@@ -116,7 +116,10 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
         etChooseCollection.editText?.doAfterTextChanged { it: Editable? ->
             etChooseCollection.error = null
             etEnterCollectionName.isVisible = it.toString() == "Create new"
-            if (it.toString() == "Create new") etEnterCollectionName.error = null
+            if (it.toString() == "Create new") {
+                etEnterCollectionName.error = null
+                etEnterCollectionName.requestFocus()
+            }
         }
 
         etEnterCollectionName.editText?.doAfterTextChanged { it: Editable? ->

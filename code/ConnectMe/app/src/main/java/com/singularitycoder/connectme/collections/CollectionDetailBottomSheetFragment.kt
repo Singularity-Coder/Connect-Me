@@ -85,6 +85,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             val popupMenu = PopupMenu(requireContext(), view)
             val optionsList = listOf(
                 Pair("Share", R.drawable.outline_share_24),
+                Pair("Copy link", R.drawable.baseline_content_copy_24),
                 Pair("Delete", R.drawable.outline_delete_24)
             )
             optionsList.forEach {
@@ -102,7 +103,19 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         requireContext().shareTextOrImage(text = collectionWebPage?.title, title = collectionWebPage?.link)
                     }
                     optionsList[1].first -> {
-                        collectionsViewModel.deleteItem(collectionWebPage)
+                        requireContext().clipboard()?.text = collectionWebPage?.link
+                        requireContext().showToast("Copied link")
+                    }
+                    optionsList[2].first -> {
+                        requireContext().showAlertDialog(
+                            title = "Delete item",
+                            message = collectionWebPage?.title ?: "",
+                            positiveBtnText = "Delete",
+                            negativeBtnText = "Cancel",
+                            positiveAction = {
+                                collectionsViewModel.deleteItem(collectionWebPage)
+                            }
+                        )
                     }
                 }
                 false

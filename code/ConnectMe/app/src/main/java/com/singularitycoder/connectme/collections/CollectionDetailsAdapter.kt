@@ -8,10 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemHistoryBinding
-import com.singularitycoder.connectme.helpers.decodeBase64StringToBitmap
-import com.singularitycoder.connectme.helpers.onCustomLongClick
-import com.singularitycoder.connectme.helpers.onSafeClick
-import com.singularitycoder.connectme.helpers.toIntuitiveDateTime
+import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.history.History
 
 class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -48,7 +45,7 @@ class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
             itemBinding.apply {
                 tvDate.isVisible = false
                 tvTitle.text = collectionWebPage?.title
-                tvSubtitle.text = collectionWebPage?.link
+                tvSubtitle.text = getHostFrom(url = collectionWebPage?.link).replace("www.", "")
                 tvTime.text = collectionWebPage?.time?.toIntuitiveDateTime()
                 val bitmap = decodeBase64StringToBitmap(collectionWebPage?.favicon)
                 ivHistoryIcon.load(bitmap) {

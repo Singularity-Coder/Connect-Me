@@ -54,7 +54,7 @@ class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 } else {
                     history.title
                 }
-                tvSubtitle.text = getHostFrom(url = history.link)
+                tvSubtitle.text = getHostFrom(url = history.link).replace("www.", "")
                 tvTime.text = history.time?.toIntuitiveDateTime()
                 root.onSafeClick {
                     itemClickListener.invoke(history)

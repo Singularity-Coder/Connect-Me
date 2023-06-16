@@ -24,7 +24,18 @@ val dateFormatList = listOf(
     "yyyy.MM.dd HH:mm",
     "yyyy/MM/dd hh:mm aa",
     "yyyy-MM-dd'T'HH:mm:ss.SS'Z'",
-    "hh:mm a"
+    "hh:mm a",
+
+    // https://code.google.com/archive/p/android-rss/
+    "EEE, dd MMM yyyy HH:mm:ss z", // RFC_822
+    "EEE, dd MMM yyyy HH:mm zzzz",
+    "yyyy-MM-dd'T'HH:mm:ssZ",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSzzzz", // Blogger Atom feed has millisecs also
+    "yyyy-MM-dd'T'HH:mm:sszzzz",
+    "yyyy-MM-dd'T'HH:mm:ss z",
+    "yyyy-MM-dd'T'HH:mm:ssz", // ISO_8601
+    "yyyy-MM-dd'T'HH:mm:ss",
+    "yyyy-MM-dd'T'HHmmss.SSSz",
 )
 
 fun Int.milliSeconds(): Long = this.toLong()

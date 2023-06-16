@@ -12,6 +12,7 @@ import android.webkit.*
 import androidx.annotation.MenuRes
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
@@ -243,6 +244,7 @@ class SearchTabFragment : Fragment() {
         }
 
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+
     }
 
     private fun setupWebChromeClient() = object : WebChromeClient() {

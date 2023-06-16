@@ -12,7 +12,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -108,28 +107,30 @@ class HistoryFragment : Fragment() {
 
         historyAdapter.setOnLongClickListener { history: History, view: View? ->
             val popupMenu = PopupMenu(requireContext(), view)
-            val historyOptionsList = listOf("Share", "Delete")
-            historyOptionsList.forEach {
+            val optionsList = listOf(
+                Pair("Share", R.drawable.outline_share_24),
+                Pair("Copy link", R.drawable.baseline_content_copy_24),
+                Pair("Delete", R.drawable.outline_delete_24),
+            )
+            optionsList.forEach { it: Pair<String, Int> ->
                 popupMenu.menu.add(
                     0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(
-                            if (it == "Share") {
-                                R.drawable.outline_share_24
-                            } else {
-                                R.drawable.outline_delete_24
-                            }
-                        )?.changeColor(requireContext(), R.color.purple_500),
-                        title = it
+                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
+                        title = it.first
                     )
                 )
             }
             popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
                 view?.setHapticFeedback()
                 when (it?.title?.toString()?.trim()) {
-                    historyOptionsList[0] -> {
+                    optionsList[0].first -> {
                         requireContext().shareTextOrImage(text = history.title, title = history.link)
                     }
-                    historyOptionsList[1] -> {
+                    optionsList[1].first -> {
+                        requireContext().clipboard()?.text = history.link
+                        requireContext().showToast("Copied link")
+                    }
+                    optionsList[2].first -> {
                         historyViewModel.deleteItem(history)
                     }
                 }
