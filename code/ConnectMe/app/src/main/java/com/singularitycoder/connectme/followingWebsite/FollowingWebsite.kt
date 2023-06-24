@@ -14,5 +14,6 @@ data class FollowingWebsite(
     val time: Long? = 0L,
     @PrimaryKey val website: String = "",
     val link: String = "",
-    val postCount: Long = 0L
+    val postCount: Long = 0L,
+    val rssUrl: String? = ""
 ) : Parcelable

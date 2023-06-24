@@ -7,12 +7,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.*
+import android.util.Base64
 import android.view.*
 import android.webkit.*
 import androidx.annotation.MenuRes
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
-import androidx.core.text.HtmlCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
@@ -356,16 +356,15 @@ class SearchTabFragment : Fragment() {
         }
 
         override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+            // https://github.com/arunkumar9t2/lynket-browser
+            // https://stackoverflow.com/questions/3961589/android-webview-and-loaddata
             if (request?.isForMainFrame == true && error != null) {
-//                view?.loadUrl(requireContext().resourceUri(R.raw.error_webpage).toString())
-                view?.loadUrl(DEFAULT_ERROR_PAGE_PATH)
-            }
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
-            if (errorCode != WebViewClient.ERROR_UNSUPPORTED_SCHEME && errorCode != WebViewClient.ERROR_HOST_LOOKUP) {
-                view?.loadUrl(DEFAULT_ERROR_PAGE_PATH)
+                view?.settings?.defaultTextEncodingName = "utf-8"
+                view?.loadData(
+                    /* data = */ Base64.encodeToString(getString(R.string.error_webpage).toByteArray(), Base64.DEFAULT),
+                    /* mimeType = */ "text/html; charset=utf-8",
+                    /* encoding = */ "base64"
+                )
             }
         }
     }

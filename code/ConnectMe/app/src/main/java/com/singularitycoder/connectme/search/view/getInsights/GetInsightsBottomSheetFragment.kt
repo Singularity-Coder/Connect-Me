@@ -338,7 +338,10 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             OPEN_AI_MODELS_LIST.forEach {
                 popupMenu.menu.add(
                     0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent),
+                        icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
+                            context = requireContext(),
+                            color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
+                        ),
                         title = it
                     )
                 )

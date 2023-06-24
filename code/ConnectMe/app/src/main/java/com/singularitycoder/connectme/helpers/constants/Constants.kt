@@ -84,6 +84,9 @@ val TOP_LEVEL_DOMAINS = listOf(
 
 val OPEN_AI_MODELS_LIST = listOf("gpt-4", "gpt-3.5-turbo")
 
+val RSS_FEED_TYPE_LIST = listOf("All Feeds", "Saved Feed")
+
+
 // Many of them dont work with GPT either because its not connected to internet or denies it. Need to find OS model.
 // https://consumeraffairs.nic.in/organisation-and-units/division/consumer-protection-unit/consumer-rights
 // Let's work this out in a step by step way to be sure we have the right answer
@@ -203,7 +206,8 @@ enum class QuickActionTabMenuMoreOptions(
     PRINT(title = "Print", icon = R.drawable.outline_print_24),
     FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
     TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
-    ADD_TO_COLLECTIONS(title = "Add to collections", icon = R.drawable.outline_file_download_24),
+    DOWNLOAD(title = "Download", icon = R.drawable.outline_file_download_24),
+    ADD_TO_COLLECTIONS(title = "Add to collections", icon = R.drawable.outline_library_add_24),
 }
 
 enum class Tab(val value: String) {

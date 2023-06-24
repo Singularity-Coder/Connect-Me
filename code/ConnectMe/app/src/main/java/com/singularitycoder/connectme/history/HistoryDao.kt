@@ -54,6 +54,10 @@ interface HistoryDao {
     suspend fun deleteByWebsite(website: String?)
 
     @Transaction
+    @Query("DELETE FROM ${Table.HISTORY} WHERE time >= :time")
+    suspend fun deleteAllByTime(time: Long?)
+
+    @Transaction
     @Query("DELETE FROM ${Table.HISTORY}")
     suspend fun deleteAll()
 }

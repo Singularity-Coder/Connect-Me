@@ -82,31 +82,28 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         collectionDetailsAdapter.setOnLongClickListener { collectionWebPage: CollectionWebPage?, view: View? ->
-            val popupMenu = PopupMenu(requireContext(), view)
             val optionsList = listOf(
+                Pair("Open in new tab", R.drawable.round_add_circle_outline_24),
+                Pair("Open in new private tab", R.drawable.outline_policy_24),
                 Pair("Share", R.drawable.outline_share_24),
                 Pair("Copy link", R.drawable.baseline_content_copy_24),
                 Pair("Delete", R.drawable.outline_delete_24)
             )
-            optionsList.forEach {
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                        title = it.first
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+            requireContext().showPopupMenuWithIcons(
+                view = view,
+                menuList = optionsList
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    optionsList[0].first -> {
+                    optionsList[0].first -> {}
+                    optionsList[1].first -> {}
+                    optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = collectionWebPage?.title, title = collectionWebPage?.link)
                     }
-                    optionsList[1].first -> {
+                    optionsList[3].first -> {
                         requireContext().clipboard()?.text = collectionWebPage?.link
                         requireContext().showToast("Copied link")
                     }
-                    optionsList[2].first -> {
+                    optionsList[4].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete item",
                             message = collectionWebPage?.title ?: "",
@@ -118,13 +115,25 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         )
                     }
                 }
-                false
             }
-            popupMenu.show()
         }
 
-        btnLaunch.onSafeClick {
-
+        btnOpenAll.onSafeClick {
+            val optionsList = listOf(
+                Pair("In new tab", R.drawable.round_add_circle_outline_24),
+                Pair("In new private tab", R.drawable.outline_policy_24),
+            )
+            requireContext().showPopupMenuWithIcons(
+                view = it.first,
+                menuList = optionsList
+            ) { it: MenuItem? ->
+                when (it?.title?.toString()?.trim()) {
+                    optionsList[0].first -> {
+                    }
+                    optionsList[1].first -> {
+                    }
+                }
+            }
         }
 
         ibClearSearch.onSafeClick {
@@ -139,7 +148,9 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                 return@doAfterTextChanged
             }
 
-            collectionDetailsAdapter.webPageList = webPageList.filter { it?.title?.contains(other = query, ignoreCase = true) == true }
+            collectionDetailsAdapter.webPageList = webPageList.filter {
+                it?.link?.contains(other = query, ignoreCase = true) == true || it?.title?.contains(other = query, ignoreCase = true) == true
+            }
             collectionDetailsAdapter.notifyDataSetChanged()
         }
     }

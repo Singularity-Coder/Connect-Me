@@ -12,6 +12,8 @@ import com.singularitycoder.connectme.databinding.FragmentFollowingWebsiteBindin
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.UserProfile
 import com.singularitycoder.connectme.helpers.constants.DUMMY_FACE_URLS_2
+import com.singularitycoder.connectme.helpers.hideKeyboard
+import com.singularitycoder.connectme.helpers.onImeClick
 import com.singularitycoder.connectme.helpers.showScreen
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -55,13 +57,13 @@ class UserFollowingFragment : Fragment() {
     private fun FragmentFollowingWebsiteBinding.setupUI() {
         when (profileScreenType) {
             UserProfile.FOLLOW.value -> {
-                cardSearch.isVisible = false
+                layoutSearch.root.isVisible = false
             }
             UserProfile.FOLLOWING.value -> {
             }
             UserProfile.FOLLOWERS.value -> {}
             UserProfile.FOLLOW_REQUESTS.value -> {
-                cardSearch.isVisible = false
+                layoutSearch.root.isVisible = false
             }
         }
         rvFollowing.apply {
@@ -89,6 +91,10 @@ class UserFollowingFragment : Fragment() {
 
         followingAdapter.setOnClickListener { it: UserFollowing ->
             (requireActivity() as MainActivity).showScreen(UserProfileFragment.newInstance(isSelfProfile = false), FragmentsTag.USER_PROFILE, isAdd = true)
+        }
+
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
         }
     }
 

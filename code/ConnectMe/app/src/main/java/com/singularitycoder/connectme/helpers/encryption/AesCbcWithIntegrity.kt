@@ -45,6 +45,8 @@ import kotlin.experimental.xor
 
 // https://gitlab.com/spacecowboy/Feeder
 
+// In cryptography, a salt is random data that is used as an additional input to a one-way function that hashes data, a password or passphrase. Salts are used to safeguard passwords in storage.
+
 /**
  * Simple library for the "right" defaults for AES key generation, encryption,
  * and decryption using 128-bit AES, CBC, PKCS5 padding, and a random 16-byte IV

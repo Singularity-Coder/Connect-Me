@@ -14,13 +14,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <include
+                android:id="@+id/layout_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                layout="@layout/layout_search_and_filter" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_feed"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:nestedScrollingEnabled="true"
                 android:scrollbars="none"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layout_search"
                 tools:listitem="@layout/list_item_feed" />
 
             <View

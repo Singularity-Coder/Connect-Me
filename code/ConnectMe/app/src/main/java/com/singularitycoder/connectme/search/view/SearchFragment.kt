@@ -49,7 +49,7 @@ import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.view.addApiKey.AddApiKeyBottomSheetFragment
-import com.singularitycoder.connectme.search.view.createCollection.CreateCollectionBottomSheetFragment
+import com.singularitycoder.connectme.collections.CreateCollectionBottomSheetFragment
 import com.singularitycoder.connectme.search.view.getInsights.GetInsightsBottomSheetFragment
 import com.singularitycoder.connectme.search.view.websiteActions.WebsiteActionsBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
@@ -328,6 +328,7 @@ class SearchFragment : Fragment() {
         etSearch.doAfterTextChanged { it: Editable? ->
             val query = it.toString().toLowCase().trim()
             searchQuery = query
+//            llTabActionButtons.isVisible = query.isBlank()
             if (isSearchSuggestionSelected) {
                 isSearchSuggestionSelected = false
                 cardSearchSuggestions.isVisible = false
@@ -564,6 +565,7 @@ class SearchFragment : Fragment() {
         btnVoiceSearch.isVisible = false
         ivWebappProfile.isVisible = true
         ivSearchEngine.isVisible = false
+        llTabActionButtons.isVisible = true
         try {
             val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
             clWebsiteProfile.isVisible = selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
@@ -960,6 +962,7 @@ class SearchFragment : Fragment() {
                             }
                             QuickActionTabMenuMoreOptions.PRINT.title -> {}
                             QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
+                            QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
                             QuickActionTabMenuMoreOptions.ADD_TO_COLLECTIONS.title -> addToCollections()
                         }
                         false
@@ -977,7 +980,7 @@ class SearchFragment : Fragment() {
             }
             withContext(Main) {
                 requireContext().showPopupMenu(
-                    view = binding.ibAddTab,
+                    view = binding.btnWebsiteQuickActions,
                     title = "Add to Collections",
                     menuList = collectionTitlesList
                 ) { menuPosition: Int ->

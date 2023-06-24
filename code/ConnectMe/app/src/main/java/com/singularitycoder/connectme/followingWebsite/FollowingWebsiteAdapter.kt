@@ -17,7 +17,7 @@ class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
 
     var followingWebsiteList = emptyList<FollowingWebsite?>()
     private var itemClickListener: (followingWebsite: FollowingWebsite?) -> Unit = {}
-    private var itemLongClickListener: (followingWebsite: FollowingWebsite?) -> Unit = {}
+    private var itemLongClickListener: (followingWebsite: FollowingWebsite?, view: View?) -> Unit = { _, _ -> }
     private var followClickListener: (followingWebsite: FollowingWebsite?) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -37,7 +37,7 @@ class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
         itemClickListener = listener
     }
 
-    fun setOnLongClickListener(listener: (followingWebsite: FollowingWebsite?) -> Unit) {
+    fun setOnLongClickListener(listener: (followingWebsite: FollowingWebsite?, view: View?) -> Unit) {
         itemLongClickListener = listener
     }
 
@@ -60,7 +60,10 @@ class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
                     itemClickListener.invoke(followingWebsite)
                 }
                 root.onCustomLongClick {
-                    itemLongClickListener.invoke(followingWebsite)
+                    viewDummyCenter.performClick()
+                }
+                viewDummyCenter.setOnClickListener {
+                    itemLongClickListener.invoke(followingWebsite, it)
                 }
                 btnFollow.onSafeClick {
                     followClickListener.invoke(followingWebsite)

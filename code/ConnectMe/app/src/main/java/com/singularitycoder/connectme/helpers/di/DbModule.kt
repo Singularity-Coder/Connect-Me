@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.singularitycoder.connectme.collections.CollectionsDao
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteDao
+import com.singularitycoder.connectme.helpers.constants.DEFAULT_FOLLOWING_SITES
 import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.constants.DEFAULT_WEB_APPS
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
@@ -36,6 +37,7 @@ object DbModule {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
                     CoroutineScope(IO).launch {
+                        getRoomDb().websiteFollowingDao().insertAll(DEFAULT_FOLLOWING_SITES) // prepopulate following websites
                         getRoomDb().collectionsDao().insertAll(DEFAULT_WEB_APPS) // prepopulate default webapps
                     }
                 }

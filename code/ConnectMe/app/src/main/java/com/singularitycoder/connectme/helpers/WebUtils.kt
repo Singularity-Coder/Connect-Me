@@ -23,7 +23,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
-import androidx.core.text.HtmlCompat
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
@@ -585,13 +584,16 @@ fun getHostFrom(url: String?): String = try {
 }
 
 /**
-  Tests:
-  https://video.google.co.uk
-  https://twitter.com
-  https://en.m.wikipedia.org
+ * Tests:
+ * https://video.google.co.uk
+ * https://twitter.com
+ * https://en.m.wikipedia.org
+ * http://www.mail.yahoo.co.in/
  * */
 fun getDomainFrom(host: String?): String {
-    var website = host?.replace(".m.", ".") ?: "" // This trims mobile subdomain
+    var website = host
+        ?.replace("www.", "")
+        ?.replace(".m.", ".") ?: "" // This trims mobile subdomain
     if (website.filter { it == '.' }.length > 1) {
         repeat(website.filter { it == '.' }.length - 1) {
             website = website.substringBeforeLast(".") // This trims top-level domains etc

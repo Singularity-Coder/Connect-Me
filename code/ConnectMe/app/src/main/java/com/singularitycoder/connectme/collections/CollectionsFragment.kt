@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -18,7 +17,6 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.search.view.createCollection.CreateCollectionBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -51,6 +49,7 @@ class CollectionsFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentCollectionsBinding.setupUI() {
+        layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.ic_round_more_horiz_24)
         rvCollections.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = collectionsAdapter
@@ -67,12 +66,12 @@ class CollectionsFragment : Fragment() {
             ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
         }
 
-        ibClearSearch.onSafeClick {
-            etSearch.setText("")
+        layoutSearch.ibClearSearch.onSafeClick {
+            layoutSearch.etSearch.setText("")
         }
 
-        etSearch.doAfterTextChanged { query: Editable? ->
-            ibClearSearch.isVisible = query.isNullOrBlank().not()
+        layoutSearch.etSearch.doAfterTextChanged { query: Editable? ->
+            layoutSearch.ibClearSearch.isVisible = query.isNullOrBlank().not()
             if (query.isNullOrBlank()) {
                 setSearchList(collectionsList)
                 return@doAfterTextChanged
@@ -82,79 +81,57 @@ class CollectionsFragment : Fragment() {
             collectionsAdapter.notifyDataSetChanged()
         }
 
-        etSearch.onImeClick {
-            etSearch.hideKeyboard()
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
         }
 
-        btnMore.onSafeClick {
-            val popupMenu = PopupMenu(requireContext(), it.first)
+        layoutSearch.btnMore.onSafeClick { btn: Pair<View?, Boolean> ->
             val optionsList = listOf(
                 Pair("Add", R.drawable.ic_round_add_24),
                 Pair("Import", R.drawable.round_south_west_24),
                 Pair("Export", R.drawable.round_north_east_24),
             )
-            optionsList.forEach { it: Pair<String, Int> ->
-                when (it.first) {
-                    "Add" -> {
-                        popupMenu.menu.add(
-                            0, 1, 1, menuIconWithText(
-                                icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                                title = it.first
-                            )
-                        )
-                    }
-                    "Import" -> {
-                        popupMenu.menu.addSubMenu(
-                            0, 1, 1, menuIconWithText(
-                                icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                                title = it.first
-                            )
-                        ).apply {
-                            add("csv")
-                            add("db")
-                        }
-                    }
-                    "Export" -> {
-                        popupMenu.menu.addSubMenu(
-                            0, 1, 1, menuIconWithText(
-                                icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                                title = it.first
-                            )
-                        ).apply {
-                            /** Notice the space next to the words. This is different from Import submenus */
-                            add("csv ")
-                            add("db ")
-                        }
-                    }
-                    else -> Unit
-                }
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+            val subMenuOptionsList = listOf("csv", "db")
+            requireContext().showPopupMenuWithIcons(
+                view = btn.first,
+                menuList = optionsList
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
                         CreateCollectionBottomSheetFragment.newInstance(
                             screen = this@CollectionsFragment::class.java.simpleName
                         ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
                     }
+                    optionsList[1].first -> {
+                        requireContext().showPopupMenu(
+                            view = btn.first,
+                            title = "Import",
+                            menuList = subMenuOptionsList
+                        ) { menuPosition: Int ->
+                            when (subMenuOptionsList[menuPosition]) {
+                                "csv" -> requireContext().showToast("Import csv")
+                                "db" -> requireContext().showToast("Import db")
+                            }
+                        }
+                    }
+                    optionsList[2].first -> {
+                        requireContext().showPopupMenu(
+                            view = btn.first,
+                            title = "Export",
+                            menuList = subMenuOptionsList
+                        ) { menuPosition: Int ->
+                            when (subMenuOptionsList[menuPosition]) {
+                                "csv" -> requireContext().showToast("Export csv")
+                                "db" -> requireContext().showToast("Export db")
+                            }
+                        }
+                    }
                 }
-                when (it?.title) {
-                    "csv" /* Import CSV */ -> {
-                        requireContext().showToast(optionsList[1].first + " csv")
-                    }
-                    "db" /* Import DB */ -> {
-                        requireContext().showToast(optionsList[1].first + " db")
-                    }
-                    "csv " /* Export CSV */ -> {
-                        requireContext().showToast(optionsList[2].first + " csv")
-                    }
-                    "db " /* Export DB */ -> {
-                        requireContext().showToast(optionsList[2].first + " db")
-                    }
-                }
-                false
             }
-            popupMenu.show()
+        }
+
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
         }
     }
 

@@ -59,6 +59,7 @@ class FollowingWebsiteFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentFollowingWebsiteBinding.setupUI() {
+        layoutSearch.btnMore.isVisible = false
         rvFollowing.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = followingWebsiteAdapter
@@ -73,46 +74,41 @@ class FollowingWebsiteFragment : Fragment() {
 
         }
 
-        followingWebsiteAdapter.setOnLongClickListener { followingWebsite: FollowingWebsite? ->
-            val popupMenu = PopupMenu(requireContext(), view)
+        followingWebsiteAdapter.setOnLongClickListener { followingWebsite: FollowingWebsite?, view: View? ->
             val optionsList = listOf(
+                Pair("Open in new tab", R.drawable.round_add_circle_outline_24),
+                Pair("Open in new private tab", R.drawable.outline_policy_24),
                 Pair("Share", R.drawable.outline_share_24),
                 Pair("Copy link", R.drawable.baseline_content_copy_24),
             )
-            optionsList.forEach { it: Pair<String, Int> ->
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                        title = it.first
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+            requireContext().showPopupMenuWithIcons(
+                view = view,
+                menuList = optionsList
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    optionsList[0].first -> {
+                    optionsList[0].first -> {}
+                    optionsList[1].first -> {}
+                    optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = followingWebsite?.title, title = followingWebsite?.link)
                     }
-                    optionsList[1].first -> {
+                    optionsList[3].first -> {
                         requireContext().clipboard()?.text = followingWebsite?.link
                         requireContext().showToast("Copied link")
                     }
                 }
-                false
             }
-            popupMenu.show()
         }
 
         followingWebsiteAdapter.setOnFollowClickListener { it: FollowingWebsite? ->
             followingWebsiteViewModel.deleteItem(it)
         }
 
-        ibClearSearch.onSafeClick {
-            etSearch.setText("")
+        layoutSearch.ibClearSearch.onSafeClick {
+            layoutSearch.etSearch.setText("")
         }
 
-        etSearch.doAfterTextChanged { query: Editable? ->
-            ibClearSearch.isVisible = query.isNullOrBlank().not()
+        layoutSearch.etSearch.doAfterTextChanged { query: Editable? ->
+            layoutSearch.ibClearSearch.isVisible = query.isNullOrBlank().not()
             if (query.isNullOrBlank()) {
                 followingWebsiteAdapter.followingWebsiteList = followingWebsiteList
                 followingWebsiteAdapter.notifyDataSetChanged()
@@ -121,6 +117,10 @@ class FollowingWebsiteFragment : Fragment() {
 
             followingWebsiteAdapter.followingWebsiteList = followingWebsiteList.filter { it?.title?.contains(other = query, ignoreCase = true) == true }
             followingWebsiteAdapter.notifyDataSetChanged()
+        }
+
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
         }
     }
 

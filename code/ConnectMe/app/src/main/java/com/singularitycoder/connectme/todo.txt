@@ -1,4 +1,5 @@
 TODO THIS WEEK
+add default following sites to following tab - if unable to fetch feed then add url - https://help.medium.com/hc/en-us/articles/214874118-Using-RSS-feeds-of-profiles-publications-and-topics
 closing session saves to collection - timestamp
 Export collection to sqlite db and csv file
 Downloads
@@ -59,7 +60,6 @@ New Tab Variations
 Favicons - either request safari ones or AI upscale them in background. tricky stuff
 
 
-Font size, TTS will be in reader mode
 Download videos/Media
 Generate QR code for link
 Save webpage
@@ -72,14 +72,21 @@ Play youtube videos in background - Vivaldi is amazing
 Use javascript interface to provide haptic feedback on button taps inside webview
 
 
-RSS Reader
+TODO Reader Mode
+Diff typefaces
+Font size
+TTS
+
+
+TODO RSS Reader
 https://zapier.com/blog/how-to-find-rss-feed-url/
 https://gitlab.com/spacecowboy/Feeder
 https://zapier.com/blog/how-to-find-rss-feed-url/
 https://code.google.com/archive/p/android-rss/source/default/source
 https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-android
 
-P2P Comm
+
+TODO P2P Comm
 https://github.com/briar/briar
 
 
@@ -143,3 +150,11 @@ TODO Checklist
 4. Room Relations
 5. Room Lazy load
 6. RSA/AES encryption decryption
+
+
+ADB
+Easiest way to run ADB commands on mac. Full list https://gist.github.com/Pulimet/5013acf2cd5b28e55036c82c91bd56d8
+STEP 1: Navigate to ADB tools path in studio terminal
+cd /Users/harekrsna/Library/Android/sdk/platform-tools
+STEP 2: Then to execute ADB commands prefix the command with ./
+./adb help

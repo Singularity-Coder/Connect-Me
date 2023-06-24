@@ -55,8 +55,11 @@ class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
                 root.onSafeClick {
                     itemClickListener.invoke(collectionWebPage)
                 }
-                root.onCustomLongClick {
+                viewDummyCenter.setOnClickListener {
                     itemLongClickListener.invoke(collectionWebPage, it)
+                }
+                root.onCustomLongClick {
+                    viewDummyCenter.performClick()
                 }
             }
         }

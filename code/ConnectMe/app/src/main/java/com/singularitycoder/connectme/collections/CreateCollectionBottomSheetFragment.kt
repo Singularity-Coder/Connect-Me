@@ -1,4 +1,4 @@
-package com.singularitycoder.connectme.search.view.createCollection
+package com.singularitycoder.connectme.collections
 
 import android.graphics.Bitmap
 import android.os.Build
@@ -15,9 +15,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.singularitycoder.connectme.collections.CollectionWebPage
-import com.singularitycoder.connectme.collections.CollectionsFragment
-import com.singularitycoder.connectme.collections.CollectionsViewModel
 import com.singularitycoder.connectme.databinding.FragmentCreateCollectionBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.search.view.SearchFragment
@@ -94,6 +91,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         lifecycleScope.launch {
+            // TODO getting collections can be a separate table. When adding coll we add to that tabel and all dups will be ignore. Minor opt
             val collectionTitlesList = collectionsViewModel.getAllUniqueCollectionTitles().toArrayList().apply {
                 add("Create new")
             }

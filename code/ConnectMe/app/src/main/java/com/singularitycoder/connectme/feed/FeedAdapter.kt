@@ -1,35 +1,43 @@
 package com.singularitycoder.connectme.feed
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemFeedBinding
+import com.singularitycoder.connectme.helpers.onCustomLongClick
+import com.singularitycoder.connectme.helpers.onSafeClick
 
 class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var feedList = emptyList<Feed>()
-    private var newsClickListener: (feed: Feed) -> Unit = {}
+    private var itemClickListener: (feed: Feed?) -> Unit = {}
+    private var itemLongClickListener: (feed: Feed?, view: View?) -> Unit = { _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemFeedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return NewsViewHolder(itemBinding)
+        return ThisViewHolder(itemBinding)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as NewsViewHolder).setData(feedList[position])
+        (holder as ThisViewHolder).setData(feedList[position])
     }
 
     override fun getItemCount(): Int = feedList.size
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setOnNewsClickListener(listener: (feed: Feed) -> Unit) {
-        newsClickListener = listener
+    fun setOnItemClickListener(listener: (feed: Feed?) -> Unit) {
+        itemClickListener = listener
     }
 
-    inner class NewsViewHolder(
+    fun setOnItemLongClickListener(listener: (feed: Feed?, view: View?) -> Unit) {
+        itemLongClickListener = listener
+    }
+
+    inner class ThisViewHolder(
         private val itemBinding: ListItemFeedBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(feed: Feed) {
@@ -44,8 +52,14 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }
                 tvSource.text = "$source  \u2022  ${feed.time}"
                 tvTitle.text = feed.title
-                root.setOnClickListener {
-                    newsClickListener.invoke(feed)
+                root.onSafeClick {
+                    itemClickListener.invoke(feed)
+                }
+                root.onCustomLongClick {
+                    viewDummyCenter.performClick()
+                }
+                viewDummyCenter.setOnClickListener {
+                    itemLongClickListener.invoke(feed, it)
                 }
             }
         }

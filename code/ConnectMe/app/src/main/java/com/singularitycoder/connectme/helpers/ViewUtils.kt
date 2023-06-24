@@ -1,7 +1,6 @@
 package com.singularitycoder.connectme.helpers
 
 import android.app.Activity
-import android.app.Dialog
 import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
@@ -31,7 +30,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.palette.graphics.Palette
@@ -249,6 +247,34 @@ fun Context.showPopupMenu(
         }
         show()
     }
+}
+
+fun Context.showPopupMenuWithIcons(
+    view: View?,
+    title: String? = null,
+    menuList: List<Pair<String, Int>>,
+    onItemClick: (menuItem: MenuItem?) -> Unit
+) {
+    val popupMenu = PopupMenu(this, view)
+    if (title != null) {
+        popupMenu.menu.add(Menu.NONE, -1, 0, title).apply {
+            isEnabled = false
+        }
+    }
+    menuList.forEach {
+        popupMenu.menu.add(
+            0, 1, 1, menuIconWithText(
+                icon = drawable(it.second)?.changeColor(this, R.color.purple_500),
+                title = it.first
+            )
+        )
+    }
+    popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+        view?.setHapticFeedback()
+        onItemClick.invoke(it)
+        false
+    }
+    popupMenu.show()
 }
 
 // Create custom list item to get correct width

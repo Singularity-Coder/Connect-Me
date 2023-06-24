@@ -33,5 +33,4 @@
     <string name="dialog_message_save_image">Saving this image will allow other apps to access it.\n\nAre you sure you want to save?</string>
     <string name="save_image">Save image</string>
     <string name="cancel">Cancel</string>
-
 </resources>

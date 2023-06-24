@@ -116,9 +116,7 @@ fun Long?.toShortDate(): String? {
     return if (calculatedTime == timeNowString) "Today" else calculatedTime
 }
 
-fun Long?.toShortTime(): String? {
-    return this?.toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)?.substringAfter(",")?.trim()
-}
+fun Long?.toShortTime(): String? = this?.toTimeOfType(DateType.h_mm_a)
 
 enum class DateType(val value: String) {
     h_mm_a(value = "h:mm a"),

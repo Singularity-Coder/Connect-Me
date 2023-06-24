@@ -1,3 +1,5 @@
+<resources>
+    <string name="error_webpage"><![CDATA[
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,7 +10,7 @@
 			text-align: center;
 			background-color: #3700B3;
 		}
-		
+
 		h1 {
 			font-size: 1.8em;
 			margin-top: 100px;
@@ -21,3 +23,5 @@
 	<h1>Something went wrong, try again or try something different!</h1>
 </body>
 </html>
+    ]]></string>
+</resources>

@@ -21,6 +21,7 @@ import com.singularitycoder.connectme.databinding.FragmentHistoryBinding
 import com.singularitycoder.connectme.helpers.*
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 
@@ -62,6 +63,7 @@ class HistoryFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentHistoryBinding.setupUI() {
+        layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.outline_delete_24)
         linearLayoutManager = LinearLayoutManager(
             /* context = */ context,
             /* orientation = */ RecyclerView.VERTICAL,
@@ -79,9 +81,9 @@ class HistoryFragment : Fragment() {
 
         nestedScrollView.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             println("scrollY: $scrollY oldScrollY: $oldScrollY".trimIndent())
-            if (scrollY - oldScrollY > 20) {
-                etSearch.hideKeyboard()
-            }
+//            if (scrollY - oldScrollY > 20) {
+//                etSearch.hideKeyboard()
+//            }
 
 //            if (historyAdapter.historyList.isNotEmpty()) {
 //                tvDate.isVisible = historyAdapter.historyList.isNotEmpty()
@@ -89,16 +91,54 @@ class HistoryFragment : Fragment() {
 //            }
         })
 
-        btnDeleteAllHistory.onSafeClick {
-            requireContext().showAlertDialog(
-                title = "Delete all history",
-                message = "Careful! You cannot undo this.",
-                positiveBtnText = "Delete",
-                negativeBtnText = "Cancel",
-                positiveAction = {
-                    historyViewModel.deleteAllHistory()
-                }
+        layoutSearch.btnMore.onSafeClick {
+            val menuOptionsList = listOf(
+                "Last hour",
+                "Last 24 hours",
+                "Last 7 days",
+                "Last 4 weeks",
+                "Last year",
+                "All time"
             )
+            requireContext().showPopupMenu(
+                view = layoutSearch.btnMore,
+                title = "Delete History",
+                menuList = menuOptionsList
+            ) { menuPosition: Int ->
+                when (menuOptionsList[menuPosition]) {
+                    menuOptionsList[0] -> {
+                        val time1Hour = TimeUnit.HOURS.toMillis(1)
+                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time1Hour)
+                    }
+                    menuOptionsList[1] -> {
+                        val time24Hours = TimeUnit.HOURS.toMillis(24)
+                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time24Hours)
+                    }
+                    menuOptionsList[2] -> {
+                        val time7Days = TimeUnit.DAYS.toMillis(7)
+                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time7Days)
+                    }
+                    menuOptionsList[3] -> {
+                        val time4Weeks = TimeUnit.DAYS.toMillis(28)
+                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time4Weeks)
+                    }
+                    menuOptionsList[4] -> {
+                        val time1Year = TimeUnit.DAYS.toMillis(28 * 12)
+                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time1Year)
+                    }
+                    menuOptionsList[5] -> {
+                        requireContext().showAlertDialog(
+                            title = "Delete all history",
+                            message = "Careful! You cannot undo this.",
+                            positiveBtnText = "Delete",
+                            negativeBtnText = "Cancel",
+                            positiveAction = {
+                                historyViewModel.deleteAllHistory()
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         historyAdapter.setOnClickListener { it: History ->
@@ -106,45 +146,40 @@ class HistoryFragment : Fragment() {
         }
 
         historyAdapter.setOnLongClickListener { history: History, view: View? ->
-            val popupMenu = PopupMenu(requireContext(), view)
             val optionsList = listOf(
+                Pair("Open in new tab", R.drawable.round_add_circle_outline_24),
+                Pair("Open in new private tab", R.drawable.outline_policy_24),
                 Pair("Share", R.drawable.outline_share_24),
                 Pair("Copy link", R.drawable.baseline_content_copy_24),
                 Pair("Delete", R.drawable.outline_delete_24),
             )
-            optionsList.forEach { it: Pair<String, Int> ->
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                        title = it.first
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+            requireContext().showPopupMenuWithIcons(
+                view = view,
+                menuList = optionsList
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    optionsList[0].first -> {
+                    optionsList[0].first -> {}
+                    optionsList[1].first -> {}
+                    optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = history.title, title = history.link)
                     }
-                    optionsList[1].first -> {
+                    optionsList[3].first -> {
                         requireContext().clipboard()?.text = history.link
                         requireContext().showToast("Copied link")
                     }
-                    optionsList[2].first -> {
+                    optionsList[4].first -> {
                         historyViewModel.deleteItem(history)
                     }
                 }
-                false
             }
-            popupMenu.show()
         }
 
-        ibClearSearch.onSafeClick {
-            etSearch.setText("")
+        layoutSearch.ibClearSearch.onSafeClick {
+            layoutSearch.etSearch.setText("")
         }
 
-        etSearch.doAfterTextChanged { query: Editable? ->
-            ibClearSearch.isVisible = query.isNullOrBlank().not()
+        layoutSearch.etSearch.doAfterTextChanged { query: Editable? ->
+            layoutSearch.ibClearSearch.isVisible = query.isNullOrBlank().not()
             if (query.isNullOrBlank()) {
                 prepareHistoryList(historyList)
                 return@doAfterTextChanged
@@ -152,6 +187,10 @@ class HistoryFragment : Fragment() {
 
             historyAdapter.historyList = historyList.filter { it?.title?.contains(other = query, ignoreCase = true) == true }
             historyAdapter.notifyDataSetChanged()
+        }
+
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
         }
     }
 

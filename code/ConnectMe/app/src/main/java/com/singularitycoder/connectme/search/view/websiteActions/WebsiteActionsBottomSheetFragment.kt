@@ -193,7 +193,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                     time = timeNow,
                     website = getHostFrom(url = webViewData?.url),
                     link = webViewData?.url ?: "",
-                    postCount = 8
+                    postCount = 8,
+                    rssUrl = "${webViewData?.url}feed"
                 )
                 val isPresent = followingWebsiteViewModel.isItemPresent(getHostFrom(url = webViewData?.url))
                 withContext(Main) {

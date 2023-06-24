@@ -74,7 +74,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "com.google.android.exoplayer:exoplayer:2.18.7"
     implementation "io.coil-kt:coil:2.2.2"
-    implementation "androidx.fragment:fragment-ktx:1.5.7"
+    implementation "androidx.fragment:fragment-ktx:1.6.0"
     implementation "androidx.activity:activity-ktx:1.7.2"
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
     implementation 'com.r0adkll:slidableactivity:2.1.0'
@@ -131,7 +131,7 @@ dependencies {
     implementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false } // Barcode Scanner
 
     // Kotlin Scripting
-    var kotlin_scripting_version = "1.8.0"
+    var kotlin_scripting_version = "1.8.10"
     implementation "org.jetbrains.kotlin:kotlin-scripting-common:$kotlin_scripting_version"
     implementation "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlin_scripting_version"
     implementation "org.jetbrains.kotlin:kotlin-scripting-dependencies:$kotlin_scripting_version"
@@ -144,5 +144,4 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation "androidx.work:work-runtime-ktx:2.8.1"
     implementation 'com.google.code.gson:gson:2.9.1'
-    implementation "androidx.datastore:datastore-preferences:1.0.0"
 }

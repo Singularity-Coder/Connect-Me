@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -66,8 +65,9 @@ class DownloadsFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentDownloadsBinding.setupUI() {
-        cardSearch.isVisible = isSelfProfile
-        btnMore.isVisible = isSelfProfile
+        layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.ic_round_more_horiz_24)
+        layoutSearch.cardSearch.isVisible = isSelfProfile
+        layoutSearch.btnMore.isVisible = isSelfProfile
         rvDownloads.apply {
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = feedAdapter
@@ -94,37 +94,29 @@ class DownloadsFragment : Fragment() {
     private fun FragmentDownloadsBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
-        btnMore.onSafeClick {
-            val popupMenu = PopupMenu(requireContext(), it.first)
-            val downloadsOptionsList = listOf("Filter", "Sort by")
-            downloadsOptionsList.forEach {
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(
-                            if (it == "Filter") {
-                                R.drawable.round_filter_list_24
-                            } else {
-                                R.drawable.round_sort_24
-                            }
-                        )?.changeColor(requireContext(), R.color.purple_500),
-                        title = it
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+        layoutSearch.btnMore.onSafeClick {
+            val optionsList = listOf(
+                Pair("Filter", R.drawable.round_filter_list_24),
+                Pair("Sort by", R.drawable.round_sort_24)
+            )
+            requireContext().showPopupMenuWithIcons(
+                view = it.first,
+                menuList = optionsList
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    downloadsOptionsList[0] -> {
+                    optionsList[0].first -> {
                     }
-                    downloadsOptionsList[1] -> {
+                    optionsList[1].first -> {
                     }
                 }
-                false
             }
-            popupMenu.show()
         }
 
         feedAdapter.setOnNewsClickListener { it: Download ->
+        }
+
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
         }
     }
 
