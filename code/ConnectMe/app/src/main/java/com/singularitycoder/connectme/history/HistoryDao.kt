@@ -14,7 +14,7 @@ interface HistoryDao {
     suspend fun insert(history: History?)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(appList: List<History?>)
+    suspend fun insertAll(list: List<History?>)
 
 
     @Transaction

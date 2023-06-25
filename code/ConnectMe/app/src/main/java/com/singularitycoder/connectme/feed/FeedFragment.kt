@@ -83,10 +83,10 @@ class FeedFragment : Fragment() {
             (0..30).forEach { it: Int ->
                 feedList.add(
                     Feed(
-                        imageUrl = DUMMY_IMAGE_URLS[Random().nextInt(DUMMY_IMAGE_URLS.size)],
+                        image = DUMMY_IMAGE_URLS[Random().nextInt(DUMMY_IMAGE_URLS.size)],
                         title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
-                        source = "www.news.com",
-                        time = "5 hours ago",
+                        website = "www.news.com",
+                        time = "5 hr ago",
                         link = ""
                     )
                 )

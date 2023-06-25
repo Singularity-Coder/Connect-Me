@@ -9,6 +9,8 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemFeedBinding
 import com.singularitycoder.connectme.helpers.onCustomLongClick
 import com.singularitycoder.connectme.helpers.onSafeClick
+import com.singularitycoder.connectme.helpers.toIntuitiveDateTime
+import com.singularitycoder.connectme.helpers.toShortTime
 
 class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -42,15 +44,10 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(feed: Feed) {
             itemBinding.apply {
-                ivNewsImage.load(feed.imageUrl) {
+                ivNewsImage.load(feed.image) {
                     placeholder(R.color.black)
                 }
-                val source = if (feed.source.isNullOrBlank()) {
-                    feed.link?.substringAfter("//")?.substringBefore("/")?.replace("www.", "")
-                } else {
-                    feed.source
-                }
-                tvSource.text = "$source  \u2022  ${feed.time}"
+                tvSource.text = "${feed.website}  \u2022  ${feed.time}"
                 tvTitle.text = feed.title
                 root.onSafeClick {
                     itemClickListener.invoke(feed)

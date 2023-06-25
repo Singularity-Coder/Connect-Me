@@ -1,16 +1,17 @@
 package com.singularitycoder.connectme.feed
 
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.singularitycoder.connectme.helpers.constants.Table
 import kotlinx.parcelize.Parcelize
 
+@Entity(tableName = Table.FEED)
 @Parcelize
 data class Feed(
-    val id: Long = 0,
-    val imageUrl: String? = "",
-    val title: String = "",
-    val source: String? = "",
+    val image: String? = "",
+    @PrimaryKey val title: String = "",
     val time: String? = "",
-    val link: String? = ""
-) : Parcelable {
-    constructor() : this(0, "", "", "", "", "")
-}
+    val website: String? = "",
+    val link: String = ""
+) : Parcelable

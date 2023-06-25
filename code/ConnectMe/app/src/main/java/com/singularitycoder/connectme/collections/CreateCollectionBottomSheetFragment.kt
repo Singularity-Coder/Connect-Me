@@ -154,9 +154,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
                 etChooseCollection.editText?.text.toString().trim()
             }
             if (screen == CollectionsFragment::class.java.simpleName) {
-                btnCreate.isVisible = false
-                progressCircular.isVisible = true
-                if (etEnterLink.editText?.text.toString().isValidURL().not()) {
+                if (etEnterLink.editText?.text.toString().toLowCase().isValidURL().not()) {
                     etEnterLink.boxStrokeWidth = 2.dpToPx().toInt()
                     etEnterLink.error = "Invalid link"
                     return@onSafeClick
@@ -171,6 +169,8 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
                     etChooseCollection.error = "This is required!"
                     return@onSafeClick
                 }
+                btnCreate.isVisible = false
+                progressCircular.isVisible = true
                 requireContext().onWebPageLoaded(url = etEnterLink.editText?.text.toString().trim()) { webView: WebView?, favicon: Bitmap? ->
                     val collectionWebPage = CollectionWebPage(
                         collectionTitle = collectionTitle,

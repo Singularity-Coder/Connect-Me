@@ -163,6 +163,7 @@ object Table {
     const val INSIGHT = "table_insight"
     const val PROMPT = "table_prompt"
     const val HISTORY = "table_history"
+    const val FEED = "table_feed"
     const val FOLLOWING_WEBSITE = "table_following_website"
     const val COLLECTION = "table_collection"
 }

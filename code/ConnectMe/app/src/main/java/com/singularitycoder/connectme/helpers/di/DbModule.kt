@@ -5,10 +5,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.singularitycoder.connectme.collections.CollectionsDao
+import com.singularitycoder.connectme.feed.FeedDao
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteDao
 import com.singularitycoder.connectme.helpers.constants.DEFAULT_FOLLOWING_SITES
-import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.constants.DEFAULT_WEB_APPS
+import com.singularitycoder.connectme.helpers.constants.Db
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
 import com.singularitycoder.connectme.history.HistoryDao
 import com.singularitycoder.connectme.search.dao.InsightDao
@@ -69,4 +70,8 @@ object DbModule {
     @Singleton
     @Provides
     fun injectCollectionsDao(db: ConnectMeDatabase): CollectionsDao = db.collectionsDao()
+
+    @Singleton
+    @Provides
+    fun injectFeedDao(db: ConnectMeDatabase): FeedDao = db.feedDao()
 }

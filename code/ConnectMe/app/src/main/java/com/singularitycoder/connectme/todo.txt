@@ -1,4 +1,16 @@
 TODO THIS WEEK
+Webview notifications
+
+<title>
+<link>
+<url>
+<published>
+<pubDate>
+Follow -> add api key or get rss link from gpt -> if link doesnt exist then they simply follow site else start worker to fetch posts
+if gpt doesnt provide link then try defaut /feed or /rss/feed - if that doesnt work then ignore
+If no link exists then add option to add link next to follow
+After getting rss link from gpt update the entry in db
+
 add default following sites to following tab - if unable to fetch feed then add url - https://help.medium.com/hc/en-us/articles/214874118-Using-RSS-feeds-of-profiles-publications-and-topics
 closing session saves to collection - timestamp
 Export collection to sqlite db and csv file
@@ -89,6 +101,8 @@ https://stackoverflow.com/questions/6093975/how-to-build-a-rss-reader-for-androi
 TODO P2P Comm
 https://github.com/briar/briar
 
+TODO Browser
+https://github.com/plateaukao/einkbro
 
 TODO NEED TO EXPLORE
 1. Room lazy load

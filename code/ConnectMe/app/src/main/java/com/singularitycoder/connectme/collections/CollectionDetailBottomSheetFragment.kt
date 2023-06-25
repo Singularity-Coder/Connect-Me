@@ -111,6 +111,9 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                             negativeBtnText = "Cancel",
                             positiveAction = {
                                 collectionsViewModel.deleteItem(collectionWebPage)
+                                if (webPageList.size == 1) {
+                                    this@CollectionDetailBottomSheetFragment.dismiss()
+                                }
                             }
                         )
                     }

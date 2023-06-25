@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -20,10 +21,13 @@ import com.singularitycoder.connectme.databinding.FragmentWebsiteActionsBottomSh
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.search.model.ApiResult
+import com.singularitycoder.connectme.search.model.ApiState
 import com.singularitycoder.connectme.search.model.WebViewData
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.SearchTabFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
+import com.singularitycoder.connectme.search.viewmodel.WebsiteActionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -40,6 +44,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val followingWebsiteViewModel by activityViewModels<FollowingWebsiteViewModel>()
+    private val websiteActionsViewModel by viewModels<WebsiteActionsViewModel>()
 
     private lateinit var binding: FragmentWebsiteActionsBottomSheetBinding
 
@@ -193,8 +198,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                     time = timeNow,
                     website = getHostFrom(url = webViewData?.url),
                     link = webViewData?.url ?: "",
-                    postCount = 8,
-                    rssUrl = "${webViewData?.url}feed"
+                    postCount = 0,
+                    rssUrl = ""
                 )
                 val isPresent = followingWebsiteViewModel.isItemPresent(getHostFrom(url = webViewData?.url))
                 withContext(Main) {
@@ -204,6 +209,16 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                     } else {
                         setButtonStyleToFollowing()
                         followingWebsiteViewModel.addFollowingWebsite(followingWebsite)
+//                        websiteActionsViewModel.getRssFeedFrom(url = "https://mashable.com/feeds/rss/all")
+                        searchViewModel.getTextInsight(
+                            prompt = """
+                                 What is the rss link for ${getHostFrom(url = webViewData?.url)}.
+                                 Put the link in this format: \"\"\"rss_link\"\"\"
+                            """.trimIndentsAndNewLines(),
+                            isSaveToDb = false,
+                            isSendResponse = false,
+                            screen = this@WebsiteActionsBottomSheetFragment.javaClass.simpleName
+                        )
                     }
                 }
             }
@@ -308,6 +323,34 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             tvSiteName.text = getHostFrom(it.url)
             tvLink.text = it.title
             binding.setupWebsiteSecurity(sslCertificate = it.certificate)
+        }
+
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+            if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
+            if (it.screen != this@WebsiteActionsBottomSheetFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
+
+            when (it.apiState) {
+                ApiState.SUCCESS -> {
+                    val rssUrl = if (it.insight?.insight?.contains("\"\"\"") == true) {
+                        it.insight.insight.substringAfter("\"\"\"").substringBefore("\"\"\"")
+                    } else ""
+                    val isValidRssUrl = rssUrl.isNotBlank() && rssUrl.contains("http")
+                    if (isValidRssUrl) {
+                        websiteActionsViewModel.getRssFeedFrom(url = rssUrl)
+                        // TODO Make API call with rss url
+                        // TODO update db
+                        // TODO when db updated start worker to fetch posts
+                    }
+                }
+                ApiState.ERROR -> {
+                    // TODO try default rss urls
+                    // Provide field to enter url manually. if that also fa
+                    // Inform user open ai api failed. if key issue. else ignore
+                }
+                else -> Unit
+            }
+
+            searchViewModel.resetInsight()
         }
     }
 

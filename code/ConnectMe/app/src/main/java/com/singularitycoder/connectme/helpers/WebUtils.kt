@@ -513,8 +513,8 @@ fun WebView.screenshot(): Bitmap {
 fun String?.isValidURL(): Boolean {
     return try {
         this ?: return false
-        URL(this).toURI()
-        true
+        URL(this.toLowCase()).toURI()
+        this.contains(other = "https://", ignoreCase = true) || this.contains(other = "http://", ignoreCase = true)
     } catch (e: MalformedURLException) {
         false
     } catch (e: URISyntaxException) {

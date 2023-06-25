@@ -3,7 +3,10 @@ package com.singularitycoder.connectme.helpers.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.singularitycoder.connectme.collections.CollectionWebPage
 import com.singularitycoder.connectme.collections.CollectionsDao
+import com.singularitycoder.connectme.feed.Feed
+import com.singularitycoder.connectme.feed.FeedDao
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteDao
 import com.singularitycoder.connectme.history.History
@@ -22,7 +25,8 @@ import com.singularitycoder.connectme.search.model.WebApp
         Prompt::class,
         History::class,
         FollowingWebsite::class,
-        com.singularitycoder.connectme.collections.CollectionWebPage::class,
+        CollectionWebPage::class,
+        Feed::class,
     ],
     version = 1,
     exportSchema = false
@@ -39,5 +43,6 @@ abstract class ConnectMeDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
     abstract fun websiteFollowingDao(): FollowingWebsiteDao
     abstract fun collectionsDao(): CollectionsDao
+    abstract fun feedDao(): FeedDao
 }
 
