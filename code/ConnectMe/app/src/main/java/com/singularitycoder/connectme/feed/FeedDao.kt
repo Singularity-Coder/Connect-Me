@@ -38,6 +38,9 @@ interface FeedDao {
     @Query("SELECT * FROM ${Table.FEED} WHERE website = :website")
     fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<Feed?>>
 
+    @Query("SELECT * FROM ${Table.FEED} WHERE isSaved = 1")
+    fun getAllSavedItemsStateFlow(): Flow<List<Feed?>>
+
     @Query("SELECT * FROM ${Table.FEED} WHERE website = :website")
     fun getItemByWebsiteStateFlow(website: String?): Flow<Feed?>
 

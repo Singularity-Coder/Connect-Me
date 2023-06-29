@@ -3,24 +3,25 @@ package com.singularitycoder.connectme.feed
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.DUMMY_IMAGE_URLS
-import com.singularitycoder.connectme.helpers.constants.RSS_FEED_TYPE_LIST
+import com.singularitycoder.connectme.helpers.constants.WorkerTag
+import com.singularitycoder.connectme.search.viewmodel.WebsiteActionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -42,17 +43,21 @@ class FeedFragment : Fragment() {
     private lateinit var binding: FragmentFeedBinding
 
     private val feedAdapter = FeedAdapter()
-    private val feedList = mutableListOf<Feed>()
+    private val rssFeedTypeList = listOf("All Feeds", "Saved Feed")
 
+    private var feedList = listOf<Feed?>()
+    private var feedSavedList = listOf<Feed?>()
     private var topicParam: String? = null
-    private var selectedFeed: String? = "All Feeds"
+    private var selectedFeed: String? = rssFeedTypeList.first()
+
+    private val websiteActionsViewModel by activityViewModels<WebsiteActionsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFeedBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -66,6 +71,7 @@ class FeedFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        if (feedList.isEmpty()) parseRssFeedFromWorker()
 //        CodeExecutor.executeCode(
 //            javaClassName = "EelloWoruludu",
 //            commandsList = listOf("System.out.println(\"Eeeelloololo Waraladuuuuuuuu\")")
@@ -79,25 +85,9 @@ class FeedFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
-        lifecycleScope.launch(Default) {
-            (0..30).forEach { it: Int ->
-                feedList.add(
-                    Feed(
-                        image = DUMMY_IMAGE_URLS[Random().nextInt(DUMMY_IMAGE_URLS.size)],
-                        title = "Party all night got 3 billion people in trouble. Mars police are investigating this on earth.",
-                        website = "www.news.com",
-                        time = "5 hr ago",
-                        link = ""
-                    )
-                )
-            }
-            withContext(Main) {
-                feedAdapter.feedList = feedList
-                feedAdapter.notifyDataSetChanged()
-            }
-        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentFeedBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
@@ -120,7 +110,9 @@ class FeedFragment : Fragment() {
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {}
                     optionsList[1].first -> {}
-                    optionsList[2].first -> {}
+                    optionsList[2].first -> {
+                        websiteActionsViewModel.updatedFeedItemToSaved(feed?.copy(isSaved = true))
+                    }
                     optionsList[3].first -> {
                         requireContext().shareTextOrImage(text = feed?.title, title = feed?.link)
                     }
@@ -135,7 +127,7 @@ class FeedFragment : Fragment() {
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
                             positiveAction = {
-//                                feedViewModel.deleteItem(feed)
+                                websiteActionsViewModel.deleteItem(feed)
                             }
                         )
                     }
@@ -145,7 +137,7 @@ class FeedFragment : Fragment() {
 
         layoutSearch.btnMore.onSafeClick {
             val popupMenu = PopupMenu(requireContext(), it.first)
-            RSS_FEED_TYPE_LIST.forEach {
+            rssFeedTypeList.forEach {
                 popupMenu.menu.add(
                     0, 1, 1, menuIconWithText(
                         icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
@@ -159,20 +151,73 @@ class FeedFragment : Fragment() {
             popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
                 view?.setHapticFeedback()
                 when (it?.title?.toString()?.trim()) {
-                    RSS_FEED_TYPE_LIST[0] -> {
-                        selectedFeed = RSS_FEED_TYPE_LIST[0]
+                    rssFeedTypeList[0] -> {
+                        selectedFeed = rssFeedTypeList[0]
+                        feedAdapter.feedList = feedList
+                        feedAdapter.notifyDataSetChanged()
                     }
-                    RSS_FEED_TYPE_LIST[1] -> {
-                        selectedFeed = RSS_FEED_TYPE_LIST[1]
+                    rssFeedTypeList[1] -> {
+                        selectedFeed = rssFeedTypeList[1]
+                        feedAdapter.feedList = feedSavedList
+                        feedAdapter.notifyDataSetChanged()
                     }
                 }
                 false
             }
             popupMenu.show()
         }
+
+        layoutSearch.ibClearSearch.onSafeClick {
+            layoutSearch.etSearch.setText("")
+        }
+
+        layoutSearch.etSearch.doAfterTextChanged { query: Editable? ->
+            layoutSearch.ibClearSearch.isVisible = query.isNullOrBlank().not()
+            if (query.isNullOrBlank()) {
+                feedAdapter.feedList = feedList
+                feedAdapter.notifyDataSetChanged()
+                return@doAfterTextChanged
+            }
+
+            feedAdapter.feedList = feedList.filter { it?.title?.contains(other = query, ignoreCase = true) == true }
+            feedAdapter.notifyDataSetChanged()
+        }
+
+        layoutSearch.etSearch.onImeClick {
+            layoutSearch.etSearch.hideKeyboard()
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeForData() {
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = websiteActionsViewModel.getAllItemsStateFlow()) { it: List<Feed?> ->
+            this.feedList = it
+            feedAdapter.feedList = it
+            feedAdapter.notifyDataSetChanged()
+        }
 
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = websiteActionsViewModel.getAllSavedItemsStateFlow()) { it: List<Feed?> ->
+            this.feedSavedList = it
+        }
+    }
+
+    private fun parseRssFeedFromWorker() {
+        val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+        val workRequest = OneTimeWorkRequestBuilder<RssFeedWorker>().setConstraints(workConstraints).build()
+        WorkManager.getInstance(requireContext()).enqueueUniqueWork(WorkerTag.RSS_FEED_PARSER, ExistingWorkPolicy.KEEP, workRequest)
+        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(workRequest.id).observe(viewLifecycleOwner) { workInfo: WorkInfo? ->
+            when (workInfo?.state) {
+                WorkInfo.State.RUNNING -> println("RUNNING: show Progress")
+                WorkInfo.State.ENQUEUED -> println("ENQUEUED: show Progress")
+                WorkInfo.State.SUCCEEDED -> {
+                    println("SUCCEEDED: stop Progress")
+                    // TODO stop progress
+                }
+                WorkInfo.State.FAILED -> println("FAILED: stop showing Progress")
+                WorkInfo.State.BLOCKED -> println("BLOCKED: show Progress")
+                WorkInfo.State.CANCELLED -> println("CANCELLED: stop showing Progress")
+                else -> Unit
+            }
+        }
     }
 }

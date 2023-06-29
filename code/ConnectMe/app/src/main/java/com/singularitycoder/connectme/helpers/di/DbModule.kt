@@ -38,7 +38,7 @@ object DbModule {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
                     CoroutineScope(IO).launch {
-                        getRoomDb().websiteFollowingDao().insertAll(DEFAULT_FOLLOWING_SITES) // prepopulate following websites
+                        getRoomDb().followingWebsiteDao().insertAll(DEFAULT_FOLLOWING_SITES) // prepopulate following websites
                         getRoomDb().collectionsDao().insertAll(DEFAULT_WEB_APPS) // prepopulate default webapps
                     }
                 }
@@ -65,7 +65,7 @@ object DbModule {
 
     @Singleton
     @Provides
-    fun injectWebsiteFollowingDao(db: ConnectMeDatabase): FollowingWebsiteDao = db.websiteFollowingDao()
+    fun injectWebsiteFollowingDao(db: ConnectMeDatabase): FollowingWebsiteDao = db.followingWebsiteDao()
 
     @Singleton
     @Provides

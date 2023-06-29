@@ -13,5 +13,6 @@ data class Feed(
     @PrimaryKey val title: String = "",
     val time: String? = "",
     val website: String? = "",
-    val link: String = ""
+    val link: String = "",
+    val isSaved: Boolean = false
 ) : Parcelable

@@ -84,9 +84,6 @@ val TOP_LEVEL_DOMAINS = listOf(
 
 val OPEN_AI_MODELS_LIST = listOf("gpt-4", "gpt-3.5-turbo")
 
-val RSS_FEED_TYPE_LIST = listOf("All Feeds", "Saved Feed")
-
-
 // Many of them dont work with GPT either because its not connected to internet or denies it. Need to find OS model.
 // https://consumeraffairs.nic.in/organisation-and-units/division/consumer-protection-unit/consumer-rights
 // Let's work this out in a step by step way to be sure we have the right answer
@@ -185,6 +182,16 @@ object BottomSheetTag {
     const val TAG_IMAGE_VIEWER = "TAG_IMAGE_VIEWER_BOTTOM_SHEET"
     const val TAG_CREATE_COLLECTION = "TAG_CREATE_COLLECTION_BOTTOM_SHEET"
     const val TAG_COLLECTION_DETAIL = "TAG_COLLECTION_DETAIL_BOTTOM_SHEET"
+}
+
+object WorkerData {
+    const val RSS_URL = "WORKER_DATA_RSS_URL"
+    const val RSS_URL_LIST = "WORKER_DATA_RSS_URL_LIST"
+}
+
+object WorkerTag {
+    const val RSS_FOLLOW_PARSER = "RSS_FOLLOW_PARSER"
+    const val RSS_FEED_PARSER = "RSS_FEED_PARSER"
 }
 
 enum class QuickActionTabMenu(val value: String) {

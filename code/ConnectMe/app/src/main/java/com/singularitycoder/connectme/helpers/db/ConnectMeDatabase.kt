@@ -41,7 +41,7 @@ abstract class ConnectMeDatabase : RoomDatabase() {
     abstract fun insightDao(): InsightDao
     abstract fun promptDao(): PromptDao
     abstract fun historyDao(): HistoryDao
-    abstract fun websiteFollowingDao(): FollowingWebsiteDao
+    abstract fun followingWebsiteDao(): FollowingWebsiteDao
     abstract fun collectionsDao(): CollectionsDao
     abstract fun feedDao(): FeedDao
 }

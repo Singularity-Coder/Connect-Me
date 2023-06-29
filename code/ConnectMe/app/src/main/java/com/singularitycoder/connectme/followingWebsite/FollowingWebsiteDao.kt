@@ -44,6 +44,9 @@ interface FollowingWebsiteDao {
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE}")
     suspend fun getAll(): List<FollowingWebsite?>
 
+    @Query("SELECT rssUrl FROM ${Table.FOLLOWING_WEBSITE}")
+    suspend fun getAllRssUrls(): List<String?>
+
 
     @Transaction
     @Delete

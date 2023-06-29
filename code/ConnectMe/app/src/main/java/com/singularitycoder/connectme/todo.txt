@@ -1,11 +1,12 @@
 TODO THIS WEEK
+https://www.blog.google/rss/
+https://www.theverge.com/rss/index.xml
+https://mashable.com/feeds/rss/all
+
+Problem with worker is sequential worker launches for fetching rss feeds
 Webview notifications
 
-<title>
-<link>
-<url>
-<published>
-<pubDate>
+FEED sync every 3 hrs
 Follow -> add api key or get rss link from gpt -> if link doesnt exist then they simply follow site else start worker to fetch posts
 if gpt doesnt provide link then try defaut /feed or /rss/feed - if that doesnt work then ignore
 If no link exists then add option to add link next to follow
@@ -88,6 +89,8 @@ TODO Reader Mode
 Diff typefaces
 Font size
 TTS
+Dark mode for reader alone
+
 
 
 TODO RSS Reader
@@ -151,6 +154,10 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
     file editing features - rename, move to subfolder, create subfolders, etc
 19. Filters for history
 20. Apply blue filter on  collections icons
+21. Open new tab in background
+22. Dark mode for webpage
+23. View webpage source code - menu - put in advanced
+24. MLM - micro lang model - To identify dates and suggest. Train jsut on dates. Same with html tags to identify appropriate tags
 
 
 TODO Interesting

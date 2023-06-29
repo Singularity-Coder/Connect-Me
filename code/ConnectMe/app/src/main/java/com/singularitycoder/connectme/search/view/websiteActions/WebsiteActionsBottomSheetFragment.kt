@@ -10,24 +10,26 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.work.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentWebsiteActionsBottomSheetBinding
+import com.singularitycoder.connectme.feed.RssFollowWorker
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.WorkerData
+import com.singularitycoder.connectme.helpers.constants.WorkerTag
 import com.singularitycoder.connectme.search.model.ApiResult
 import com.singularitycoder.connectme.search.model.ApiState
 import com.singularitycoder.connectme.search.model.WebViewData
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.SearchTabFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
-import com.singularitycoder.connectme.search.viewmodel.WebsiteActionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -44,7 +46,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val followingWebsiteViewModel by activityViewModels<FollowingWebsiteViewModel>()
-    private val websiteActionsViewModel by viewModels<WebsiteActionsViewModel>()
 
     private lateinit var binding: FragmentWebsiteActionsBottomSheetBinding
 
@@ -151,42 +152,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(sslCertificate: SslCertificate?) {
-        if (sslCertificate == null) {
-            tvSiteSecurity.text = "Connection is insecure"
-            tvSiteSecurity.setTextColor(requireContext().color(R.color.md_red_500))
-            llSslCertificateDetails.isVisible = false
-            ivSiteSecurityArrow.isVisible = false
-            return
-        }
-
-        tvSiteSecurity.text = "Connection is secure"
-        tvSiteSecurity.setTextColor(requireContext().color(R.color.md_green_500))
-
-        tvIssuedToCn.isVisible = sslCertificate.issuedTo?.cName.isNullOrBlank().not()
-        tvIssuedToO.isVisible = sslCertificate.issuedTo?.oName.isNullOrBlank().not()
-        tvIssuedToUn.isVisible = sslCertificate.issuedTo?.uName.isNullOrBlank().not()
-        tvIssuedByCn.isVisible = sslCertificate.issuedBy?.cName.isNullOrBlank().not()
-        tvIssuedByO.isVisible = sslCertificate.issuedBy?.oName.isNullOrBlank().not()
-        tvIssuedByUn.isVisible = sslCertificate.issuedBy?.uName.isNullOrBlank().not()
-        tvIssuedOn.isVisible = sslCertificate.validNotBeforeDate != null
-        tvExpiresOn.isVisible = sslCertificate.validNotAfterDate != null
-
-        tvIssuedToPlaceholder.isVisible = tvIssuedToCn.isVisible || tvIssuedToO.isVisible || tvIssuedToUn.isVisible
-        tvIssuedByPlaceholder.isVisible = tvIssuedByCn.isVisible || tvIssuedByO.isVisible || tvIssuedByUn.isVisible
-        tvValidityPeriodPlaceholder.isVisible = tvIssuedOn.isVisible || tvExpiresOn.isVisible
-
-        tvIssuedToCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate.issuedTo?.cName}"
-        tvIssuedToO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate.issuedTo?.oName}"
-        tvIssuedToUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate.issuedTo?.uName}"
-        tvIssuedByCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate.issuedBy?.cName}"
-        tvIssuedByO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate.issuedBy?.oName}"
-        tvIssuedByUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate.issuedBy?.uName}"
-        tvIssuedOn.text = "${getString(R.string.ssl_cert_dialog_issued_on)}: ${DateFormat.getDateTimeInstance().format(sslCertificate.validNotBeforeDate)}"
-        tvExpiresOn.text = "${getString(R.string.ssl_cert_dialog_expires_on)}: ${DateFormat.getDateTimeInstance().format(sslCertificate.validNotAfterDate)}"
-    }
-
     private fun FragmentWebsiteActionsBottomSheetBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
@@ -209,7 +174,8 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                     } else {
                         setButtonStyleToFollowing()
                         followingWebsiteViewModel.addFollowingWebsite(followingWebsite)
-//                        websiteActionsViewModel.getRssFeedFrom(url = "https://mashable.com/feeds/rss/all")
+                        parseRssFollowFromWorker("https://www.theverge.com/rss/index.xml")
+//                        parseRssFeedFromWorker("https://mashable.com/feeds/rss/all")
                         searchViewModel.getTextInsight(
                             prompt = """
                                  What is the rss link for ${getHostFrom(url = webViewData?.url)}.
@@ -335,14 +301,10 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                         it.insight.insight.substringAfter("\"\"\"").substringBefore("\"\"\"")
                     } else ""
                     val isValidRssUrl = rssUrl.isNotBlank() && rssUrl.contains("http")
-                    if (isValidRssUrl) {
-                        websiteActionsViewModel.getRssFeedFrom(url = rssUrl)
-                        // TODO Make API call with rss url
-                        // TODO update db
-                        // TODO when db updated start worker to fetch posts
-                    }
+                    if (isValidRssUrl) parseRssFollowFromWorker(rssUrl)
                 }
                 ApiState.ERROR -> {
+                    parseRssFollowFromWorker(rssUrl = "${getHostFrom(url = webViewData?.url)}feed")
                     // TODO try default rss urls
                     // Provide field to enter url manually. if that also fa
                     // Inform user open ai api failed. if key issue. else ignore
@@ -352,6 +314,68 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
             searchViewModel.resetInsight()
         }
+    }
+
+    private fun parseRssFollowFromWorker(rssUrl: String?) {
+        val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+        val data = Data.Builder().apply {
+            putString(WorkerData.RSS_URL, rssUrl)
+        }.build()
+        val workRequest = OneTimeWorkRequestBuilder<RssFollowWorker>()
+            .setInputData(data)
+            .setConstraints(workConstraints)
+            .build()
+        WorkManager.getInstance(requireContext()).enqueueUniqueWork(WorkerTag.RSS_FOLLOW_PARSER, ExistingWorkPolicy.KEEP, workRequest)
+        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(workRequest.id).observe(viewLifecycleOwner) { workInfo: WorkInfo? ->
+            when (workInfo?.state) {
+                WorkInfo.State.RUNNING -> println("RUNNING: show Progress")
+                WorkInfo.State.ENQUEUED -> println("ENQUEUED: show Progress")
+                WorkInfo.State.SUCCEEDED -> {
+                    println("SUCCEEDED: stop Progress")
+                    // TODO show manual rss url field
+                }
+                WorkInfo.State.FAILED -> println("FAILED: stop showing Progress")
+                WorkInfo.State.BLOCKED -> println("BLOCKED: show Progress")
+                WorkInfo.State.CANCELLED -> println("CANCELLED: stop showing Progress")
+                else -> Unit
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun FragmentWebsiteActionsBottomSheetBinding.setupWebsiteSecurity(sslCertificate: SslCertificate?) {
+        if (sslCertificate == null) {
+            tvSiteSecurity.text = "Connection is insecure"
+            tvSiteSecurity.setTextColor(requireContext().color(R.color.md_red_500))
+            llSslCertificateDetails.isVisible = false
+            ivSiteSecurityArrow.isVisible = false
+            return
+        }
+
+        tvSiteSecurity.text = "Connection is secure"
+        tvSiteSecurity.setTextColor(requireContext().color(R.color.md_green_500))
+
+        tvIssuedToCn.isVisible = sslCertificate.issuedTo?.cName.isNullOrBlank().not()
+        tvIssuedToO.isVisible = sslCertificate.issuedTo?.oName.isNullOrBlank().not()
+        tvIssuedToUn.isVisible = sslCertificate.issuedTo?.uName.isNullOrBlank().not()
+        tvIssuedByCn.isVisible = sslCertificate.issuedBy?.cName.isNullOrBlank().not()
+        tvIssuedByO.isVisible = sslCertificate.issuedBy?.oName.isNullOrBlank().not()
+        tvIssuedByUn.isVisible = sslCertificate.issuedBy?.uName.isNullOrBlank().not()
+        tvIssuedOn.isVisible = sslCertificate.validNotBeforeDate != null
+        tvExpiresOn.isVisible = sslCertificate.validNotAfterDate != null
+
+        tvIssuedToPlaceholder.isVisible = tvIssuedToCn.isVisible || tvIssuedToO.isVisible || tvIssuedToUn.isVisible
+        tvIssuedByPlaceholder.isVisible = tvIssuedByCn.isVisible || tvIssuedByO.isVisible || tvIssuedByUn.isVisible
+        tvValidityPeriodPlaceholder.isVisible = tvIssuedOn.isVisible || tvExpiresOn.isVisible
+
+        tvIssuedToCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate.issuedTo?.cName}"
+        tvIssuedToO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate.issuedTo?.oName}"
+        tvIssuedToUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate.issuedTo?.uName}"
+        tvIssuedByCn.text = "${getString(R.string.ssl_cert_dialog_common_name)}: ${sslCertificate.issuedBy?.cName}"
+        tvIssuedByO.text = "${getString(R.string.ssl_cert_dialog_organization)}: ${sslCertificate.issuedBy?.oName}"
+        tvIssuedByUn.text = "${getString(R.string.ssl_cert_dialog_organizational_unit)}: ${sslCertificate.issuedBy?.uName}"
+        tvIssuedOn.text = "${getString(R.string.ssl_cert_dialog_issued_on)}: ${DateFormat.getDateTimeInstance().format(sslCertificate.validNotBeforeDate)}"
+        tvExpiresOn.text = "${getString(R.string.ssl_cert_dialog_expires_on)}: ${DateFormat.getDateTimeInstance().format(sslCertificate.validNotAfterDate)}"
     }
 
     private fun setButtonStyleToFollowing() {

@@ -7,19 +7,17 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemFeedBinding
-import com.singularitycoder.connectme.helpers.onCustomLongClick
-import com.singularitycoder.connectme.helpers.onSafeClick
-import com.singularitycoder.connectme.helpers.toIntuitiveDateTime
-import com.singularitycoder.connectme.helpers.toShortTime
+import com.singularitycoder.connectme.databinding.ListItemFeedLargeTextBinding
+import com.singularitycoder.connectme.helpers.*
 
 class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var feedList = emptyList<Feed>()
+    var feedList = emptyList<Feed?>()
     private var itemClickListener: (feed: Feed?) -> Unit = {}
     private var itemLongClickListener: (feed: Feed?, view: View?) -> Unit = { _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val itemBinding = ListItemFeedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val itemBinding = ListItemFeedLargeTextBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ThisViewHolder(itemBinding)
     }
 
@@ -40,15 +38,15 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     inner class ThisViewHolder(
-        private val itemBinding: ListItemFeedBinding,
+        private val itemBinding: ListItemFeedLargeTextBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun setData(feed: Feed) {
+        fun setData(feed: Feed?) {
             itemBinding.apply {
-                ivNewsImage.load(feed.image) {
+                ivImage.load(feed?.image) {
                     placeholder(R.color.black)
                 }
-                tvSource.text = "${feed.website}  \u2022  ${feed.time}"
-                tvTitle.text = feed.title
+                tvSource.text = "${getHostFrom(url = feed?.website)}  \u2022  ${feed?.time}"
+                tvTitle.text = feed?.title
                 root.onSafeClick {
                     itemClickListener.invoke(feed)
                 }

@@ -33,8 +33,17 @@
                     android:layout_height="wrap_content"
                     android:paddingStart="16dp"
                     android:paddingTop="16dp"
-                    android:paddingEnd="16dp"
                     android:paddingBottom="16dp">
+
+                    <ImageView
+                        android:id="@+id/iv_weather"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:scaleType="fitEnd"
+                        android:src="@drawable/suncloud"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
                         android:id="@+id/tv_location"
@@ -48,9 +57,10 @@
                         android:maxLines="1"
                         android:text="Bengaluru @ 3:30 PM"
                         android:textColor="@color/title_color"
+                        android:layout_marginStart="14dp"
                         android:textStyle="bold"
                         app:layout_constraintEnd_toStartOf="@+id/tv_temperature"
-                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/iv_weather"
                         app:layout_constraintTop_toTopOf="@+id/tv_temperature" />
 
                     <TextView
@@ -66,7 +76,7 @@
                         android:text="Thunder storms"
                         android:textColor="@android:color/darker_gray"
                         app:layout_constraintEnd_toStartOf="@+id/tv_temperature"
-                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintStart_toStartOf="@+id/tv_location"
                         app:layout_constraintTop_toBottomOf="@+id/tv_location" />
 
                     <TextView
@@ -74,22 +84,12 @@
                         style="@style/TextAppearance.Material3.HeadlineMedium"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-thin"
+                        android:layout_marginEnd="16dp"
+                        android:fontFamily="sans-serif-medium"
                         android:marqueeRepeatLimit="marquee_forever"
                         android:maxLines="1"
                         android:text="21°&#x1D9C;"
-                        android:layout_marginEnd="16dp"
                         android:textColor="@color/purple_500"
-                        app:layout_constraintEnd_toStartOf="@+id/iv_weather"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
-                        android:id="@+id/iv_weather"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:scaleType="fitEnd"
-                        android:src="@drawable/suncloud"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />

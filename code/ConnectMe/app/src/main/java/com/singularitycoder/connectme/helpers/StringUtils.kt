@@ -7,13 +7,30 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
+import com.singularitycoder.connectme.feed.Feed
+import com.singularitycoder.connectme.feed.FeedDao
+import org.eclipse.jetty.http.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
+import org.w3c.dom.Document
+import org.xml.sax.InputSource
+import org.xml.sax.SAXException
 import java.io.*
 import java.net.HttpURLConnection
+import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
+import javax.xml.XMLConstants
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.parsers.ParserConfigurationException
+import javax.xml.transform.Transformer
+import javax.xml.transform.TransformerException
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -213,4 +230,132 @@ fun decodeBase64StringToBitmap(string: String?): Bitmap? {
     string ?: return null
     val decodedByte: ByteArray = android.util.Base64.decode(string, 0)
     return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.size)
+}
+
+fun String.toMaxCharacters(count: Long): String {
+    return if (this.length >= count) {
+        this.substring(0, 1000)
+    } else {
+        this
+    }
+}
+
+// https://mkyong.com/java/java-convert-string-to-xml/
+fun convertXmlToString(doc: Document): String? {
+    val domSource = DOMSource(doc)
+    val writer = StringWriter()
+    val result = StreamResult(writer)
+    val tf: TransformerFactory = TransformerFactory.newInstance()
+    var transformer: Transformer? = null
+    try {
+        transformer = tf.newTransformer()
+        transformer.transform(domSource, result)
+    } catch (e: TransformerException) {
+        throw RuntimeException(e)
+    }
+    return writer.toString()
+}
+
+// https://mkyong.com/java/java-convert-string-to-xml/
+fun convertStringToXml(xmlString: String): Document? {
+    val dbf: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
+    return try {
+        // optional, but recommended - process XML securely, avoid attacks like XML External Entities (XXE)
+        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+        val builder: DocumentBuilder = dbf.newDocumentBuilder()
+        builder.parse(InputSource(StringReader(xmlString)))
+    } catch (e: ParserConfigurationException) {
+//        throw RuntimeException(e)
+        null
+    } catch (e: IOException) {
+//        throw RuntimeException(e)
+        null
+    } catch (e: SAXException) {
+//        throw RuntimeException(e)
+        null
+    }
+}
+
+suspend fun getRssFeedFrom(
+    url: String?,
+    feedDao: FeedDao,
+    networkStatus: NetworkStatus
+) {
+    if (networkStatus.isOnline().not()) return
+    val connection: HttpURLConnection = suspendCoroutine { it: Continuation<HttpURLConnection> ->
+        val httpURLConnection = (URL(url).openConnection() as HttpURLConnection).apply {
+            requestMethod = HttpMethod.GET.name
+            setRequestProperty("Content-Type", "application/rss+xml; utf-8")
+            instanceFollowRedirects = true
+            readTimeout = 10.seconds().toInt()
+            connectTimeout = 10.seconds().toInt()
+            connect()
+        }
+        it.resume(httpURLConnection)
+    }
+
+    when (connection.responseCode) {
+        HttpURLConnection.HTTP_OK -> {
+            try {
+                val inputStream: InputStream = BufferedInputStream(connection.inputStream)
+                var xmlResponseString = inputStreamToString(connection, inputStream)
+//                    val xmlResponse = convertStringToXml(xmlResponseString)
+                val hasTitleHtmlTag = xmlResponseString.substringAfter("<title>").substringBefore("</title>").isBlank().not()
+                var count = 0
+
+                while (hasTitleHtmlTag) {
+//                        val title = xmlResponse?.getElementsByTagName("<title>")?.item(0)?.attributes?.getNamedItem("href")
+                    val title = xmlResponseString.substringAfter("<title>").substringBefore("</title>")
+
+                    val linkWithoutHref = xmlResponseString.substringAfter("<link>").substringBefore("</link>")
+                    val linkWithHref = xmlResponseString.substringAfter("<link").substringBefore("/>")
+                    val link = if (linkWithoutHref.contains("</link>")) {
+                        xmlResponseString.substringAfter("<link>").substringBefore("</link>")
+                    } else {
+                        linkWithHref.substringAfter("href=\"").substringBefore("\"/>")
+                    }
+
+                    val imageTag = xmlResponseString.substringAfter("<img").substringBefore(">")
+                    val image = xmlResponseString.substringAfter("src=\"").substringBefore("\"")
+
+                    val pubDate = xmlResponseString.substringAfter("<pubDate>").substringBefore("</pubDate>")
+                    val date = if (xmlResponseString.contains("</pubDate>", ignoreCase = true).not()) {
+                        xmlResponseString.substringAfter("<published>").substringBefore("</published>")
+                    } else pubDate
+
+                    val feed = Feed(
+                        image = image.trim().toMaxCharacters(count = 1000L),
+                        title = title.replace("<![CDATA[", "").replace("]]>", "").trim().toMaxCharacters(count = 1000L),
+                        time = date.trim().toMaxCharacters(count = 1000L),
+                        website = url?.trim(),
+                        link = link.trim().toMaxCharacters(count = 1000L)
+                    )
+
+                    // TODO fix images and othr elems
+                    xmlResponseString = xmlResponseString
+                        .replace(oldValue = "<title>$title</title>", newValue = "")
+                        .replace(oldValue = "<link>$link</link>", newValue = "")
+                        .replace(oldValue = "<img$imageTag>", newValue = "")
+                        .replace(oldValue = "<img$imageTag/>", newValue = "")
+                        .replace(oldValue = "<pubDate>$pubDate</pubDate>", newValue = "")
+                        .replace(oldValue = "<published>$date</published>", newValue = "")
+
+                    count++
+                    if (count == 1) continue
+                    if (count == 500) break
+
+                    feedDao.insert(feed)
+                }
+                println(xmlResponseString)
+            } catch (_: Exception) {
+            }
+        }
+        else -> {
+            try {
+                val errorStream: InputStream = connection.errorStream
+                val errorString = inputStreamToString(connection, errorStream)
+            } catch (_: Exception) {
+            }
+        }
+    }
 }
