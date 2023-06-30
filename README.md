@@ -3,13 +3,13 @@
 A mobile browser with tabs. Genius?
 
 ## Screenshots
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s1.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s2.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s3.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s4.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s5.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s6.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s7.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s8.png)
-![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/s9.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss1.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss2.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss3.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss4.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss5.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss6.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss7.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss8.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss9.png)
 
