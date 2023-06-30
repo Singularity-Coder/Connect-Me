@@ -3,6 +3,7 @@ package com.singularitycoder.connectme.feed
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.singularitycoder.connectme.R
@@ -14,6 +15,7 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var feedList = emptyList<Feed?>()
     private var itemClickListener: (feed: Feed?) -> Unit = {}
+    private var itemCountListener: (count: Int) -> Unit = {}
     private var itemLongClickListener: (feed: Feed?, view: View?) -> Unit = { _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -25,9 +27,16 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         (holder as ThisViewHolder).setData(feedList[position])
     }
 
-    override fun getItemCount(): Int = feedList.size
+    override fun getItemCount(): Int {
+        itemCountListener.invoke(feedList.size)
+        return feedList.size
+    }
 
     override fun getItemViewType(position: Int): Int = position
+
+    fun getItemCountListener(listener: (count: Int) -> Unit) {
+        itemCountListener = listener
+    }
 
     fun setOnItemClickListener(listener: (feed: Feed?) -> Unit) {
         itemClickListener = listener
@@ -42,10 +51,17 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(feed: Feed?) {
             itemBinding.apply {
+                ivImage.isVisible = feed?.image.isNullOrBlank().not()
                 ivImage.load(feed?.image) {
                     placeholder(R.color.black)
                 }
-                tvSource.text = "${getHostFrom(url = feed?.website)}  \u2022  ${feed?.time}"
+                tvSource.setMargins(
+                    start = 16.dpToPx().toInt(),
+                    top = if (ivImage.isVisible.not()) 16.dpToPx().toInt() else 8.dpToPx().toInt(),
+                    end = 16.dpToPx().toInt(),
+                    bottom = 0
+                )
+                tvSource.text = "${getHostFrom(url = feed?.website)}" + if (feed?.time.isNullOrBlank()) "" else "  •  ${feed?.time}"
                 tvTitle.text = feed?.title
                 root.onSafeClick {
                     itemClickListener.invoke(feed)

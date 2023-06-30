@@ -262,16 +262,7 @@ val DEFAULT_FOLLOWING_SITES = listOf(
         website = "www.theverge.com",
         link = "https://www.theverge.com/",
         postCount = 8,
-        rssUrl = "https://www.theverge.com/feed"
-    ),
-    FollowingWebsite(
-        favicon = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARzQklUCAgI CHwIZIgAAAT9SURBVFiFtZdrbFRVEMf/M3fptrvdbsqzUBCs5VEeloeRh8RUGhRBDcYPaDQRYz+g GG2CJqAhAQMoEj40GqMoIRJ8kBhjNDRAU1+kCBQDldBIoAUkLS2F0tLudtvdM+MHttu9u7ftFnA+ 3Tszd37/e+6558whpGiqmgXgKRFZoqqFRJQHwBcN31LVi0RUw8yVAA4Q0a1Uaw8GnmqM2WOM6dIU zRgTNMbsVtXJdwP2GGN2GmMiqYIdhISNMTtUNWOo8CnGmLN3CnYQ8req5juxyAE+V0QOMfPIxJi5 2oDuXw8jfOokIpfrIe1tgCo4yw9rYh7SCufCXbwMVu6EJJCItDDz40R0ul8BqjpFRKoS4aapEYFd H6P7yC+A6sDDRwT3I0XwrnkLVs44JxGLiOhCkgBV9YrICWaeHv9QqKIcnWXboaGugcGJOjI88K17 D+6ipYkizjDzfCLqAgCOC7yfCA9+9xU6tm8aMhwAtCuInuo/k/zMPEtENseEArd/NRE5y8xWbyBU UY6O7Zsci7vy8pH28CJYY3MBIpjGBvRUH0Wk7nwsJ33Fs/CVrgcoaZpBRCLMXEBEFwgAjDF7mHl1 b4K52oCbJS9Au0O2B62xucgsXY+0efMdhfWcPIaOnVvhXlyEzLXrnIemT8Ruy7JKSFX9ItLEzOm9 wUDZmwj+fMz2wLCCmfBvKwP5fEnF4k2DAZDHO2BOVECQmXMYwIp4uHbVw12wC+6HWmLJPHwEsrbs HBQOICU4ADCzB8ByFpEltjdo3g9YAs/SBnhXXgKlKbyvrgX7s1MqPBQTkSUuVS20CWj9LXadVtAG V24m0oqX3XM4AKhqoSu6q/U5A7W2JGvyAsDl6rdI8bZAysCNK90omt5Xi4jyGH1b6m0Lt9huKcNx Cb8ja2xLWkX97JT4f1lPJHkZZwD2xmHYKNutBs/jXpnXnbQotbtU9SKAEb0eypwBbW2OZTS11WK0 RDCMnedB5bvOv93FFkHJF/YlfIzfLkBV65mIauKdlP1Y7Ppg93g835iH8ku/9/tW/dmJOpPkmzLW st1HWziutDnHrEIYLuzofBCbO+YiBAufnvkGN0JtKcM7Q4rvj4dtvvtGMnISRoCZKxnAARGJjRVl TMLn3g34ITQpltgaakfpH9vQ3tMxKDxsgC0/dqM1YJ9wTxbaP6GIBAGUc7R7/TY+uGrWGnhc6bYH /rlZj5cOvYMjjX/1Cz/fdhmvHdiP6voem3+4l/D0nKQ59DURdfZux5NFpJa5b6YdvHwEG4+VOYIm ZeViYc4cTMjMARHhWtcNnLpWi5rr56BQWKF8eJrfAEVuL9+bn0vH4ql9319EwtHtuC72UYwxO5j5 7XjQvnM/oez03n7feCAj40NG8+t4ZV4hVj+aZouJyIeWZW0A7C2ZR0SOM/PM+OTD/1Zha/VnCEaG 1hVZZKGk4EWUzHomEV7DzAuIKGQTEBWRLyJHmdm2GjUFr+OTmn2ouFIFGawpBTBv9AyUzn4Z07Jt 2wxEpDnalNb3+pza8tkicjhRBABcDbSg4koVqpvPoK79Cm52t0MV8Lt9mOgbh9mjpqF4/EJMzb4/ SVQU/kTiuuNoqpofPUzcq4PJaVXNGxScICLDGPORMSZ8F+AeY8wHqpo+OHHg0fjSGBMYAjhgjNml qg8MVj+5Z+5fiA/A8oTjuT8ablfV+rjjeTkRdaZS9z9hDpOs39UoLAAAAABJRU5ErkJggg== ",
-        title = "The Keyword India",
-        time = timeNow,
-        website = "blog.google",
-        link = "https://blog.google/intl/en-in/",
-        postCount = 8,
-        rssUrl = "https://www.blog.google/rss/"
+        rssUrl = "https://www.theverge.com/rss/index.xml"
     ),
     FollowingWebsite(
         favicon = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARzQklUCAgI CHwIZIgAAAHVSURBVDiNjZPLa1NhEMV/302qVhtB0CL1/V5EpAtrXSgBEXxVQRfZluqmiPhvBLpz 5U7syoUoGmK8aQ2Ie7dS0iStNC25sQFTyy2xNzkukphcTWgHZjNz5szMme+DLiYpJSkrabPpWUmp bth/C21tbclexbkWwk3PqBy9IQfkgMoPrsn9lOokyXbtXHddrd6LyDmCnDPIOdD0s6gYQuX7ke6T tCI/xiJyRk/LAa3H38pbyMlbzGn9/RuVQLVKxbdLp2DyviXkHEVFkLdc2IYUkiQ7CJwC4OcY+56D V58mMHRoS8GbdjIIHANQBUwAdl0J+xDm4S/Yb9qBTXg6HODZeD/A8aAPDJh673Yjewx9FqgjZgHf AQJ7YQNIF+Z9RXoRQlMDaGqAR5eDLFXFhYNWK71oATmA0mGbUGmE619jLK2t/Nd9tQKTnz1WanDp 3N/B8wYaZwSIvJug4DrkvQKvL8YYHjqPMYb5UoZbs3lGi+OcGKzz6kl/Y2VjTIvgI3Bzo1blbuIx 6bU5oA9UBQRmB1jLDNajLERj7N4JQNIYc6e9a+PDSJJms190OzEppsPiZVhX4xOKz8103t8vVAdJ chuP50PvO7WJbEkZSb+bnpFkd8P+AVOirr00nyt/AAAAAElFTkSuQmCC ",
@@ -281,15 +272,6 @@ val DEFAULT_FOLLOWING_SITES = listOf(
         link = "https://ai.googleblog.com/?m=1",
         postCount = 8,
         rssUrl = "http://feeds.feedburner.com/blogspot/gJZg"
-    ),
-    FollowingWebsite(
-        favicon = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARzQklUCAgI CHwIZIgAAAFHSURBVDiN3ZC/S8NwEMXffZOURNSW1i6ipVihBUEQF8FNJal/hi4VB138A/RvqNqm uLi5O1lxcxBcHFwEK5ixxRRR21DTnovpD5uqq950x+fe490B/6dW2Az+dneeTcXrRaehHYPzpz+J dTZvxyAW/FO8ZRtpzsW9eZVzc2k+THbEhXWDzftuDfW655bg8gnJUrlu2TPdTIuFr91XJ3Uxsj3q a6DzwSQgX9VLlfHvTtAS0bsiZVI9Bsu8H2nZjbJbrQmSBLjZ8hV7TI2Fn88DmyHg84kSlBu3WhPq VPRRjUf2SBJ9YqEpDTUe3lIiw1XHsoM6Fy4BQBicX3MsewIAiPBQpMwuBPUZyEHtpUgbWSWkVQDA sZ4WDT6aJp3Ns3qpordjKhL4vel/whemJaLHMphnpaEAQMRtEpAH/bDDmAng5ODFP1Mfr4lv9weK +oQAAAAASUVORK5CYII= ",
-        title = "Android Developers Blog",
-        time = timeNow,
-        website = "android-developers.googleblog.com",
-        link = "https://android-developers.googleblog.com/?m=1",
-        postCount = 8,
-        rssUrl = "http://feeds.feedburner.com/blogspot/hsDu"
     ),
     FollowingWebsite(
         favicon = "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 ",
@@ -317,5 +299,23 @@ val DEFAULT_FOLLOWING_SITES = listOf(
         link = "https://techcrunch.com/",
         postCount = 8,
         rssUrl = "https://techcrunch.com/feed"
+    ),
+    FollowingWebsite(
+        favicon = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARzQklUCAgI CHwIZIgAAAT9SURBVFiFtZdrbFRVEMf/M3fptrvdbsqzUBCs5VEeloeRh8RUGhRBDcYPaDQRYz+g GG2CJqAhAQMoEj40GqMoIRJ8kBhjNDRAU1+kCBQDldBIoAUkLS2F0tLudtvdM+MHttu9u7ftFnA+ 3Tszd37/e+6558whpGiqmgXgKRFZoqqFRJQHwBcN31LVi0RUw8yVAA4Q0a1Uaw8GnmqM2WOM6dIU zRgTNMbsVtXJdwP2GGN2GmMiqYIdhISNMTtUNWOo8CnGmLN3CnYQ8req5juxyAE+V0QOMfPIxJi5 2oDuXw8jfOokIpfrIe1tgCo4yw9rYh7SCufCXbwMVu6EJJCItDDz40R0ul8BqjpFRKoS4aapEYFd H6P7yC+A6sDDRwT3I0XwrnkLVs44JxGLiOhCkgBV9YrICWaeHv9QqKIcnWXboaGugcGJOjI88K17 D+6ipYkizjDzfCLqAgCOC7yfCA9+9xU6tm8aMhwAtCuInuo/k/zMPEtENseEArd/NRE5y8xWbyBU UY6O7Zsci7vy8pH28CJYY3MBIpjGBvRUH0Wk7nwsJ33Fs/CVrgcoaZpBRCLMXEBEFwgAjDF7mHl1 b4K52oCbJS9Au0O2B62xucgsXY+0efMdhfWcPIaOnVvhXlyEzLXrnIemT8Ruy7JKSFX9ItLEzOm9 wUDZmwj+fMz2wLCCmfBvKwP5fEnF4k2DAZDHO2BOVECQmXMYwIp4uHbVw12wC+6HWmLJPHwEsrbs HBQOICU4ADCzB8ByFpEltjdo3g9YAs/SBnhXXgKlKbyvrgX7s1MqPBQTkSUuVS20CWj9LXadVtAG V24m0oqX3XM4AKhqoSu6q/U5A7W2JGvyAsDl6rdI8bZAysCNK90omt5Xi4jyGH1b6m0Lt9huKcNx Cb8ja2xLWkX97JT4f1lPJHkZZwD2xmHYKNutBs/jXpnXnbQotbtU9SKAEb0eypwBbW2OZTS11WK0 RDCMnedB5bvOv93FFkHJF/YlfIzfLkBV65mIauKdlP1Y7Ppg93g835iH8ku/9/tW/dmJOpPkmzLW st1HWziutDnHrEIYLuzofBCbO+YiBAufnvkGN0JtKcM7Q4rvj4dtvvtGMnISRoCZKxnAARGJjRVl TMLn3g34ITQpltgaakfpH9vQ3tMxKDxsgC0/dqM1YJ9wTxbaP6GIBAGUc7R7/TY+uGrWGnhc6bYH /rlZj5cOvYMjjX/1Cz/fdhmvHdiP6voem3+4l/D0nKQ59DURdfZux5NFpJa5b6YdvHwEG4+VOYIm ZeViYc4cTMjMARHhWtcNnLpWi5rr56BQWKF8eJrfAEVuL9+bn0vH4ql9319EwtHtuC72UYwxO5j5 7XjQvnM/oez03n7feCAj40NG8+t4ZV4hVj+aZouJyIeWZW0A7C2ZR0SOM/PM+OTD/1Zha/VnCEaG 1hVZZKGk4EWUzHomEV7DzAuIKGQTEBWRLyJHmdm2GjUFr+OTmn2ouFIFGawpBTBv9AyUzn4Z07Jt 2wxEpDnalNb3+pza8tkicjhRBABcDbSg4koVqpvPoK79Cm52t0MV8Lt9mOgbh9mjpqF4/EJMzb4/ SVQU/kTiuuNoqpofPUzcq4PJaVXNGxScICLDGPORMSZ8F+AeY8wHqpo+OHHg0fjSGBMYAjhgjNml qg8MVj+5Z+5fiA/A8oTjuT8ablfV+rjjeTkRdaZS9z9hDpOs39UoLAAAAABJRU5ErkJggg== ",
+        title = "The Keyword India",
+        time = timeNow,
+        website = "blog.google",
+        link = "https://blog.google/intl/en-in/",
+        postCount = 8,
+        rssUrl = "https://www.blog.google/rss/"
+    ),
+    FollowingWebsite(
+        favicon = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARzQklUCAgI CHwIZIgAAAFHSURBVDiN3ZC/S8NwEMXffZOURNSW1i6ipVihBUEQF8FNJal/hi4VB138A/RvqNqm uLi5O1lxcxBcHFwEK5ixxRRR21DTnovpD5uqq950x+fe490B/6dW2Az+dneeTcXrRaehHYPzpz+J dTZvxyAW/FO8ZRtpzsW9eZVzc2k+THbEhXWDzftuDfW655bg8gnJUrlu2TPdTIuFr91XJ3Uxsj3q a6DzwSQgX9VLlfHvTtAS0bsiZVI9Bsu8H2nZjbJbrQmSBLjZ8hV7TI2Fn88DmyHg84kSlBu3WhPq VPRRjUf2SBJ9YqEpDTUe3lIiw1XHsoM6Fy4BQBicX3MsewIAiPBQpMwuBPUZyEHtpUgbWSWkVQDA sZ4WDT6aJp3Ns3qpordjKhL4vel/whemJaLHMphnpaEAQMRtEpAH/bDDmAng5ODFP1Mfr4lv9weK +oQAAAAASUVORK5CYII= ",
+        title = "Android Developers Blog",
+        time = timeNow,
+        website = "android-developers.googleblog.com",
+        link = "https://android-developers.googleblog.com/?m=1",
+        postCount = 8,
+        rssUrl = "http://feeds.feedburner.com/blogspot/hsDu"
     ),
 )

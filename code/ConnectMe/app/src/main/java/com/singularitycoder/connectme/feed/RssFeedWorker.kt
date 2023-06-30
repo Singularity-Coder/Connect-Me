@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.DEFAULT_FOLLOWING_SITES
 import com.singularitycoder.connectme.helpers.constants.WorkerData
 import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
 import dagger.hilt.EntryPoint
@@ -29,9 +30,11 @@ class RssFeedWorker(val context: Context, workerParams: WorkerParameters) : Coro
             val feedDao = dbEntryPoint.db().feedDao()
             val followingWebsiteDao = dbEntryPoint.db().followingWebsiteDao()
             val networkStatus = dbEntryPoint.networkStatus()
+            val defaultRssUrlList = DEFAULT_FOLLOWING_SITES.map { it.rssUrl }
             val rssUrlList = followingWebsiteDao.getAllRssUrls()
 
             try {
+
                 rssUrlList.forEach { rssUrl: String? ->
                     getRssFeedFrom(
                         url = rssUrl,

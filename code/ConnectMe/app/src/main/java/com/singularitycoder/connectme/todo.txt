@@ -1,12 +1,14 @@
 TODO THIS WEEK
+
+feed item link nav
+feed sync every 3 hrs
+
 https://www.blog.google/rss/
 https://www.theverge.com/rss/index.xml
 https://mashable.com/feeds/rss/all
 
-Problem with worker is sequential worker launches for fetching rss feeds
 Webview notifications
 
-FEED sync every 3 hrs
 Follow -> add api key or get rss link from gpt -> if link doesnt exist then they simply follow site else start worker to fetch posts
 if gpt doesnt provide link then try defaut /feed or /rss/feed - if that doesnt work then ignore
 If no link exists then add option to add link next to follow
@@ -28,7 +30,6 @@ Explore
 
 
 1. Website actions - start with - find in page, then all others - get from Lineage OS
-2. Add to collection db
 4. Configure home screen - set either website or show new tab screen
 2. Edit explore feed
 3. Explore feed - first get google suggestions about the topic, then scrape posts from all those topics from google
@@ -158,7 +159,7 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 22. Dark mode for webpage
 23. View webpage source code - menu - put in advanced
 24. MLM - micro lang model - To identify dates and suggest. Train jsut on dates. Same with html tags to identify appropriate tags
-
+25. As a human i can identify what tags i need in the rss xml. So AI should be able to do that as well. Find the repeating item adn trim all others.
 
 TODO Interesting
 1. https://medium.com/@joseph.pyram/9-parts-of-a-url-that-you-should-know-89fea8e11713

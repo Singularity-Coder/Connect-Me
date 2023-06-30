@@ -65,7 +65,7 @@ object DbModule {
 
     @Singleton
     @Provides
-    fun injectWebsiteFollowingDao(db: ConnectMeDatabase): FollowingWebsiteDao = db.followingWebsiteDao()
+    fun injectFollowingWebsiteDao(db: ConnectMeDatabase): FollowingWebsiteDao = db.followingWebsiteDao()
 
     @Singleton
     @Provides

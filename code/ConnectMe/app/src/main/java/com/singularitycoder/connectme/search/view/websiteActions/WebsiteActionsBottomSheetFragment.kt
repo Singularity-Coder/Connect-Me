@@ -174,6 +174,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                     } else {
                         setButtonStyleToFollowing()
                         followingWebsiteViewModel.addFollowingWebsite(followingWebsite)
+                        // TODO delete this
                         parseRssFollowFromWorker("https://www.theverge.com/rss/index.xml")
 //                        parseRssFeedFromWorker("https://mashable.com/feeds/rss/all")
                         searchViewModel.getTextInsight(

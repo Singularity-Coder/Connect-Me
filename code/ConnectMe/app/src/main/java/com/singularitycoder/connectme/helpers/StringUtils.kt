@@ -14,7 +14,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.w3c.dom.Document
 import org.xml.sax.InputSource
-import org.xml.sax.SAXException
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -24,7 +23,6 @@ import java.util.*
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.parsers.ParserConfigurationException
 import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
@@ -232,7 +230,7 @@ fun decodeBase64StringToBitmap(string: String?): Bitmap? {
     return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.size)
 }
 
-fun String.toMaxCharacters(count: Long): String {
+fun String.toMaxChar(count: Long): String {
     return if (this.length >= count) {
         this.substring(0, 1000)
     } else {
@@ -264,14 +262,7 @@ fun convertStringToXml(xmlString: String): Document? {
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
         val builder: DocumentBuilder = dbf.newDocumentBuilder()
         builder.parse(InputSource(StringReader(xmlString)))
-    } catch (e: ParserConfigurationException) {
-//        throw RuntimeException(e)
-        null
-    } catch (e: IOException) {
-//        throw RuntimeException(e)
-        null
-    } catch (e: SAXException) {
-//        throw RuntimeException(e)
+    } catch (_: Exception) {
         null
     }
 }
@@ -300,51 +291,88 @@ suspend fun getRssFeedFrom(
                 val inputStream: InputStream = BufferedInputStream(connection.inputStream)
                 var xmlResponseString = inputStreamToString(connection, inputStream)
 //                    val xmlResponse = convertStringToXml(xmlResponseString)
-                val hasTitleHtmlTag = xmlResponseString.substringAfter("<title>").substringBefore("</title>").isBlank().not()
+                val hasTitleHtmlTag = xmlResponseString.contains(other = "<title>", ignoreCase = true)
+                while (
+                    xmlResponseString.contains("&lt;") ||
+                    xmlResponseString.contains("&gt;")
+//                    xmlResponseString.contains("<p>") ||
+//                    xmlResponseString.contains("</p>") ||
+//                    xmlResponseString.contains("<div")
+                ) {
+                    xmlResponseString = xmlResponseString.replace("&lt;", "<").replace("&gt;", ">")
+//                    val paragraph = xmlResponseString.substringAfter("<p>").substringBefore("</p>")
+//                    xmlResponseString = xmlResponseString.replace("<p>$paragraph</p>", "<")
+                }
                 var count = 0
 
                 while (hasTitleHtmlTag) {
 //                        val title = xmlResponse?.getElementsByTagName("<title>")?.item(0)?.attributes?.getNamedItem("href")
-                    val title = xmlResponseString.substringAfter("<title>").substringBefore("</title>")
+                    val title = if (xmlResponseString.contains(other = "<title>", ignoreCase = true)) {
+                        xmlResponseString.substringAfter("<title>").substringBefore("</title>")
+                    } else ""
+                    xmlResponseString = xmlResponseString
+                        .replace(oldValue = "<title>$title</title>", newValue = "")
+
 
                     val linkWithoutHref = xmlResponseString.substringAfter("<link>").substringBefore("</link>")
-                    val linkWithHref = xmlResponseString.substringAfter("<link").substringBefore("/>")
-                    val link = if (linkWithoutHref.contains("</link>")) {
+                    val linkWithHref = if (xmlResponseString.substringAfter("<link").substringBefore("/>").contains("type=\"image/jpeg\"").not()) {
+                        xmlResponseString.substringAfter("<link").substringBefore("/>")
+                    } else ""
+                    val link = if (linkWithoutHref.contains(other = "</link>", ignoreCase = true)) {
                         xmlResponseString.substringAfter("<link>").substringBefore("</link>")
                     } else {
                         linkWithHref.substringAfter("href=\"").substringBefore("\"/>")
                     }
-
-                    val imageTag = xmlResponseString.substringAfter("<img").substringBefore(">")
-                    val image = xmlResponseString.substringAfter("src=\"").substringBefore("\"")
-
-                    val pubDate = xmlResponseString.substringAfter("<pubDate>").substringBefore("</pubDate>")
-                    val date = if (xmlResponseString.contains("</pubDate>", ignoreCase = true).not()) {
-                        xmlResponseString.substringAfter("<published>").substringBefore("</published>")
-                    } else pubDate
-
-                    val feed = Feed(
-                        image = image.trim().toMaxCharacters(count = 1000L),
-                        title = title.replace("<![CDATA[", "").replace("]]>", "").trim().toMaxCharacters(count = 1000L),
-                        time = date.trim().toMaxCharacters(count = 1000L),
-                        website = url?.trim(),
-                        link = link.trim().toMaxCharacters(count = 1000L)
-                    )
-
-                    // TODO fix images and othr elems
                     xmlResponseString = xmlResponseString
-                        .replace(oldValue = "<title>$title</title>", newValue = "")
                         .replace(oldValue = "<link>$link</link>", newValue = "")
-                        .replace(oldValue = "<img$imageTag>", newValue = "")
-                        .replace(oldValue = "<img$imageTag/>", newValue = "")
-                        .replace(oldValue = "<pubDate>$pubDate</pubDate>", newValue = "")
-                        .replace(oldValue = "<published>$date</published>", newValue = "")
+
 
                     count++
                     if (count == 1) continue
-                    if (count == 500) break
+                    if (count == 100) break
 
-                    feedDao.insert(feed)
+
+                    val imageTag = xmlResponseString.substringAfter("<img").substringBefore("/>")
+                    val imageLink = xmlResponseString.substringAfter("<link").substringBefore("/>")
+                    val image = if (xmlResponseString.contains(other = "<img", ignoreCase = true)) {
+                        xmlResponseString.substringAfter("src=\"").substringBefore("\"")
+                    } else if (imageLink.contains("type=\"image/jpeg\"")) {
+                        imageLink.substringAfter("href=\"").substringBefore("\"")
+                    } else ""
+                    xmlResponseString = xmlResponseString
+                        .replace(oldValue = "<img$imageTag/>", newValue = "")
+                    if (imageLink.contains("type=\"image/jpeg\"")) {
+                        xmlResponseString = xmlResponseString.replace(oldValue = "<link$imageLink/>", newValue = "")
+                    }
+
+
+                    val pubDate = xmlResponseString.substringAfter("<pubDate>").substringBefore("</pubDate>")
+                    val updatedDate = xmlResponseString.substringAfter("<updated>").substringBefore("</updated>")
+                    val publishedDate = xmlResponseString.substringAfter("<published>").substringBefore("</published>")
+                    val date = if (xmlResponseString.contains(other = "</pubDate>", ignoreCase = true)) {
+                        pubDate
+                    } else if (xmlResponseString.contains("</published>", ignoreCase = true)) {
+                        publishedDate
+                    } else if (xmlResponseString.contains("</updated>", ignoreCase = true)) {
+                        updatedDate
+                    } else ""
+                    xmlResponseString = xmlResponseString
+                        .replace(oldValue = "<pubDate>$pubDate</pubDate>", newValue = "")
+                        .replace(oldValue = "<published>$date</published>", newValue = "")
+                        .replace(oldValue = "<updated>$date</updated>", newValue = "")
+
+
+                    val feed = Feed(
+                        image = image.trim().toMaxChar(count = 1000L),
+                        title = title.trim().trimCdata().toMaxChar(count = 1000L),
+                        time = date.trim().toMaxChar(count = 1000L).trimCdata(),
+                        website = url?.trim()?.replace("www.", ""),
+                        link = link.trim().toMaxChar(count = 1000L)
+                    )
+
+                    // TODO figure out a way where all 5 of the elements are in one block adn only then perform ops
+
+                    if (title.isBlank().not()) feedDao.insert(feed)
                 }
                 println(xmlResponseString)
             } catch (_: Exception) {
@@ -358,4 +386,8 @@ suspend fun getRssFeedFrom(
             }
         }
     }
+}
+
+fun String?.trimCdata(): String {
+    return this?.replace(oldValue = "<![CDATA[", newValue = "")?.replace(oldValue = "]]>", newValue = "") ?: ""
 }

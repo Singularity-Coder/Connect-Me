@@ -16,9 +16,9 @@
 
             <include
                 android:id="@+id/layout_search"
+                layout="@layout/layout_search_and_filter"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                layout="@layout/layout_search_and_filter" />
+                android:layout_height="wrap_content" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_feed"
@@ -27,7 +27,16 @@
                 android:nestedScrollingEnabled="true"
                 android:scrollbars="none"
                 app:layout_constraintTop_toBottomOf="@+id/layout_search"
-                tools:listitem="@layout/list_item_feed" />
+                tools:listitem="@layout/list_item_feed_large_text" />
+
+            <include
+                android:id="@+id/layout_shimmer_loader"
+                layout="@layout/layout_shimmer_feed_loader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@+id/layout_search" />
 
             <View
                 android:layout_width="match_parent"

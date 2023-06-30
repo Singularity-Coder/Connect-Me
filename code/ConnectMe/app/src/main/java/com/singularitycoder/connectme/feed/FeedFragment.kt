@@ -71,7 +71,10 @@ class FeedFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (feedList.isEmpty()) parseRssFeedFromWorker()
+        if (feedList.isEmpty()) {
+            binding.layoutShimmerLoader.root.isVisible = true
+            parseRssFeedFromWorker()
+        }
 //        CodeExecutor.executeCode(
 //            javaClassName = "EelloWoruludu",
 //            commandsList = listOf("System.out.println(\"Eeeelloololo Waraladuuuuuuuu\")")
@@ -92,6 +95,8 @@ class FeedFragment : Fragment() {
         root.setOnClickListener { }
 
         feedAdapter.setOnItemClickListener { it: Feed? ->
+            // TODO temp. show bottomsheet webview
+            activity?.openWithChrome(url = it?.link)
         }
 
         feedAdapter.setOnItemLongClickListener { feed, view ->
@@ -186,6 +191,12 @@ class FeedFragment : Fragment() {
         layoutSearch.etSearch.onImeClick {
             layoutSearch.etSearch.hideKeyboard()
         }
+
+        feedAdapter.getItemCountListener { count: Int ->
+            if (count > 0) {
+                binding.layoutShimmerLoader.root.isVisible = false
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -211,7 +222,7 @@ class FeedFragment : Fragment() {
                 WorkInfo.State.ENQUEUED -> println("ENQUEUED: show Progress")
                 WorkInfo.State.SUCCEEDED -> {
                     println("SUCCEEDED: stop Progress")
-                    // TODO stop progress
+//                    binding.layoutShimmerLoader.root.isVisible = feedList.isEmpty()
                 }
                 WorkInfo.State.FAILED -> println("FAILED: stop showing Progress")
                 WorkInfo.State.BLOCKED -> println("BLOCKED: show Progress")

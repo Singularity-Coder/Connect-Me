@@ -2,6 +2,7 @@ package com.singularitycoder.connectme.helpers
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -23,6 +24,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
@@ -605,4 +607,43 @@ fun getDomainFrom(host: String?): String {
         website = website.substringAfter(".") // This trims subdomains if any exist
     }
     return website
+}
+
+// https://stackoverflow.com/questions/12013416/is-there-any-way-in-android-to-force-open-a-link-to-open-in-chrome
+fun Activity.searchWithChrome(query: String) {
+    val sanitizedQuery = query.replaceFirst("for", "").trim().replace(" ", "+")
+    val url = "https://www.google.com/search?q=$sanitizedQuery"
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        setPackage("com.android.chrome")
+    }
+    try {
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
+    } catch (ex: ActivityNotFoundException) {
+        // If Chrome not installed
+        intent.setPackage(null)
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
+    }
+}
+
+fun Activity.openWithChrome(url: String?) {
+    val intent = Intent(Intent.ACTION_VIEW, url?.toUri()).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        setPackage("com.android.chrome")
+    }
+    try {
+//        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+//        }
+    } catch (ex: ActivityNotFoundException) {
+        // If Chrome not installed
+        intent.setPackage(null)
+//        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+//        }
+    }
 }
