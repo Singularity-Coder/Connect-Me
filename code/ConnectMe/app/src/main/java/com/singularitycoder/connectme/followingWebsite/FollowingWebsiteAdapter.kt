@@ -54,8 +54,9 @@ class FollowingWebsiteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
                     placeholder(R.drawable.ic_placeholder_rectangle)
                     error(R.drawable.ic_placeholder_rectangle)
                 }
-                tvFollowingSite.text = getHostFrom(url = followingWebsite?.link).replace("www.", "")
-                tvPostsToday.text = "Posted ${followingWebsite?.postCount} articles today"
+                tvFollowingSite.text = followingWebsite?.title
+//                tvPostsToday.text = "Posted ${followingWebsite?.postCount} articles today"
+                tvPostsToday.text = getHostFrom(url = followingWebsite?.link).replace("www.", "")
                 root.onSafeClick {
                     itemClickListener.invoke(followingWebsite)
                 }

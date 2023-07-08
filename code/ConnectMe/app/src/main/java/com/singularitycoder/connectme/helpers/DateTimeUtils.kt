@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 // https://stackoverflow.com/questions/4772425/change-date-format-in-a-java-string
 
-val dateFormatList = listOf(
+val DATE_FORMAT_LIST = listOf(
     "dd-MMMM hh:mm",
     "dd-MM-yyyy",
     "dd/MM/yyyy",
@@ -38,6 +38,8 @@ val dateFormatList = listOf(
     "yyyy-MM-dd'T'HHmmss.SSSz",
 )
 
+val GMT_DATE_FORMAT_LIST = listOf("")
+
 fun Int.milliSeconds(): Long = this.toLong()
 
 fun Int.seconds(): Long = TimeUnit.SECONDS.toMillis(this.toLong())
@@ -58,7 +60,7 @@ val timeNow: Long
  * */
 val deviceStartTime = System.currentTimeMillis() - SystemClock.elapsedRealtime()
 
-fun Long.toIntuitiveDateTime(): String {
+fun Long.toIntuitiveDateTime(dateType: DateType = DateType.dd_MMM_yyyy_hh_mm_a): String {
     val postedTime = this
     val elapsedTimeMillis = timeNow - postedTime
     val elapsedTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTimeMillis)
@@ -76,7 +78,7 @@ fun Long.toIntuitiveDateTime(): String {
         elapsedTimeInDays < 30 -> "$elapsedTimeInDays days ago"
         elapsedTimeInMonths == 1L -> "$elapsedTimeInMonths mon ago"
         elapsedTimeInMonths < 12 -> "$elapsedTimeInMonths mon ago"
-        else -> postedTime toTimeOfType DateType.dd_MMM_yyyy_hh_mm_a
+        else -> postedTime toTimeOfType dateType
     }
 }
 
@@ -90,7 +92,9 @@ fun convertDateToLong(date: String, dateType: String): Long {
     if (date.isNullOrBlankOrNaOrNullString()) return convertDateToLong(date = Date().toString(), dateType)
     val dateFormat = SimpleDateFormat(dateType, Locale.getDefault())
     return try {
-        if (dateFormat.parse(date) is Date) dateFormat.parse(date).time else convertDateToLong(date = Date().toString(), dateType)
+        if (dateFormat.parse(date) is Date) {
+            dateFormat.parse(date).time
+        } else convertDateToLong(date = Date().toString(), dateType)
     } catch (e: Exception) {
         0L
     }

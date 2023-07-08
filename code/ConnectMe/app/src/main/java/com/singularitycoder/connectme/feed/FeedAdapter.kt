@@ -61,7 +61,11 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     end = 16.dpToPx().toInt(),
                     bottom = 0
                 )
-                tvSource.text = "${getHostFrom(url = feed?.website)}" + if (feed?.time.isNullOrBlank()) "" else "  •  ${feed?.time}"
+                val date = convertDateToLong(
+                    date = feed?.time ?: "",
+                    dateType = DateType.yyyy_MM_dd_T_HH_mm_ss_SS_Z.value
+                ).toIntuitiveDateTime(dateType = DateType.dd_MMM_yyyy)
+                tvSource.text = "${getHostFrom(url = feed?.website)}" + if (feed?.time.isNullOrBlank()) "" else "  •  $date"
                 tvTitle.text = feed?.title
                 root.onSafeClick {
                     itemClickListener.invoke(feed)

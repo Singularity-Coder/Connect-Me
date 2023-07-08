@@ -23,6 +23,7 @@ import com.singularitycoder.connectme.helpers.constants.WorkerTag
 import com.singularitycoder.connectme.search.viewmodel.WebsiteActionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
@@ -74,6 +75,8 @@ class FeedFragment : Fragment() {
         if (feedList.isEmpty()) {
             binding.layoutShimmerLoader.root.isVisible = true
             parseRssFeedFromWorker()
+        } else {
+            parseRssFeedEvery6hrsFromWorker()
         }
 //        CodeExecutor.executeCode(
 //            javaClassName = "EelloWoruludu",
@@ -195,6 +198,7 @@ class FeedFragment : Fragment() {
         feedAdapter.getItemCountListener { count: Int ->
             if (count > 0) {
                 binding.layoutShimmerLoader.root.isVisible = false
+                parseRssFeedEvery6hrsFromWorker()
             }
         }
     }
@@ -215,20 +219,23 @@ class FeedFragment : Fragment() {
     private fun parseRssFeedFromWorker() {
         val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
         val workRequest = OneTimeWorkRequestBuilder<RssFeedWorker>().setConstraints(workConstraints).build()
-        WorkManager.getInstance(requireContext()).enqueueUniqueWork(WorkerTag.RSS_FEED_PARSER, ExistingWorkPolicy.KEEP, workRequest)
-        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(workRequest.id).observe(viewLifecycleOwner) { workInfo: WorkInfo? ->
-            when (workInfo?.state) {
-                WorkInfo.State.RUNNING -> println("RUNNING: show Progress")
-                WorkInfo.State.ENQUEUED -> println("ENQUEUED: show Progress")
-                WorkInfo.State.SUCCEEDED -> {
-                    println("SUCCEEDED: stop Progress")
-//                    binding.layoutShimmerLoader.root.isVisible = feedList.isEmpty()
-                }
-                WorkInfo.State.FAILED -> println("FAILED: stop showing Progress")
-                WorkInfo.State.BLOCKED -> println("BLOCKED: show Progress")
-                WorkInfo.State.CANCELLED -> println("CANCELLED: stop showing Progress")
-                else -> Unit
-            }
-        }
+        WorkManager.getInstance(requireContext()).enqueueUniqueWork(
+            /* uniqueWorkName = */ WorkerTag.RSS_FEED_PARSER,
+            /* existingWorkPolicy = */ ExistingWorkPolicy.KEEP,
+            /* work = */ workRequest
+        )
+    }
+
+    private fun parseRssFeedEvery6hrsFromWorker() {
+        val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+        val workRequest = PeriodicWorkRequestBuilder<RssFeedWorker>(
+            repeatInterval = 6.hours(),
+            repeatIntervalTimeUnit = TimeUnit.HOURS
+        ).setConstraints(workConstraints).build()
+        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+            /* uniqueWorkName = */ WorkerTag.PERIODIC_RSS_FEED_PARSER,
+            /* existingPeriodicWorkPolicy = */ ExistingPeriodicWorkPolicy.KEEP,
+            /* periodicWork = */ workRequest
+        )
     }
 }

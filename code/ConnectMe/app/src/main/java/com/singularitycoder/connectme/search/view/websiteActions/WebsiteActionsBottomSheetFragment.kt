@@ -175,8 +175,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                         setButtonStyleToFollowing()
                         followingWebsiteViewModel.addFollowingWebsite(followingWebsite)
                         // TODO delete this
-                        parseRssFollowFromWorker("https://www.theverge.com/rss/index.xml")
-//                        parseRssFeedFromWorker("https://mashable.com/feeds/rss/all")
+//                        parseRssFollowFromWorker("https://www.theverge.com/rss/index.xml")
                         searchViewModel.getTextInsight(
                             prompt = """
                                  What is the rss link for ${getHostFrom(url = webViewData?.url)}.
@@ -213,18 +212,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         itemClearCookies.root.onSafeClick { }
 
         itemClearCache.root.onSafeClick { }
-
-//        btnMenu.onSafeClick {
-//            val optionsList = listOf("Close")
-//            requireContext().showPopup(
-//                view = it.first,
-//                menuList = optionsList
-//            ) { menuPosition: Int ->
-//                when (optionsList[menuPosition]) {
-//                    optionsList[0] -> dismiss()
-//                }
-//            }
-//        }
 
         itemDesktopSite.apply {
             root.onSafeClick { switchOnOff.performClick() }
@@ -303,12 +290,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
                     } else ""
                     val isValidRssUrl = rssUrl.isNotBlank() && rssUrl.contains("http")
                     if (isValidRssUrl) parseRssFollowFromWorker(rssUrl)
-                }
-                ApiState.ERROR -> {
-                    parseRssFollowFromWorker(rssUrl = "${getHostFrom(url = webViewData?.url)}feed")
-                    // TODO try default rss urls
-                    // Provide field to enter url manually. if that also fa
-                    // Inform user open ai api failed. if key issue. else ignore
                 }
                 else -> Unit
             }

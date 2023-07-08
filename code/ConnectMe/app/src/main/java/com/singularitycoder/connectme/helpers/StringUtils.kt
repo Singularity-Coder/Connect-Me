@@ -314,21 +314,37 @@ suspend fun getRssFeedFrom(
                         .replace(oldValue = "<title>$title</title>", newValue = "")
 
 
-                    val linkWithoutHref = xmlResponseString.substringAfter("<link>").substringBefore("</link>")
-                    val linkWithHref = if (xmlResponseString.substringAfter("<link").substringBefore("/>").contains("type=\"image/jpeg\"").not()) {
-                        xmlResponseString.substringAfter("<link").substringBefore("/>")
+                    val linkWithHref = if (xmlResponseString.substringAfter("<link ").substringBefore("/>").contains("type=\"image/jpeg\"").not()) {
+                        xmlResponseString.substringAfter("<link ").substringBefore("/>")
                     } else ""
-                    val link = if (linkWithoutHref.contains(other = "</link>", ignoreCase = true)) {
-                        xmlResponseString.substringAfter("<link>").substringBefore("</link>")
-                    } else {
-                        linkWithHref.substringAfter("href=\"").substringBefore("\"/>")
+                    val link = when {
+                        xmlResponseString.contains(other = "<link>", ignoreCase = true) -> {
+                            xmlResponseString.substringAfter("<link>").substringBefore("</link>")
+                        }
+                        xmlResponseString.contains(other = "<link ", ignoreCase = true) -> {
+                            linkWithHref.substringAfter("href=\"").substringBefore("\"")
+                        }
+                        else -> ""
                     }
-                    xmlResponseString = xmlResponseString
-                        .replace(oldValue = "<link>$link</link>", newValue = "")
+                    xmlResponseString = when {
+                        xmlResponseString.contains(other = "<link>", ignoreCase = true) -> {
+                            xmlResponseString
+                                .replace(oldValue = "<link>$link</link>", newValue = "")
+                        }
+                        xmlResponseString.contains(other = "<link ", ignoreCase = true) -> {
+                            xmlResponseString
+                                .replace(oldValue = "<link $linkWithHref/>", newValue = "")
+                        }
+                        else -> {
+                            xmlResponseString
+                        }
+                    }
 
 
                     count++
+                    /** Ignoring the xml intros. Worst case scenario 1 post will be lost */
                     if (count == 1) continue
+                    /** This prevents infinite looping */
                     if (count == 100) break
 
 

@@ -192,6 +192,7 @@ object WorkerData {
 object WorkerTag {
     const val RSS_FOLLOW_PARSER = "RSS_FOLLOW_PARSER"
     const val RSS_FEED_PARSER = "RSS_FEED_PARSER"
+    const val PERIODIC_RSS_FEED_PARSER = "PERIODIC_RSS_FEED_PARSER"
 }
 
 enum class QuickActionTabMenu(val value: String) {

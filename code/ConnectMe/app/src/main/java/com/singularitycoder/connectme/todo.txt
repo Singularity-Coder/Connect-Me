@@ -1,21 +1,5 @@
 TODO THIS WEEK
 
-feed item link nav
-feed sync every 3 hrs
-
-https://www.blog.google/rss/
-https://www.theverge.com/rss/index.xml
-https://mashable.com/feeds/rss/all
-
-Webview notifications
-
-Follow -> add api key or get rss link from gpt -> if link doesnt exist then they simply follow site else start worker to fetch posts
-if gpt doesnt provide link then try defaut /feed or /rss/feed - if that doesnt work then ignore
-If no link exists then add option to add link next to follow
-After getting rss link from gpt update the entry in db
-
-add default following sites to following tab - if unable to fetch feed then add url - https://help.medium.com/hc/en-us/articles/214874118-Using-RSS-feeds-of-profiles-publications-and-topics
-closing session saves to collection - timestamp
 Export collection to sqlite db and csv file
 Downloads
     download in internal directory first. Then search for public directory
@@ -39,6 +23,8 @@ Explore
 Avoid history logging in incognito
 Google translate webpages
 
+Webview notifications
+closing session saves to collection - timestamp
 
 TODO Url editing when in focus show letter navigation using sliders, slider will show on another tap
 TODO on focus show recent searches
@@ -160,6 +146,9 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 23. View webpage source code - menu - put in advanced
 24. MLM - micro lang model - To identify dates and suggest. Train jsut on dates. Same with html tags to identify appropriate tags
 25. As a human i can identify what tags i need in the rss xml. So AI should be able to do that as well. Find the repeating item adn trim all others.
+26. following websites today posts count - this requires proper date parsing - problem is every site has its own epoch format
+27. RSS feeds needs more work in identifying the right tags for every feed. Some tests - https://www.blog.google/rss/, https://www.theverge.com/rss/index.xml, https://mashable.com/feeds/rss/all, https://www.apple.com/newsroom/rss-feed.rss
+
 
 TODO Interesting
 1. https://medium.com/@joseph.pyram/9-parts-of-a-url-that-you-should-know-89fea8e11713
