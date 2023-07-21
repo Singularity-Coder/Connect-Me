@@ -38,6 +38,10 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.search.model.SearchTab
+import com.singularitycoder.connectme.search.view.SearchFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -353,4 +357,23 @@ fun Context.shareImageAndTextViaApps(
         putExtra(Intent.EXTRA_TEXT, subtitle)
     }
     startActivity(Intent.createChooser(intent, intentTitle ?: "Share to..."))
+}
+
+/** Need to extend every obj with this */
+inline fun <reified T : GenericWebsite> Activity.openSearchScreen(
+    isPrivate: Boolean,
+    genericWebsite: T?
+) {
+    (this as? MainActivity)?.showScreen(
+        fragment = SearchFragment.newInstance(websiteList = listOf(genericWebsite).mapIndexed { index, website ->
+            SearchTab(
+                id = index.toLong(),
+                type = NewTabType.NEW_TAB,
+                link = website?.link,
+                isPrivate = isPrivate
+            )
+        }.toArrayList()),
+        tag = FragmentsTag.SEARCH,
+        isAdd = true
+    )
 }

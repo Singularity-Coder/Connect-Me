@@ -51,6 +51,7 @@ class FeedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun setData(feed: Feed?) {
             itemBinding.apply {
+                ivImage.layoutParams.height = deviceHeight() / 4
                 ivImage.isVisible = feed?.image.isNullOrBlank().not()
                 ivImage.load(feed?.image) {
                     placeholder(R.color.black)

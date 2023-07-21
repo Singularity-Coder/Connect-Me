@@ -8,7 +8,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -20,7 +19,12 @@ import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionDetailBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.history.History
+import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.search.model.SearchTab
+import com.singularitycoder.connectme.search.view.SearchFragment
+import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val ARG_PARAM_COLLECTION_TITLE = "ARG_PARAM_COLLECTION_TITLE"
@@ -78,7 +82,9 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentCollectionDetailBottomSheetBinding.setupUserActionListeners() {
         collectionDetailsAdapter.setOnItemClickListener { it: CollectionWebPage? ->
-
+            PeekBottomSheetFragment.newInstance(
+                peekUrl = it?.link
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         collectionDetailsAdapter.setOnLongClickListener { collectionWebPage: CollectionWebPage?, view: View? ->
@@ -94,8 +100,14 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                 menuList = optionsList
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    optionsList[0].first -> {}
-                    optionsList[1].first -> {}
+                    optionsList[0].first -> {
+                        openSearchScreen(isPrivate = false, collectionWebPage = collectionWebPage)
+                        dismiss()
+                    }
+                    optionsList[1].first -> {
+                        openSearchScreen(isPrivate = true, collectionWebPage = collectionWebPage)
+                        dismiss()
+                    }
                     optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = collectionWebPage?.title, title = collectionWebPage?.link)
                     }
@@ -121,10 +133,11 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             }
         }
 
-        btnOpenAll.onSafeClick {
+        ivMore.onSafeClick {
             val optionsList = listOf(
-                Pair("In new tab", R.drawable.round_add_circle_outline_24),
-                Pair("In new private tab", R.drawable.outline_policy_24),
+                Pair("Open in new tab", R.drawable.round_add_circle_outline_24),
+                Pair("Open in new private tab", R.drawable.outline_policy_24),
+                Pair("Delete All", R.drawable.outline_delete_24),
             )
             requireContext().showPopupMenuWithIcons(
                 view = it.first,
@@ -132,10 +145,56 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
+                        (requireActivity() as? MainActivity)?.showScreen(
+                            fragment = SearchFragment.newInstance(websiteList = collectionDetailsAdapter.webPageList.mapIndexed { index, collectionWebPage ->
+                                SearchTab(
+                                    id = index.toLong(),
+                                    type = NewTabType.NEW_TAB,
+                                    link = collectionWebPage?.link
+                                )
+                            }.toArrayList()),
+                            tag = FragmentsTag.SEARCH,
+                            isAdd = true
+                        )
+                        dismiss()
                     }
                     optionsList[1].first -> {
+                        (requireActivity() as? MainActivity)?.showScreen(
+                            fragment = SearchFragment.newInstance(websiteList = collectionDetailsAdapter.webPageList.mapIndexed { index, collectionWebPage ->
+                                SearchTab(
+                                    id = index.toLong(),
+                                    type = NewTabType.NEW_PRIVATE_TAB,
+                                    link = collectionWebPage?.link
+                                )
+                            }.toArrayList()),
+                            tag = FragmentsTag.SEARCH,
+                            isAdd = true
+                        )
+                        dismiss()
+                    }
+                    optionsList[2].first -> {
+                        requireContext().showAlertDialog(
+                            title = "Delete all items",
+                            message = "Careful! You cannot undo this.",
+                            positiveBtnText = "Delete",
+                            negativeBtnText = "Cancel",
+                            positiveAction = {
+                                collectionsViewModel.deleteAllItemsBy(collectionTitle)
+                                dismiss()
+                            }
+                        )
                     }
                 }
+            }
+        }
+
+        ivSearch.onSafeClick {
+            etSearch.setText("")
+            clSearch.isVisible = clSearch.isVisible.not()
+            if (clSearch.isVisible) {
+                etSearch.showKeyboard()
+            } else {
+                etSearch.hideKeyboard()
             }
         }
 
@@ -167,6 +226,24 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             collectionDetailsAdapter.webPageList = it
             collectionDetailsAdapter.notifyDataSetChanged()
         }
+    }
+
+    private fun openSearchScreen(
+        isPrivate: Boolean,
+        collectionWebPage: CollectionWebPage?
+    ) {
+        (requireActivity() as? MainActivity)?.showScreen(
+            fragment = SearchFragment.newInstance(websiteList = listOf(collectionWebPage).mapIndexed { index, collectionWebPage ->
+                SearchTab(
+                    id = index.toLong(),
+                    type = NewTabType.NEW_TAB,
+                    link = collectionWebPage?.link,
+                    isPrivate = isPrivate
+                )
+            }.toArrayList()),
+            tag = FragmentsTag.SEARCH,
+            isAdd = true
+        )
     }
 
     private fun setBottomSheetBehaviour() {

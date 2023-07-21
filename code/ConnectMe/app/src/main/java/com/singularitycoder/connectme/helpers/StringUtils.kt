@@ -9,6 +9,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import com.singularitycoder.connectme.feed.Feed
 import com.singularitycoder.connectme.feed.FeedDao
+import com.singularitycoder.connectme.helpers.constants.escapeCharList
 import org.eclipse.jetty.http.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
@@ -380,7 +381,7 @@ suspend fun getRssFeedFrom(
 
                     val feed = Feed(
                         image = image.trim().toMaxChar(count = 1000L),
-                        title = title.trim().trimCdata().toMaxChar(count = 1000L),
+                        title = title.trim().trimCdata().trimEscapeChars().toMaxChar(count = 1000L),
                         time = date.trim().toMaxChar(count = 1000L).trimCdata(),
                         website = url?.trim()?.replace("www.", ""),
                         link = link.trim().toMaxChar(count = 1000L)
@@ -406,4 +407,12 @@ suspend fun getRssFeedFrom(
 
 fun String?.trimCdata(): String {
     return this?.replace(oldValue = "<![CDATA[", newValue = "")?.replace(oldValue = "]]>", newValue = "") ?: ""
+}
+
+fun String?.trimEscapeChars(): String {
+    var string = this ?: ""
+    listOf(escapeCharList, listOf("r/")).flatten().forEach {
+        string = string.replace(oldValue = it, newValue = "")
+    }
+    return string
 }

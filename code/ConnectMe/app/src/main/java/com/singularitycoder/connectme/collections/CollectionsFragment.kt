@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -91,7 +92,7 @@ class CollectionsFragment : Fragment() {
                 Pair("Import", R.drawable.round_south_west_24),
                 Pair("Export", R.drawable.round_north_east_24),
             )
-            val subMenuOptionsList = listOf("csv", "db")
+            val subMenuOptionsList = listOf("html", "csv", "db")
             requireContext().showPopupMenuWithIcons(
                 view = btn.first,
                 menuList = optionsList
@@ -109,8 +110,16 @@ class CollectionsFragment : Fragment() {
                             menuList = subMenuOptionsList
                         ) { menuPosition: Int ->
                             when (subMenuOptionsList[menuPosition]) {
-                                "csv" -> requireContext().showToast("Import csv")
-                                "db" -> requireContext().showToast("Import db")
+                                "html" -> {
+                                }
+                                "csv" -> {
+                                    // TODO csv to json to insert all
+                                }
+                                "db" -> {
+                                    // TODO extract compressed databases file in ext storage -> then copy/replace to databases dir
+                                    val uri = requireContext().internalFilesDir(directory = "").toUri()
+                                    activity.importDbFrom(uri = uri)
+                                }
                             }
                         }
                     }
@@ -121,8 +130,17 @@ class CollectionsFragment : Fragment() {
                             menuList = subMenuOptionsList
                         ) { menuPosition: Int ->
                             when (subMenuOptionsList[menuPosition]) {
-                                "csv" -> requireContext().showToast("Export csv")
-                                "db" -> requireContext().showToast("Export db")
+                                "html" -> {
+                                }
+                                "csv" -> {
+                                    // TODO get json from collections, then convert json to csv
+                                }
+                                "db" -> {
+                                    // TODO temp measure. store in ext db
+                                    // TODO compress databases dir in internal storage -> then copy to specified ext storage
+                                    val path = requireContext().internalFilesDir(directory = "COLLECTIONS_BACKUP").absolutePath
+                                    requireContext().exportDbTo(path = path)
+                                }
                             }
                         }
                     }

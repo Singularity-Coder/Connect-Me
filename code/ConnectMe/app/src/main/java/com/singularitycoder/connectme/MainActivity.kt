@@ -7,50 +7,55 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.singularitycoder.connectme.databinding.ActivityMainBinding
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.db.ConnectMeDatabase
 import com.singularitycoder.connectme.helpers.hasPermission
 import com.singularitycoder.connectme.helpers.isLocationToggleEnabled
 import com.singularitycoder.connectme.helpers.shouldShowRationaleFor
 import com.singularitycoder.connectme.helpers.showScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    @Inject
+    lateinit var connectMeDatabase: ConnectMeDatabase
+
     private lateinit var binding: ActivityMainBinding
 
-    private val permissionsResult = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions: Map<String, @JvmSuppressWildcards Boolean>? ->
-        permissions?.entries?.forEach { it: Map.Entry<String, @JvmSuppressWildcards Boolean> ->
-            val permission = it.key
-            val isGranted = it.value
-            when {
-                isGranted -> Unit
-                ActivityCompat.shouldShowRequestPermissionRationale(this, permission) -> {
-                    // Permission denied but not permanently, tell user why you need it. Ideally provide a button to request it again and another to dismiss
-                }
-                else -> {
-                    // permission permanently denied. Show settings dialog
-                }
-            }
-        }
-    }
+//    private val permissionsResult = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions: Map<String, @JvmSuppressWildcards Boolean>? ->
+//        permissions?.entries?.forEach { it: Map.Entry<String, @JvmSuppressWildcards Boolean> ->
+//            val permission = it.key
+//            val isGranted = it.value
+//            when {
+//                isGranted -> Unit
+//                ActivityCompat.shouldShowRequestPermissionRationale(this, permission) -> {
+//                    // Permission denied but not permanently, tell user why you need it. Ideally provide a button to request it again and another to dismiss
+//                }
+//                else -> {
+//                    // permission permanently denied. Show settings dialog
+//                }
+//            }
+//        }
+//    }
 
-    private val locationPermissionResult = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isPermissionGranted: Boolean? ->
-        isPermissionGranted ?: return@registerForActivityResult
-        if (isPermissionGranted.not()) {
-            val accessFineLocationNeedsRationale = shouldShowRationaleFor(Manifest.permission.ACCESS_FINE_LOCATION)
-            if (accessFineLocationNeedsRationale) {
-            }
-            return@registerForActivityResult
-        }
-        val accessFineLocationGranted = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-        val isLocationToggleEnabled = isLocationToggleEnabled()
-        println("isLocationToggleEnabled: $isLocationToggleEnabled")
-        if (accessFineLocationGranted && isLocationToggleEnabled) {
-
-        } else {
-
-        }
-    }
+//    private val locationPermissionResult = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isPermissionGranted: Boolean? ->
+//        isPermissionGranted ?: return@registerForActivityResult
+//        if (isPermissionGranted.not()) {
+//            val accessFineLocationNeedsRationale = shouldShowRationaleFor(Manifest.permission.ACCESS_FINE_LOCATION)
+//            if (accessFineLocationNeedsRationale) {
+//            }
+//            return@registerForActivityResult
+//        }
+//        val accessFineLocationGranted = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+//        val isLocationToggleEnabled = isLocationToggleEnabled()
+//        println("isLocationToggleEnabled: $isLocationToggleEnabled")
+//        if (accessFineLocationGranted && isLocationToggleEnabled) {
+//
+//        } else {
+//
+//        }
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +69,13 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun grantLocationPermissions() {
-        locationPermissionResult.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    override fun onDestroy() {
+        super.onDestroy()
+        // https://stackoverflow.com/questions/50372487/android-room-database-file-is-empty-db-db-shm-db-wal
+        connectMeDatabase.close() // close the primary database to ensure all the transactions are merged
     }
+
+//    private fun grantLocationPermissions() {
+//        locationPermissionResult.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+//    }
 }

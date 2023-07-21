@@ -16,6 +16,8 @@ interface CollectionsDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(list: List<CollectionWebPage?>)
 
+    @Query("SELECT Count(*) FROM ${Table.COLLECTION}") // Add WHERE if necessary
+    fun getAllItemsCount(): Int
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
@@ -62,9 +64,9 @@ interface CollectionsDao {
     @Delete
     suspend fun delete(collectionWebPage: CollectionWebPage?)
 
-//    @Transaction
-//    @Query("DELETE FROM ${Table.COLLECTION} WHERE website = :website")
-//    suspend fun deleteByWebsite(website: String?)
+    @Transaction
+    @Query("DELETE FROM ${Table.COLLECTION} WHERE collectionTitle = :collectionTitle")
+    suspend fun deleteBy(collectionTitle: String?)
 
     @Transaction
     @Query("DELETE FROM ${Table.COLLECTION}")

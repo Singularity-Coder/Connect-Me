@@ -31,6 +31,10 @@ class CollectionsViewModel @Inject constructor(
         collectionsDao.delete(collectionWebPage)
     }
 
+    fun deleteAllItemsBy(collectionTitle: String?) = viewModelScope.launch {
+        collectionsDao.deleteBy(collectionTitle)
+    }
+
     // https://developer.android.com/kotlin/coroutines/coroutines-best-practices#create-coroutines-data-layer
 //    suspend fun isItemPresent(website: String?): Boolean = collectionsDao.isItemPresent(website)
 }

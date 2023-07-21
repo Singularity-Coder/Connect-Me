@@ -74,7 +74,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         setBottomSheetBehaviour()
 
         val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(
-            ConnectMeUtils.webpageIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
+            ConnectMeUtils.webpageFragmentIdList[searchFragment?.getTabsTabLayout()?.selectedTabPosition ?: 0]
         ) as? SearchTabFragment
         val sslCertificate = selectedWebpage?.getWebView()?.certificate
         ivSiteIcon.setImageBitmap(selectedWebpage?.getFavicon())

@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doAfterTextChanged
@@ -19,6 +18,12 @@ import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentHistoryBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.search.model.SearchTab
+import com.singularitycoder.connectme.search.view.SearchFragment
+import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -141,11 +146,13 @@ class HistoryFragment : Fragment() {
             }
         }
 
-        historyAdapter.setOnClickListener { it: History ->
-
+        historyAdapter.setOnClickListener { it: History? ->
+            PeekBottomSheetFragment.newInstance(
+                peekUrl = it?.link
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
-        historyAdapter.setOnLongClickListener { history: History, view: View? ->
+        historyAdapter.setOnLongClickListener { history: History?, view: View? ->
             val optionsList = listOf(
                 Pair("Open in new tab", R.drawable.round_add_circle_outline_24),
                 Pair("Open in new private tab", R.drawable.outline_policy_24),
@@ -158,13 +165,17 @@ class HistoryFragment : Fragment() {
                 menuList = optionsList
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    optionsList[0].first -> {}
-                    optionsList[1].first -> {}
+                    optionsList[0].first -> {
+                        openSearchScreen(isPrivate = false, history = history)
+                    }
+                    optionsList[1].first -> {
+                        openSearchScreen(isPrivate = true, history = history)
+                    }
                     optionsList[2].first -> {
-                        requireContext().shareTextOrImage(text = history.title, title = history.link)
+                        requireContext().shareTextOrImage(text = history?.title, title = history?.link)
                     }
                     optionsList[3].first -> {
-                        requireContext().clipboard()?.text = history.link
+                        requireContext().clipboard()?.text = history?.link
                         requireContext().showToast("Copied link")
                     }
                     optionsList[4].first -> {
@@ -199,6 +210,24 @@ class HistoryFragment : Fragment() {
             this.historyList = historyList
             prepareHistoryList(historyList)
         }
+    }
+
+    private fun openSearchScreen(
+        isPrivate: Boolean,
+        history: History?
+    ) {
+        (requireActivity() as? MainActivity)?.showScreen(
+            fragment = SearchFragment.newInstance(websiteList = listOf(history).mapIndexed { index, history ->
+                SearchTab(
+                    id = index.toLong(),
+                    type = NewTabType.NEW_TAB,
+                    link = history?.link,
+                    isPrivate = isPrivate
+                )
+            }.toArrayList()),
+            tag = FragmentsTag.SEARCH,
+            isAdd = true
+        )
     }
 
     @SuppressLint("NotifyDataSetChanged")

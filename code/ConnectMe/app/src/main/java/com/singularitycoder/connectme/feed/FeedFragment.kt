@@ -18,8 +18,15 @@ import androidx.work.*
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
+import com.singularitycoder.connectme.explore.Explore
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.helpers.constants.FragmentsTag
+import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.helpers.constants.WorkerTag
+import com.singularitycoder.connectme.search.model.SearchTab
+import com.singularitycoder.connectme.search.view.SearchFragment
+import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.WebsiteActionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -74,9 +81,6 @@ class FeedFragment : Fragment() {
         super.onResume()
         if (feedList.isEmpty()) {
             binding.layoutShimmerLoader.root.isVisible = true
-            parseRssFeedFromWorker()
-        } else {
-            parseRssFeedEvery6hrsFromWorker()
         }
 //        CodeExecutor.executeCode(
 //            javaClassName = "EelloWoruludu",
@@ -91,6 +95,7 @@ class FeedFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
+        parseRssFeedEveryHourFromWorker()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -98,8 +103,9 @@ class FeedFragment : Fragment() {
         root.setOnClickListener { }
 
         feedAdapter.setOnItemClickListener { it: Feed? ->
-            // TODO temp. show bottomsheet webview
-            activity?.openWithChrome(url = it?.link)
+            PeekBottomSheetFragment.newInstance(
+                peekUrl = it?.link
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         feedAdapter.setOnItemLongClickListener { feed, view ->
@@ -116,8 +122,12 @@ class FeedFragment : Fragment() {
                 menuList = optionsList
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    optionsList[0].first -> {}
-                    optionsList[1].first -> {}
+                    optionsList[0].first -> {
+                        openSearchScreen(isPrivate = false, feed = feed)
+                    }
+                    optionsList[1].first -> {
+                        openSearchScreen(isPrivate = true, feed = feed)
+                    }
                     optionsList[2].first -> {
                         websiteActionsViewModel.updatedFeedItemToSaved(feed?.copy(isSaved = true))
                     }
@@ -198,7 +208,7 @@ class FeedFragment : Fragment() {
         feedAdapter.getItemCountListener { count: Int ->
             if (count > 0) {
                 binding.layoutShimmerLoader.root.isVisible = false
-                parseRssFeedEvery6hrsFromWorker()
+                parseRssFeedEveryHourFromWorker()
             }
         }
     }
@@ -216,20 +226,28 @@ class FeedFragment : Fragment() {
         }
     }
 
-    private fun parseRssFeedFromWorker() {
-        val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-        val workRequest = OneTimeWorkRequestBuilder<RssFeedWorker>().setConstraints(workConstraints).build()
-        WorkManager.getInstance(requireContext()).enqueueUniqueWork(
-            /* uniqueWorkName = */ WorkerTag.RSS_FEED_PARSER,
-            /* existingWorkPolicy = */ ExistingWorkPolicy.KEEP,
-            /* work = */ workRequest
+    private fun openSearchScreen(
+        isPrivate: Boolean,
+        feed: Feed?
+    ) {
+        (requireActivity() as? MainActivity)?.showScreen(
+            fragment = SearchFragment.newInstance(websiteList = listOf(feed).mapIndexed { index, feed ->
+                SearchTab(
+                    id = index.toLong(),
+                    type = NewTabType.NEW_TAB,
+                    link = feed?.link,
+                    isPrivate = isPrivate
+                )
+            }.toArrayList()),
+            tag = FragmentsTag.SEARCH,
+            isAdd = true
         )
     }
 
-    private fun parseRssFeedEvery6hrsFromWorker() {
+    private fun parseRssFeedEveryHourFromWorker() {
         val workConstraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
         val workRequest = PeriodicWorkRequestBuilder<RssFeedWorker>(
-            repeatInterval = 6.hours(),
+            repeatInterval = 1,
             repeatIntervalTimeUnit = TimeUnit.HOURS
         ).setConstraints(workConstraints).build()
         WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(

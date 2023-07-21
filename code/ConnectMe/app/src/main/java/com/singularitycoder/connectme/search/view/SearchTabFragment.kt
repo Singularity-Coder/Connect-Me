@@ -28,7 +28,8 @@ import javax.inject.Inject
 
 // Lots of references from https://github.com/LineageOS/android_packages_apps_Jelly
 
-// private const val ARG_PARAM_TAB = "ARG_PARAM_TAB"
+private const val ARG_PEEK_URL = "ARG_PEEK_URL"
+private const val ARG_TAB_URL = "ARG_TAB_URL"
 
 @AndroidEntryPoint
 class SearchTabFragment : Fragment() {
@@ -41,8 +42,14 @@ class SearchTabFragment : Fragment() {
         private const val DEFAULT_ERROR_PAGE_PATH = "file:///android_res/raw/error_webpage.html"
 
         @JvmStatic
-        fun newInstance(paramTab: String) = SearchTabFragment().apply {
-//            arguments = Bundle().apply { putString(ARG_PARAM_TAB, paramTab) }
+        fun newInstance(
+            peekUrl: String? = null,
+            tabUrl: String? = null,
+        ) = SearchTabFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_PEEK_URL, peekUrl)
+                putString(ARG_TAB_URL, tabUrl)
+            }
         }
     }
 
@@ -54,8 +61,11 @@ class SearchTabFragment : Fragment() {
     private val hideProgressHandler by lazy {
         Handler(Looper.getMainLooper())
     }
+    private var progressListener: (progress: Int) -> Unit = {}
+    private var webViewListener: (webView: WebView?) -> Unit = {}
 
-    //    private var paramTab: String? = null
+    private var peekUrl: String? = null
+    private var tabUrl: String? = null
     private var mobileUserAgent: String? = null
     private var hideProgressRunnable = Runnable {}
     private var desktopUserAgent: String? = null
@@ -73,7 +83,8 @@ class SearchTabFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        paramTab = arguments?.getString(ARG_PARAM_TAB)
+        peekUrl = arguments?.getString(ARG_PEEK_URL)
+        tabUrl = arguments?.getString(ARG_TAB_URL)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -98,7 +109,7 @@ class SearchTabFragment : Fragment() {
     // https://guides.codepath.com/android/Working-with-the-WebView
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentSearchTabBinding.setupUI() {
-        ConnectMeUtils.webpageIdList.add(tag)
+        ConnectMeUtils.webpageFragmentIdList.add(tag)
         searchFragment = getSearchFragment()
         setupWebView()
     }
@@ -177,8 +188,8 @@ class SearchTabFragment : Fragment() {
     }
 
     fun loadUrl(url: String) {
-        lastLoadedUrl = url
-        followUrl(url)
+        lastLoadedUrl = peekUrl ?: tabUrl ?: url
+        followUrl(lastLoadedUrl ?: "")
     }
 
     private fun followUrl(url: String) {
@@ -245,11 +256,15 @@ class SearchTabFragment : Fragment() {
 
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
 
+        if (peekUrl != null || tabUrl != null) {
+            loadUrl(url = peekUrl ?: tabUrl ?: "")
+        }
     }
 
     private fun setupWebChromeClient() = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView, progress: Int) {
             searchFragment?.setLinearProgress(progress)
+            progressListener.invoke(progress)
             if (progress == 100) {
                 isWebpageLoadedAtLeastOnce = true
                 searchFragment?.doOnWebPageLoaded()
@@ -273,6 +288,7 @@ class SearchTabFragment : Fragment() {
             if (icon.isRecycled.not()) icon.recycle()
             searchFragment?.getFaviconImageView()?.setImageBitmap(favicon)
             searchFragment?.setWebViewData()
+            webViewListener.invoke(view)
         }
 
         override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
@@ -470,9 +486,35 @@ class SearchTabFragment : Fragment() {
         // TODO add to db
     }
 
-    private fun getSearchFragment() = requireActivity().supportFragmentManager.fragments.firstOrNull {
-        it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
-    } as? SearchFragment
+    private fun getSearchFragment(): SearchFragment? {
+        if (peekUrl != null) return null
+        return requireActivity().supportFragmentManager.fragments.firstOrNull {
+            it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
+        } as? SearchFragment
+    }
+
+    fun getWebViewProgressListener(progressListener: (progress: Int) -> Unit) {
+        this.progressListener = progressListener
+    }
+
+    fun getWebViewListener(webViewListener: (webView: WebView?) -> Unit) {
+        this.webViewListener = webViewListener
+    }
+
+    fun clearCache() {
+        binding.webView.clearCache(true)
+        binding.webView.clearSslPreferences()
+        binding.webView.clearMatches()
+        binding.webView.clearHistory()
+        binding.webView.clearFormData()
+        binding.webView.clearAnimation()
+        binding.webView.clearChildFocus(null)
+        binding.webView.clearDisappearingChildren()
+        binding.webView.clearFocus()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            binding.webView.clearViewTranslationCallback()
+        }
+    }
 
     class SimpleWebJavascriptInterface {
         @JavascriptInterface

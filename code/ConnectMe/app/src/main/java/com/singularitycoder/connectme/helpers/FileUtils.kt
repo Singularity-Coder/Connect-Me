@@ -292,3 +292,25 @@ private fun Uri.toBitmap(context: Context): Bitmap? {
         null
     }
 }
+
+// https://stackoverflow.com/questions/7036381/copying-files-from-sdcard-to-android-internal-storage-directory
+// https://stackoverflow.com/questions/4770004/how-to-move-rename-file-from-internal-app-storage-to-external-storage-on-android
+fun copyFile(
+    source: File,
+    destination: File
+) {
+    if (source.absolutePath == source.absolutePath) return
+
+    try {
+        val `is`: InputStream = FileInputStream(source)
+        val os: OutputStream = FileOutputStream(destination)
+        val buff = ByteArray(1024)
+        var len: Int
+        while (`is`.read(buff).also { len = it } > 0) {
+            os.write(buff, 0, len)
+        }
+        `is`.close()
+        os.close()
+    } catch (_: Exception) {
+    }
+}

@@ -23,6 +23,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Singleton
 
 @Module
@@ -43,6 +44,7 @@ object DbModule {
                     }
                 }
             })
+//            .createFromFile(File(""))
             .build()
         return getRoomDb()
     }

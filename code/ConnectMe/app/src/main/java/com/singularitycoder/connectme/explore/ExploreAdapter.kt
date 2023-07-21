@@ -1,24 +1,23 @@
 package com.singularitycoder.connectme.explore
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemExploreBinding
-import com.singularitycoder.connectme.helpers.color
+import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.exploreItemColorsList
 import com.singularitycoder.connectme.helpers.constants.typefaceList
-import com.singularitycoder.connectme.helpers.drawable
-import com.singularitycoder.connectme.helpers.setTypeface
-import kotlin.random.Random
 
 class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var feedList = emptyList<Explore>()
-    private var newsClickListener: (explore: Explore) -> Unit = {}
+    var exploreList = emptyList<Explore>()
     private var colorPosition: Int = -1
     private var isListReversible: Boolean = false
     private var typefacePosition = 0
+    private var itemClickListener: (explore: Explore?) -> Unit = {}
+    private var itemLongClickListener: (explore: Explore?, view: View?) -> Unit = { _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemExploreBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -26,15 +25,19 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as NewsViewHolder).setData(feedList[position])
+        (holder as NewsViewHolder).setData(exploreList[position])
     }
 
-    override fun getItemCount(): Int = feedList.size
+    override fun getItemCount(): Int = exploreList.size
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setOnNewsClickListener(listener: (explore: Explore) -> Unit) {
-        newsClickListener = listener
+    fun setOnItemClickListener(listener: (explore: Explore?) -> Unit) {
+        itemClickListener = listener
+    }
+
+    fun setOnItemLongClickListener(listener: (explore: Explore?, view: View?) -> Unit) {
+        itemLongClickListener = listener
     }
 
     fun setTypefacePosition(typefacePosition: Int) {
@@ -73,8 +76,14 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     setTypeface(root.context, typefaceList.getOrNull(typefacePosition) ?: R.font.milkshake)
                 }
                 clExplore.background = root.context.drawable(color?.gradientColor ?: R.drawable.gradient_default_light)
-                root.setOnClickListener {
-                    newsClickListener.invoke(explore)
+                root.onSafeClick {
+                    itemClickListener.invoke(explore)
+                }
+                viewDummyCenter.setOnClickListener {
+                    itemLongClickListener.invoke(explore, it)
+                }
+                root.onCustomLongClick {
+                    viewDummyCenter.performClick()
                 }
             }
         }

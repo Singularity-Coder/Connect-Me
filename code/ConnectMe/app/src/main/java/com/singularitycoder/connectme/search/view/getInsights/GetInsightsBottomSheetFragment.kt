@@ -286,79 +286,70 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             etImageQuantity.boxStrokeColor = requireContext().color(R.color.black_50)
         }
 
-        ivChatMenu.onSafeClick {
-            val chatMenuOptionsList = listOf(
-                Pair("Add API key", R.drawable.outline_key_24),
-                Pair("Search", R.drawable.ic_round_search_24)
-            )
-            val popupMenu = PopupMenu(requireContext(), it.first)
-            chatMenuOptionsList.forEach { it: Pair<String, Int> ->
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(it.second)?.changeColor(requireContext(), R.color.purple_500),
-                        title = it.first
-                    )
-                )
+        ivSearch.onSafeClick {
+            lifecycleScope.launch {
+                getInsightStringsList()
+                withContext(Main) {
+                    setSearchList(insightStringsList)
+                }
             }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+            etSearch.setText("")
+            clChatSearch.isVisible = clChatSearch.isVisible.not()
+            scrollViewConversation.isVisible = clChatSearch.isVisible.not()
+            llAskAnything.isVisible = clChatSearch.isVisible.not()
+            if (clChatSearch.isVisible) {
+                doAfter(1.seconds()) {
+                    etSearch.showKeyboard()
+                }
+            } else {
+                etSearch.hideKeyboard()
+            }
+        }
+
+        ivMore.onSafeClick { pair: Pair<View?, Boolean> ->
+            val optionsList = listOf(
+                Pair("Add API key", R.drawable.outline_key_24),
+                Pair("Select AI Model", R.drawable.robot_black_24dp)
+            )
+            requireContext().showPopupMenuWithIcons(
+                view = pair.first,
+                menuList = optionsList
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    chatMenuOptionsList[0].first -> {
+                    optionsList[0].first -> {
                         AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                         dismiss()
                     }
-                    chatMenuOptionsList[1].first -> {
-                        lifecycleScope.launch {
-                            getInsightStringsList()
-                            withContext(Main) {
-                                setSearchList(insightStringsList)
-                            }
+                    optionsList[1].first -> {
+                        val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
+                        val popupMenu = PopupMenu(requireContext(), pair.first)
+                        OPEN_AI_MODELS_LIST.forEach {
+                            popupMenu.menu.add(
+                                0, 1, 1, menuIconWithText(
+                                    icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
+                                        context = requireContext(),
+                                        color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
+                                    ),
+                                    title = it
+                                )
+                            )
                         }
-                        etSearch.setText("")
-                        clChatSearch.isVisible = clChatSearch.isVisible.not()
-                        scrollViewConversation.isVisible = clChatSearch.isVisible.not()
-                        llAskAnything.isVisible = clChatSearch.isVisible.not()
-                        if (clChatSearch.isVisible) {
-                            doAfter(1.seconds()) {
-                                etSearch.showKeyboard()
+                        popupMenu.setOnMenuItemClickListener { aiModelMenuItem: MenuItem? ->
+                            view?.setHapticFeedback()
+                            when (aiModelMenuItem?.title?.toString()?.trim()) {
+                                OPEN_AI_MODELS_LIST[0] -> {
+                                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
+                                }
+                                OPEN_AI_MODELS_LIST[1] -> {
+                                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[1]).apply()
+                                }
                             }
-                        } else {
-                            etSearch.hideKeyboard()
+                            false
                         }
+                        popupMenu.show()
                     }
                 }
-                false
             }
-            popupMenu.show()
-        }
-
-        ivAiSettings.onSafeClick {
-            val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
-            val popupMenu = PopupMenu(requireContext(), it.first)
-            OPEN_AI_MODELS_LIST.forEach {
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
-                            context = requireContext(),
-                            color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
-                        ),
-                        title = it
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
-                when (it?.title?.toString()?.trim()) {
-                    OPEN_AI_MODELS_LIST[0] -> {
-                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
-                    }
-                    OPEN_AI_MODELS_LIST[1] -> {
-                        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[1]).apply()
-                    }
-                }
-                false
-            }
-            popupMenu.show()
         }
 
         ivChatMode.onSafeClick {

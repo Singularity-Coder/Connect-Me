@@ -393,10 +393,11 @@
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chip_group_link_text_actions"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:layout_marginEnd="12dp"
+                    android:visibility="gone"
                     app:singleLine="true" />
             </HorizontalScrollView>
         </androidx.constraintlayout.widget.ConstraintLayout>

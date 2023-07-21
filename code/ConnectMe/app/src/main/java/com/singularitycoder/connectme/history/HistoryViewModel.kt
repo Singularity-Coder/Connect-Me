@@ -13,7 +13,7 @@ class HistoryViewModel @Inject constructor(
 
     fun getAllHistory() = historyDao.getAllItemsStateFlow()
 
-    fun deleteItem(history: History) = viewModelScope.launch {
+    fun deleteItem(history: History?) = viewModelScope.launch {
         historyDao.delete(history)
     }
 

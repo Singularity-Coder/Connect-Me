@@ -16,11 +16,11 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_chat_menu"
+            android:id="@+id/iv_search"
             android:layout_width="26dp"
             android:layout_height="26dp"
             android:layout_marginStart="16dp"
-            android:src="@drawable/round_menu_24"
+            android:src="@drawable/ic_round_search_24"
             android:tint="@color/purple_500"
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/divider"
@@ -53,11 +53,11 @@
             app:layout_constraintTop_toBottomOf="@+id/iv_drag_handle" />
 
         <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_ai_settings"
+            android:id="@+id/iv_more"
             android:layout_width="26dp"
             android:layout_height="26dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/round_tune_24"
+            android:src="@drawable/ic_round_more_horiz_24"
             android:tint="@color/purple_500"
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/divider"

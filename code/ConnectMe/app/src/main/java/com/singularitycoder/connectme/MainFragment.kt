@@ -20,7 +20,7 @@ import com.singularitycoder.connectme.feed.FeedFragment
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteFragment
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
-import com.singularitycoder.connectme.helpers.constants.Tab
+import com.singularitycoder.connectme.helpers.constants.FeatureTab
 import com.singularitycoder.connectme.history.HistoryFragment
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.view.SearchFragment
@@ -157,22 +157,22 @@ class MainFragment : Fragment() {
         })
         tabLayoutHome.tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
         TabLayoutMediator(tabLayoutHome, viewpagerHome) { tab, position ->
-            tab.text = Tab.values()[position].value
+            tab.text = FeatureTab.values()[position].value
         }.attach()
         tabLayoutHome.selectTab(tabLayoutHome.getTabAt(1))
     }
 
     inner class HomeViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = Tab.values().size
+        override fun getItemCount(): Int = FeatureTab.values().size
         override fun createFragment(position: Int): Fragment = when (position) {
-            Tab.EXPLORE.ordinal -> ExploreFragment.newInstance(screenType = Tab.EXPLORE.value)
-            Tab.FEED.ordinal -> FeedFragment.newInstance(screenType = Tab.FEED.value)
-            Tab.COLLECTIONS.ordinal -> CollectionsFragment.newInstance(screenType = Tab.COLLECTIONS.value)
+            FeatureTab.EXPLORE.ordinal -> ExploreFragment.newInstance(screenType = FeatureTab.EXPLORE.value)
+            FeatureTab.FEED.ordinal -> FeedFragment.newInstance(screenType = FeatureTab.FEED.value)
+            FeatureTab.COLLECTIONS.ordinal -> CollectionsFragment.newInstance(screenType = FeatureTab.COLLECTIONS.value)
 //            Tab.REMAINDERS.ordinal -> FeedFragment.newInstance(screenType = Tab.REMAINDERS.value)
 //            Tab.NOTES.ordinal -> FeedFragment.newInstance(screenType = Tab.NOTES.value)
-            Tab.FOLLOWING.ordinal -> FollowingWebsiteFragment.newInstance(screenType = Tab.FOLLOWING.value)
-            Tab.HISTORY.ordinal -> HistoryFragment.newInstance(screenType = Tab.HISTORY.value)
-            else -> DownloadsFragment.newInstance(screenType = Tab.DOWNLOADS.value, isSelfProfile = true)
+            FeatureTab.FOLLOWING.ordinal -> FollowingWebsiteFragment.newInstance(screenType = FeatureTab.FOLLOWING.value)
+            FeatureTab.HISTORY.ordinal -> HistoryFragment.newInstance(screenType = FeatureTab.HISTORY.value)
+            else -> DownloadsFragment.newInstance(screenType = FeatureTab.DOWNLOADS.value, isSelfProfile = true)
         }
     }
 }

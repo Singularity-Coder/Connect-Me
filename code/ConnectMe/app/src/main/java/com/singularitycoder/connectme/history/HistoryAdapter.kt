@@ -13,8 +13,8 @@ import com.singularitycoder.connectme.helpers.*
 class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var historyList = emptyList<History?>()
-    private var itemClickListener: (history: History) -> Unit = {}
-    private var itemLongClickListener: (history: History, view: View?) -> Unit = { _, _ -> }
+    private var itemClickListener: (history: History?) -> Unit = {}
+    private var itemLongClickListener: (history: History?, view: View?) -> Unit = { _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -29,11 +29,11 @@ class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setOnClickListener(listener: (history: History) -> Unit) {
+    fun setOnClickListener(listener: (history: History?) -> Unit) {
         itemClickListener = listener
     }
 
-    fun setOnLongClickListener(listener: (history: History, view: View?) -> Unit) {
+    fun setOnLongClickListener(listener: (history: History?, view: View?) -> Unit) {
         itemLongClickListener = listener
     }
 

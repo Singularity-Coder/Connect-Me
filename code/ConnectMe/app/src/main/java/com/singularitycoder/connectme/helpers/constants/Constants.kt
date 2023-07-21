@@ -7,6 +7,7 @@ import com.singularitycoder.connectme.helpers.toLowCase
 import com.singularitycoder.connectme.helpers.trimIndentsAndNewLines
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.view.SearchFragment
+import com.singularitycoder.connectme.search.view.SearchTabFragment
 
 const val FILE_PROVIDER = "com.singularitycoder.connectme.fileprovider"
 
@@ -143,6 +144,8 @@ val LOCAL_TEXT_PROMPTS_MAP = mapOf(
     // Have a personality. Have opinions but do not press them onto the user. Suggest some places. Suggest stuff to buy, eat, play.
 )
 
+val escapeCharList = listOf("\r", "\n", "\\", "\t", "\b")
+
 enum class ChatRole {
     USER, ASSISTANT, SYSTEM
 }
@@ -173,6 +176,7 @@ object FragmentsTag {
     val MAIN: String = MainFragment::class.java.simpleName
     val SEARCH: String = SearchFragment::class.java.simpleName
     val USER_PROFILE: String = UserProfileFragment::class.java.simpleName
+    val SEARCH_TAB: String = SearchTabFragment::class.java.simpleName
 }
 
 object BottomSheetTag {
@@ -182,6 +186,7 @@ object BottomSheetTag {
     const val TAG_IMAGE_VIEWER = "TAG_IMAGE_VIEWER_BOTTOM_SHEET"
     const val TAG_CREATE_COLLECTION = "TAG_CREATE_COLLECTION_BOTTOM_SHEET"
     const val TAG_COLLECTION_DETAIL = "TAG_COLLECTION_DETAIL_BOTTOM_SHEET"
+    const val TAG_PEEK = "TAG_PEEK_BOTTOM_SHEET"
 }
 
 object WorkerData {
@@ -191,7 +196,6 @@ object WorkerData {
 
 object WorkerTag {
     const val RSS_FOLLOW_PARSER = "RSS_FOLLOW_PARSER"
-    const val RSS_FEED_PARSER = "RSS_FEED_PARSER"
     const val PERIODIC_RSS_FEED_PARSER = "PERIODIC_RSS_FEED_PARSER"
 }
 
@@ -219,7 +223,7 @@ enum class QuickActionTabMenuMoreOptions(
     ADD_TO_COLLECTIONS(title = "Add to collections", icon = R.drawable.outline_library_add_24),
 }
 
-enum class Tab(val value: String) {
+enum class FeatureTab(val value: String) {
     EXPLORE(value = "Explore"),
     FEED(value = "Feed"),
     COLLECTIONS(value = "Collections"),
