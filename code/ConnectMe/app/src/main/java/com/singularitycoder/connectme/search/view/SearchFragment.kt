@@ -41,11 +41,9 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
-import com.singularitycoder.connectme.collections.CollectionWebPage
-import com.singularitycoder.connectme.collections.CollectionsViewModel
-import com.singularitycoder.connectme.collections.CreateCollectionBottomSheetFragment
-import com.singularitycoder.connectme.collections.LinksCollection
+import com.singularitycoder.connectme.collections.*
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
+import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.history.History
@@ -91,12 +89,12 @@ class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
 
     private val webSearchTabsList = mutableListOf<SearchTab?>()
-    private val linksCollectionsList = mutableListOf<LinksCollection?>()
     private val collectionsTitlesList = mutableListOf<String?>()
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
     private val historyViewModel by viewModels<HistoryViewModel>()
+    private val followingWebsiteViewModel by viewModels<FollowingWebsiteViewModel>()
     private val iconTextActionAdapter by lazy { IconTextActionAdapter() }
 
     private var searchQuery: String = ""
@@ -165,6 +163,7 @@ class SearchFragment : Fragment() {
             layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.round_vpn_key_24))
             layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
             layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+            layoutIconText.cardImage.strokeWidth = 0
         }
         layoutAdBlocker.apply {
             layoutIconText.tvText.text = "Enable Ad Blocker"
@@ -172,25 +171,24 @@ class SearchFragment : Fragment() {
             layoutIconText.ivIcon.setImageDrawable(requireActivity().drawable(R.drawable.outline_block_24))
             layoutIconText.ivIcon.setMargins(start = 0, top = -2.dpToPx().toInt(), end = 0, bottom = 0)
             layoutIconText.ivIcon.imageTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-        }
-        layoutCollections.apply {
-            tvTitle.text = "Collections"
-            tvTitle.setTextColor(requireContext().color(R.color.purple_500))
-            ivDropdownArrow.isVisible = true
-            viewDummyTitle.isVisible = true
+            layoutIconText.cardImage.strokeWidth = 0
         }
         layoutFollowing.tvTitle.text = "Following"
         layoutHistory.tvTitle.text = "History"
         layoutDownloads.tvTitle.text = "Downloads"
-        layoutFollowing.apply {
-            layoutFollowingApp1.ivAppIcon.load(DUMMY_FAVICON_URLS[0])
-            layoutFollowingApp1.tvAppName.text = "Doodle"
-            layoutFollowingApp2.ivAppIcon.load(DUMMY_FAVICON_URLS[1])
-            layoutFollowingApp2.tvAppName.text = "Stupify"
-            layoutFollowingApp3.ivAppIcon.load(DUMMY_FAVICON_URLS[2])
-            layoutFollowingApp3.tvAppName.text = "Hitgub"
-            layoutFollowingApp4.ivAppIcon.load(DUMMY_FAVICON_URLS[3])
-            layoutFollowingApp4.tvAppName.text = "Coldstar"
+        lifecycleScope.launch {
+            val followingWebsites = followingWebsiteViewModel.getTop4FollowingWebsites()
+            withContext(Main) {
+                listOf(
+                    layoutFollowing.layoutFollowingApp1,
+                    layoutFollowing.layoutFollowingApp2,
+                    layoutFollowing.layoutFollowingApp3,
+                    layoutFollowing.layoutFollowingApp4,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(followingWebsites.getOrNull(index)?.favicon))
+                    listItemAppBinding.tvAppName.text = followingWebsites.getOrNull(index)?.title
+                }
+            }
         }
         lifecycleScope.launch {
             if (collectionsTitlesList.isEmpty()) {
@@ -198,8 +196,26 @@ class SearchFragment : Fragment() {
             }
             val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList.firstOrNull())
             withContext(Main) {
-                layoutCollections.tvTitle.text = collectionsTitlesList.firstOrNull()
+                layoutCollections.apply {
+                    tvTitle.setTextColor(requireContext().color(R.color.purple_500))
+                    ivDropdownArrow.isVisible = true
+                    viewDummyTitle.isVisible = true
+                    tvTitle.text = collectionsTitlesList.firstOrNull()
+                }
                 updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
+            }
+        }
+        lifecycleScope.launch {
+            val historyList = historyViewModel.getLast3HistoryItems()
+            withContext(Main) {
+                listOf(
+                    layoutHistory.layoutItem1,
+                    layoutHistory.layoutItem2,
+                    layoutHistory.layoutItem3,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    listItemAppBinding.ivIcon.load(decodeBase64StringToBitmap(historyList.getOrNull(index)?.favicon))
+                    listItemAppBinding.tvText.text = historyList.getOrNull(index)?.title
+                }
             }
         }
         tabLayoutTabs.addOnTabSelectedListener(tabSelectedListener)
@@ -212,6 +228,11 @@ class SearchFragment : Fragment() {
         root.setOnClickListener { }
 
         layoutCollections.apply {
+            root.onSafeClick {
+                CollectionDetailBottomSheetFragment.newInstance(
+                    collectionTitle = layoutCollections.tvTitle.text.toString()
+                ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
+            }
             viewDummyForDropdown.onSafeClick {
                 lifecycleScope.launch {
                     if (collectionsTitlesList.isEmpty()) {
@@ -253,8 +274,8 @@ class SearchFragment : Fragment() {
             clShowMore.setOnClickListener {
                 layoutCollections.ivShowMore.performClick()
             }
-            ivShowMore.onSafeClick {
-                requireContext().showToast("Show more")
+            ivShowMore.setOnClickListener {
+                root.performClick()
             }
         }
 
@@ -468,22 +489,6 @@ class SearchFragment : Fragment() {
             }
 
             searchViewModel.resetInsight()
-        }
-
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
-            val collectionsMap = HashMap<String?, java.util.ArrayList<CollectionWebPage?>>()
-            it.forEach {
-                val collectionWebPageList = (collectionsMap.get(it?.collectionTitle) ?: java.util.ArrayList()).apply { add(it) }
-                collectionsMap.put(it?.collectionTitle, collectionWebPageList)
-            }
-            collectionsMap.keys.forEach { key: String? ->
-                val linksCollection = LinksCollection(
-                    title = key,
-                    count = collectionsMap[key]?.size ?: 0,
-                    linkList = collectionsMap[key] ?: emptyList()
-                )
-                linksCollectionsList.add(linksCollection)
-            }
         }
     }
 
@@ -1210,21 +1215,14 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.updateTop4WebPageViewsOfCollections(top4CollectionItemsList: List<CollectionWebPage?>) {
-        layoutCollections.layoutFollowingApp1.apply {
-            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(0)?.favicon))
-            tvAppName.text = top4CollectionItemsList.getOrNull(0)?.title
-        }
-        layoutCollections.layoutFollowingApp2.apply {
-            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(1)?.favicon))
-            tvAppName.text = top4CollectionItemsList.getOrNull(1)?.title
-        }
-        layoutCollections.layoutFollowingApp3.apply {
-            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(2)?.favicon))
-            tvAppName.text = top4CollectionItemsList.getOrNull(2)?.title
-        }
-        layoutCollections.layoutFollowingApp4.apply {
-            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(3)?.favicon))
-            tvAppName.text = top4CollectionItemsList.getOrNull(3)?.title
+        listOf(
+            layoutCollections.layoutFollowingApp1,
+            layoutCollections.layoutFollowingApp2,
+            layoutCollections.layoutFollowingApp3,
+            layoutCollections.layoutFollowingApp4,
+        ).forEachIndexed { index, listItemAppBinding ->
+            listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(index)?.favicon))
+            listItemAppBinding.tvAppName.text = top4CollectionItemsList.getOrNull(index)?.title
         }
     }
 

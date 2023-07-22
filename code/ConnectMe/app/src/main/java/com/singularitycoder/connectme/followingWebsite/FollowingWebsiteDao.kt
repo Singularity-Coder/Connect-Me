@@ -29,6 +29,9 @@ interface FollowingWebsiteDao {
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE} WHERE website LIKE :website LIMIT 1")
     suspend fun getItemByWebsite(website: String?): FollowingWebsite?
 
+    @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE} LIMIT 4")
+    suspend fun getTop4By(): List<FollowingWebsite?>
+
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE}")
     fun getAllItemsLiveData(): LiveData<List<FollowingWebsite?>>
 

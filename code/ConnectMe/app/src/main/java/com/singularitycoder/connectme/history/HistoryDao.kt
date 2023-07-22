@@ -35,6 +35,9 @@ interface HistoryDao {
     @Query("SELECT * FROM ${Table.HISTORY}")
     fun getAllItemsStateFlow(): Flow<List<History?>>
 
+    @Query("SELECT * FROM ${Table.HISTORY} ORDER BY time DESC LIMIT 3")
+    suspend fun getLast3By(): List<History?>
+
     @Query("SELECT * FROM ${Table.HISTORY} WHERE website = :website")
     fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<History?>>
 

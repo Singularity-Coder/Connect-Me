@@ -14,6 +14,8 @@ class FollowingWebsiteViewModel @Inject constructor(
 
     fun getAllFollowingWebsites() = followingWebsiteDao.getAllItemsStateFlow()
 
+    suspend fun getTop4FollowingWebsites() = followingWebsiteDao.getTop4By()
+
     fun deleteItem(followingWebsite: FollowingWebsite?) = viewModelScope.launch {
         followingWebsiteDao.delete(followingWebsite)
     }
