@@ -44,6 +44,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.collections.CollectionWebPage
 import com.singularitycoder.connectme.collections.CollectionsViewModel
 import com.singularitycoder.connectme.collections.CreateCollectionBottomSheetFragment
+import com.singularitycoder.connectme.collections.LinksCollection
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
@@ -90,6 +91,9 @@ class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
 
     private val webSearchTabsList = mutableListOf<SearchTab?>()
+    private val linksCollectionsList = mutableListOf<LinksCollection?>()
+    private val collectionsTitlesList = mutableListOf<String?>()
+
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
     private val historyViewModel by viewModels<HistoryViewModel>()
@@ -111,6 +115,7 @@ class SearchFragment : Fragment() {
         override fun onTabSelected(tab: TabLayout.Tab?) {
             binding.doOnTabClick()
         }
+
         override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
         override fun onTabReselected(tab: TabLayout.Tab?) = Unit
     }
@@ -172,27 +177,30 @@ class SearchFragment : Fragment() {
             tvTitle.text = "Collections"
             tvTitle.setTextColor(requireContext().color(R.color.purple_500))
             ivDropdownArrow.isVisible = true
+            viewDummyTitle.isVisible = true
         }
+        layoutFollowing.tvTitle.text = "Following"
+        layoutHistory.tvTitle.text = "History"
+        layoutDownloads.tvTitle.text = "Downloads"
         layoutFollowing.apply {
-            tvTitle.text = "Following"
+            layoutFollowingApp1.ivAppIcon.load(DUMMY_FAVICON_URLS[0])
+            layoutFollowingApp1.tvAppName.text = "Doodle"
+            layoutFollowingApp2.ivAppIcon.load(DUMMY_FAVICON_URLS[1])
+            layoutFollowingApp2.tvAppName.text = "Stupify"
+            layoutFollowingApp3.ivAppIcon.load(DUMMY_FAVICON_URLS[2])
+            layoutFollowingApp3.tvAppName.text = "Hitgub"
+            layoutFollowingApp4.ivAppIcon.load(DUMMY_FAVICON_URLS[3])
+            layoutFollowingApp4.tvAppName.text = "Coldstar"
         }
-        listOf(layoutFollowing, layoutCollections).forEach {
-            it.apply {
-                layoutFollowingApp1.ivAppIcon.load(DUMMY_FAVICON_URLS[0])
-                layoutFollowingApp1.tvAppName.text = "Doodle"
-                layoutFollowingApp2.ivAppIcon.load(DUMMY_FAVICON_URLS[1])
-                layoutFollowingApp2.tvAppName.text = "Stupify"
-                layoutFollowingApp3.ivAppIcon.load(DUMMY_FAVICON_URLS[2])
-                layoutFollowingApp3.tvAppName.text = "Hitgub"
-                layoutFollowingApp4.ivAppIcon.load(DUMMY_FAVICON_URLS[3])
-                layoutFollowingApp4.tvAppName.text = "Coldstar"
+        lifecycleScope.launch {
+            if (collectionsTitlesList.isEmpty()) {
+                collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
             }
-        }
-        layoutHistory.apply {
-            tvTitle.text = "History"
-        }
-        layoutDownloads.apply {
-            tvTitle.text = "Downloads"
+            val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList.firstOrNull())
+            withContext(Main) {
+                layoutCollections.tvTitle.text = collectionsTitlesList.firstOrNull()
+                updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
+            }
         }
         tabLayoutTabs.addOnTabSelectedListener(tabSelectedListener)
         setupSearchSuggestionsRecyclerView()
@@ -205,24 +213,39 @@ class SearchFragment : Fragment() {
 
         layoutCollections.apply {
             viewDummyForDropdown.onSafeClick {
-                val collectionsList = listOf("Collection 1", "Collection 2", "Collection 3")
-                val adapter = ArrayAdapter(
-                    /* context = */ requireContext(),
-                    /* resource = */ android.R.layout.simple_list_item_1,
-                    /* objects = */ collectionsList
-                )
-                ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
-                    anchorView = it.first
-                    setAdapter(adapter)
-                    setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-                        layoutCollections.tvTitle.text = collectionsList[position]
-                        this.dismiss()
+                lifecycleScope.launch {
+                    if (collectionsTitlesList.isEmpty()) {
+                        collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
                     }
-                    show()
+                    withContext(Main) {
+                        val adapter = ArrayAdapter(
+                            /* context = */ requireContext(),
+                            /* resource = */ android.R.layout.simple_list_item_1,
+                            /* objects = */ collectionsTitlesList
+                        )
+                        ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
+                            anchorView = it.first
+                            setAdapter(adapter)
+                            setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+                                layoutCollections.tvTitle.text = collectionsTitlesList[position]
+                                lifecycleScope.launch {
+                                    val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList[position])
+                                    withContext(Main) {
+                                        updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
+                                    }
+                                }
+                                this.dismiss()
+                            }
+                            show()
+                        }
+                    }
                 }
             }
             tvTitle.setOnClickListener {
                 layoutCollections.viewDummyForDropdown.performClick()
+            }
+            viewDummyTitle.setOnClickListener {
+                tvTitle.performClick()
             }
             ivDropdownArrow.setOnClickListener {
                 layoutCollections.tvTitle.performClick()
@@ -447,8 +470,21 @@ class SearchFragment : Fragment() {
             searchViewModel.resetInsight()
         }
 
-//        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
-//        }
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
+            val collectionsMap = HashMap<String?, java.util.ArrayList<CollectionWebPage?>>()
+            it.forEach {
+                val collectionWebPageList = (collectionsMap.get(it?.collectionTitle) ?: java.util.ArrayList()).apply { add(it) }
+                collectionsMap.put(it?.collectionTitle, collectionWebPageList)
+            }
+            collectionsMap.keys.forEach { key: String? ->
+                val linksCollection = LinksCollection(
+                    title = key,
+                    count = collectionsMap[key]?.size ?: 0,
+                    linkList = collectionsMap[key] ?: emptyList()
+                )
+                linksCollectionsList.add(linksCollection)
+            }
+        }
     }
 
     private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
@@ -1171,6 +1207,25 @@ class SearchFragment : Fragment() {
 //        }
 
         binding.clUrlSearchHeader.isVisible = isVisible
+    }
+
+    private fun FragmentSearchBinding.updateTop4WebPageViewsOfCollections(top4CollectionItemsList: List<CollectionWebPage?>) {
+        layoutCollections.layoutFollowingApp1.apply {
+            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(0)?.favicon))
+            tvAppName.text = top4CollectionItemsList.getOrNull(0)?.title
+        }
+        layoutCollections.layoutFollowingApp2.apply {
+            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(1)?.favicon))
+            tvAppName.text = top4CollectionItemsList.getOrNull(1)?.title
+        }
+        layoutCollections.layoutFollowingApp3.apply {
+            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(2)?.favicon))
+            tvAppName.text = top4CollectionItemsList.getOrNull(2)?.title
+        }
+        layoutCollections.layoutFollowingApp4.apply {
+            ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(3)?.favicon))
+            tvAppName.text = top4CollectionItemsList.getOrNull(3)?.title
+        }
     }
 
     inner class SearchViewPagerAdapter(

@@ -129,20 +129,12 @@ class PeekBottomSheetFragment : BottomSheetDialogFragment() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 println("bottom sheet state: ${behavior.state}")
                 when (newState) {
-                    BottomSheetBehavior.STATE_COLLAPSED -> {
-                        behavior.state = BottomSheetBehavior.STATE_HIDDEN
-                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> Unit
                     BottomSheetBehavior.STATE_DRAGGING -> Unit
-                    BottomSheetBehavior.STATE_EXPANDED -> {
-                        oldState = BottomSheetBehavior.STATE_EXPANDED
-                    }
+                    BottomSheetBehavior.STATE_EXPANDED -> Unit
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
-                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-                    BottomSheetBehavior.STATE_SETTLING -> {
-                        if (oldState == BottomSheetBehavior.STATE_EXPANDED) {
-                            behavior.state = BottomSheetBehavior.STATE_HIDDEN
-                        }
-                    }
+                    BottomSheetBehavior.STATE_HIDDEN -> Unit
+                    BottomSheetBehavior.STATE_SETTLING -> Unit
                 }
             }
 

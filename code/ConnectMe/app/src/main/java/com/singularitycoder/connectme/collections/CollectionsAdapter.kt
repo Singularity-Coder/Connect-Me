@@ -9,11 +9,13 @@ import coil.load
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemCollectionBinding
 import com.singularitycoder.connectme.helpers.decodeBase64StringToBitmap
+import com.singularitycoder.connectme.helpers.onSafeClick
 
 class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var collectionsList = emptyList<LinksCollection?>()
     private var itemClickListener: (linksCollection: LinksCollection?) -> Unit = {}
+    private var webAppClickListener: (collectionWebPage: CollectionWebPage?) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemCollectionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -30,6 +32,10 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun setOnItemClickListener(listener: (linksCollection: LinksCollection?) -> Unit) {
         itemClickListener = listener
+    }
+
+    fun setOnWebAppClickListener(listener: (collectionWebPage: CollectionWebPage?) -> Unit) {
+        webAppClickListener = listener
     }
 
     inner class ThisViewHolder(
@@ -51,6 +57,9 @@ class CollectionsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                             error(R.color.md_red_900)
                         }
                         listItemAppBinding.tvAppName.text = linksCollection?.linkList?.get(index)?.title
+                        listItemAppBinding.root.onSafeClick {
+                            webAppClickListener.invoke(linksCollection?.linkList?.get(index))
+                        }
                     } else {
                         listItemAppBinding.root.isInvisible = true
                     }

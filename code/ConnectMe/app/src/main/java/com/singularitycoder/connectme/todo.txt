@@ -12,15 +12,15 @@ TODO Checklist
 
 TODO THIS WEEK
 Speed dial
-closing session saves to collection - timestamp
+closing session saves to collection - timestamp - take from history by website
 Explore - Add time topics n location
 Export collection to sqlite db and csv file
+
 Downloads
     download in internal directory first. Then search for public directory
     Download filters - file type, file size, sort - ascending, descending
     handle gif, image, audio, video, file
     long press download item to see full file name with options to delete, show in chrome, share
- - open tabs from collection
 
 Explore
 1. News and other useful/subscribed info summaries

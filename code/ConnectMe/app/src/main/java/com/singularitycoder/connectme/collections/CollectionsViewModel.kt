@@ -15,9 +15,9 @@ class CollectionsViewModel @Inject constructor(
 
     fun getCollectionsByCollectionTitles(collectionTitle: String?) = collectionsDao.getAllItemsByCollectionTitleStateFlow(collectionTitle)
 
-    suspend fun getAllCollectionTitles() = collectionsDao.getAllCollectionTitles()
-
     suspend fun getAllUniqueCollectionTitles() = collectionsDao.getAllUniqueTitles()
+
+    suspend fun getTop4CollectionsBy(collectionTitle: String?) = collectionsDao.getTop4By(collectionTitle)
 
     fun addToCollections(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
         collectionsDao.insert(collectionWebPage)

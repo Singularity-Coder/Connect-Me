@@ -18,6 +18,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -65,6 +66,12 @@ class CollectionsFragment : Fragment() {
             CollectionDetailBottomSheetFragment.newInstance(
                 collectionTitle = it?.title
             ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
+        }
+
+        collectionsAdapter.setOnWebAppClickListener { it: CollectionWebPage? ->
+            PeekBottomSheetFragment.newInstance(
+                peekUrl = it?.link
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         layoutSearch.ibClearSearch.onSafeClick {
@@ -155,18 +162,18 @@ class CollectionsFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun observeForData() {
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
             val collectionsMap = HashMap<String?, ArrayList<CollectionWebPage?>>()
             val linksCollectionsList = mutableListOf<LinksCollection?>()
             it.forEach {
                 val collectionWebPageList = (collectionsMap.get(it?.collectionTitle) ?: ArrayList()).apply { add(it) }
                 collectionsMap.put(it?.collectionTitle, collectionWebPageList)
             }
-            collectionsMap.keys.forEach { it: String? ->
+            collectionsMap.keys.forEach { key: String? ->
                 val linksCollection = LinksCollection(
-                    title = it,
-                    count = collectionsMap.get(it)?.size ?: 0,
-                    linkList = collectionsMap.get(it) ?: emptyList()
+                    title = key,
+                    count = collectionsMap[key]?.size ?: 0,
+                    linkList = collectionsMap[key] ?: emptyList()
                 )
                 linksCollectionsList.add(linksCollection)
             }

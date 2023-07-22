@@ -49,6 +49,9 @@ interface CollectionsDao {
     @Query("SELECT * FROM ${Table.COLLECTION}")
     suspend fun getAll(): List<CollectionWebPage?>
 
+    @Query("SELECT * FROM ${Table.COLLECTION} WHERE collectionTitle = :collectionTitle LIMIT 4")
+    suspend fun getTop4By(collectionTitle: String?): List<CollectionWebPage?>
+
     @Query("SELECT title FROM ${Table.COLLECTION}")
     suspend fun getAllTitles(): List<String?>
 
