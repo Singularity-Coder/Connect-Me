@@ -244,10 +244,10 @@ class HistoryFragment : Fragment() {
                 history.apply {
                     if (index == historyMap.get(date)?.lastIndex) this?.isDateShown = true
                 }
-            }?.reversed() ?: emptyList()
+            } ?: emptyList()
             sortedHistoryList.addAll(preparedList)
         }
-        historyAdapter.historyList = sortedHistoryList.reversed()
+        historyAdapter.historyList = sortedHistoryList
         historyAdapter.notifyDataSetChanged()
     }
 }

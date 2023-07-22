@@ -48,6 +48,7 @@ import com.singularitycoder.connectme.databinding.FragmentSearchBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.history.History
+import com.singularitycoder.connectme.history.HistoryViewModel
 import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.view.addApiKey.AddApiKeyBottomSheetFragment
 import com.singularitycoder.connectme.search.view.getInsights.GetInsightsBottomSheetFragment
@@ -91,6 +92,7 @@ class SearchFragment : Fragment() {
     private val webSearchTabsList = mutableListOf<SearchTab?>()
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
+    private val historyViewModel by viewModels<HistoryViewModel>()
     private val iconTextActionAdapter by lazy { IconTextActionAdapter() }
 
     private var searchQuery: String = ""
@@ -395,7 +397,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.observeForData() {
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
             if (searchSuggestionsList.isEmpty() || searchQuery.isBlank()) {
                 cardSearchSuggestions.isVisible = false
                 return@collectLatestLifecycleFlow
@@ -424,7 +426,7 @@ class SearchFragment : Fragment() {
             })
         }
 
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
             if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
             if (it.screen != this@SearchFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
 
@@ -444,6 +446,9 @@ class SearchFragment : Fragment() {
 
             searchViewModel.resetInsight()
         }
+
+//        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+//        }
     }
 
     private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
@@ -1122,7 +1127,7 @@ class SearchFragment : Fragment() {
             link = selectedWebpage?.getWebView()?.url ?: ""
         )
         if (selectedWebpage?.getWebView()?.url.isNullOrBlank().not()) {
-            searchViewModel.addToHistory(history)
+            historyViewModel.addToHistory(history)
         }
 //        webSearchTabsList[binding.tabLayoutTabs.selectedTabPosition] = webSearchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.copy(title = selectedWebpage?.getWebView()?.title)
     }

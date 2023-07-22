@@ -144,8 +144,6 @@ val LOCAL_TEXT_PROMPTS_MAP = mapOf(
     // Have a personality. Have opinions but do not press them onto the user. Suggest some places. Suggest stuff to buy, eat, play.
 )
 
-val escapeCharList = listOf("\r", "\n", "\\", "\t", "\b")
-
 enum class ChatRole {
     USER, ASSISTANT, SYSTEM
 }

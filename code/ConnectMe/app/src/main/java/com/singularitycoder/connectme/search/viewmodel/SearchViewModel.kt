@@ -10,13 +10,10 @@ import com.singularitycoder.connectme.helpers.constants.ChatRole
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
 import com.singularitycoder.connectme.helpers.encryption.AesCbcWithIntegrity
-import com.singularitycoder.connectme.helpers.encryption.CipherUtils
 import com.singularitycoder.connectme.helpers.searchSuggestions.BingSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.DuckSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.GoogleSearchSuggestionProvider
 import com.singularitycoder.connectme.helpers.searchSuggestions.YahooSearchSuggestionProvider
-import com.singularitycoder.connectme.history.History
-import com.singularitycoder.connectme.history.HistoryDao
 import com.singularitycoder.connectme.search.dao.InsightDao
 import com.singularitycoder.connectme.search.dao.PromptDao
 import com.singularitycoder.connectme.search.model.*
@@ -45,7 +42,6 @@ class SearchViewModel @Inject constructor(
     private val networkStatus: NetworkStatus,
     private val insightDao: InsightDao,
     private val promptDao: PromptDao,
-    private val historyDao: HistoryDao,
 ) : ViewModel() {
 
     private val _searchSuggestionResultsStateFlow = MutableStateFlow<List<String>>(emptyList())
@@ -113,10 +109,6 @@ class SearchViewModel @Inject constructor(
 
     fun addPrompt(prompt: Prompt?) = viewModelScope.launch {
         promptDao.insert(prompt)
-    }
-
-    fun addToHistory(history: History) = viewModelScope.launch {
-        historyDao.insert(history)
     }
 
     fun resetInsight() = viewModelScope.launch(IO) {

@@ -771,7 +771,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                     BottomSheetBehavior.STATE_DRAGGING -> Unit
                     BottomSheetBehavior.STATE_EXPANDED -> Unit
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
-                    BottomSheetBehavior.STATE_HIDDEN -> Unit
+                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
                     BottomSheetBehavior.STATE_SETTLING -> Unit
                 }
             }

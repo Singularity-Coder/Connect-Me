@@ -9,7 +9,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import com.singularitycoder.connectme.feed.Feed
 import com.singularitycoder.connectme.feed.FeedDao
-import com.singularitycoder.connectme.helpers.constants.escapeCharList
 import org.eclipse.jetty.http.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
@@ -411,6 +410,7 @@ fun String?.trimCdata(): String {
 
 fun String?.trimEscapeChars(): String {
     var string = this ?: ""
+    val escapeCharList = listOf("\r", "\n", "\\", "\t", "\b")
     listOf(escapeCharList, listOf("r/")).flatten().forEach {
         string = string.replace(oldValue = it, newValue = "")
     }

@@ -11,6 +11,10 @@ class HistoryViewModel @Inject constructor(
     private val historyDao: HistoryDao,
 ) : ViewModel() {
 
+    fun addToHistory(history: History) = viewModelScope.launch {
+        historyDao.insert(history)
+    }
+
     fun getAllHistory() = historyDao.getAllItemsStateFlow()
 
     fun deleteItem(history: History?) = viewModelScope.launch {

@@ -1,6 +1,6 @@
 TODO Checklist
 1. Git Remove DS store - https://stackoverflow.com/questions/9050914/how-can-i-remove-all-files-in-my-git-repo-and-update-push-from-my-local-git-repo
-2. File IO - FileOutputStream, ParcelFileDescriptor, rename, compress, set modified date, copy, replace,
+2. File IO - FileOutputStream, ParcelFileDescriptor, rename, compress/zip, set modified date, copy, replace,
 3. Room Foreign Key
 4. Room Relations
 5. Room Lazy load
@@ -11,8 +11,8 @@ TODO Checklist
 
 
 TODO THIS WEEK
-closing session saves to collection - timestamp
 Speed dial
+closing session saves to collection - timestamp
 Explore - Add time topics n location
 Export collection to sqlite db and csv file
 Downloads

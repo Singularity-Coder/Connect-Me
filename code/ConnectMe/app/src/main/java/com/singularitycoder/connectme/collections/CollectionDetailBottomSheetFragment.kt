@@ -265,7 +265,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         oldState = BottomSheetBehavior.STATE_EXPANDED
                     }
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
-                    BottomSheetBehavior.STATE_HIDDEN -> Unit
+                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
                     BottomSheetBehavior.STATE_SETTLING -> {
                         if (oldState == BottomSheetBehavior.STATE_EXPANDED) {
                             behavior.state = BottomSheetBehavior.STATE_HIDDEN

@@ -81,6 +81,7 @@ class PeekBottomSheetFragment : BottomSheetDialogFragment() {
             if (progress == 100) {
                 ivNavigateBack.isVisible = searchTabFragment?.getWebView()?.canGoBack() == true
                 ivNavigateForward.isVisible = searchTabFragment?.getWebView()?.canGoForward() == true
+                nestedScrollView.scrollTo(0, 0)
             }
         }
 
@@ -136,9 +137,7 @@ class PeekBottomSheetFragment : BottomSheetDialogFragment() {
                         oldState = BottomSheetBehavior.STATE_EXPANDED
                     }
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
-                    BottomSheetBehavior.STATE_HIDDEN -> {
-                        dismiss()
-                    }
+                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
                     BottomSheetBehavior.STATE_SETTLING -> {
                         if (oldState == BottomSheetBehavior.STATE_EXPANDED) {
                             behavior.state = BottomSheetBehavior.STATE_HIDDEN

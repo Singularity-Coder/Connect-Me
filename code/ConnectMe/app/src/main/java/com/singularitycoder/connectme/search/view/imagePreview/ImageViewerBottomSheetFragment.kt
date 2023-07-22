@@ -170,7 +170,7 @@ class ImageViewerBottomSheetFragment : BottomSheetDialogFragment() {
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> {
                         behavior.state = BottomSheetBehavior.STATE_EXPANDED
                     }
-                    BottomSheetBehavior.STATE_HIDDEN -> Unit
+                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
                     BottomSheetBehavior.STATE_SETTLING -> {
 //                        behavior.state = BottomSheetBehavior.STATE_HIDDEN
                         dismiss()
