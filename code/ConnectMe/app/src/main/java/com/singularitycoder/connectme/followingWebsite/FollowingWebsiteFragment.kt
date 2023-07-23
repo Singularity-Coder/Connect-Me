@@ -137,7 +137,7 @@ class FollowingWebsiteFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun observeForData() {
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { it: List<FollowingWebsite?> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { it: List<FollowingWebsite?> ->
             this.followingWebsiteList = it
             followingWebsiteAdapter.followingWebsiteList = it
             followingWebsiteAdapter.notifyDataSetChanged()

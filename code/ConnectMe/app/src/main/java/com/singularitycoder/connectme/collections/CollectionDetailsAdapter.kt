@@ -48,7 +48,7 @@ class CollectionDetailsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
                 tvSubtitle.text = getHostFrom(url = collectionWebPage?.link).replace("www.", "")
                 tvTime.text = collectionWebPage?.time?.toIntuitiveDateTime()
                 val bitmap = decodeBase64StringToBitmap(collectionWebPage?.favicon)
-                ivHistoryIcon.load(bitmap) {
+                ivWebappIcon.load(bitmap) {
                     placeholder(R.color.white)
                     error(R.color.md_red_900)
                 }

@@ -206,7 +206,7 @@ class HistoryFragment : Fragment() {
     }
 
     private fun observeForData() {
-        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = historyViewModel.getAllHistory()) { historyList: List<History?> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistory()) { historyList: List<History?> ->
             this.historyList = historyList
             prepareHistoryList(historyList)
         }

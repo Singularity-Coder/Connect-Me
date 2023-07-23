@@ -70,7 +70,7 @@
 
             <include
                 android:id="@+id/layout_history"
-                layout="@layout/layout_3_web_links"
+                layout="@layout/layout_3_web_links_large"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -79,7 +79,7 @@
 
             <include
                 android:id="@+id/layout_downloads"
-                layout="@layout/layout_3_web_links"
+                layout="@layout/layout_3_web_links_large"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"

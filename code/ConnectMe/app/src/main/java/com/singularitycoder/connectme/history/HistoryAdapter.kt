@@ -45,7 +45,7 @@ class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             itemBinding.apply {
                 tvDate.isVisible = history.isDateShown
                 tvDate.text = history.time.toShortDate()
-                ivHistoryIcon.load(decodeBase64StringToBitmap(history.favicon)) {
+                ivWebappIcon.load(decodeBase64StringToBitmap(history.favicon)) {
                     placeholder(R.drawable.ic_placeholder_rectangle)
                     error(R.drawable.ic_placeholder_rectangle)
                 }

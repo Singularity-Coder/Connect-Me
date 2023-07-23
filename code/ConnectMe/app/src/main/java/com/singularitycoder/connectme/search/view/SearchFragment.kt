@@ -43,6 +43,7 @@ import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.collections.*
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
+import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
@@ -176,48 +177,6 @@ class SearchFragment : Fragment() {
         layoutFollowing.tvTitle.text = "Following"
         layoutHistory.tvTitle.text = "History"
         layoutDownloads.tvTitle.text = "Downloads"
-        lifecycleScope.launch {
-            val followingWebsites = followingWebsiteViewModel.getTop4FollowingWebsites()
-            withContext(Main) {
-                listOf(
-                    layoutFollowing.layoutFollowingApp1,
-                    layoutFollowing.layoutFollowingApp2,
-                    layoutFollowing.layoutFollowingApp3,
-                    layoutFollowing.layoutFollowingApp4,
-                ).forEachIndexed { index, listItemAppBinding ->
-                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(followingWebsites.getOrNull(index)?.favicon))
-                    listItemAppBinding.tvAppName.text = followingWebsites.getOrNull(index)?.title
-                }
-            }
-        }
-        lifecycleScope.launch {
-            if (collectionsTitlesList.isEmpty()) {
-                collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
-            }
-            val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList.firstOrNull())
-            withContext(Main) {
-                layoutCollections.apply {
-                    tvTitle.setTextColor(requireContext().color(R.color.purple_500))
-                    ivDropdownArrow.isVisible = true
-                    viewDummyTitle.isVisible = true
-                    tvTitle.text = collectionsTitlesList.firstOrNull()
-                }
-                updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
-            }
-        }
-        lifecycleScope.launch {
-            val historyList = historyViewModel.getLast3HistoryItems()
-            withContext(Main) {
-                listOf(
-                    layoutHistory.layoutItem1,
-                    layoutHistory.layoutItem2,
-                    layoutHistory.layoutItem3,
-                ).forEachIndexed { index, listItemAppBinding ->
-                    listItemAppBinding.ivIcon.load(decodeBase64StringToBitmap(historyList.getOrNull(index)?.favicon))
-                    listItemAppBinding.tvText.text = historyList.getOrNull(index)?.title
-                }
-            }
-        }
         tabLayoutTabs.addOnTabSelectedListener(tabSelectedListener)
         setupSearchSuggestionsRecyclerView()
         setUpViewPager()
@@ -489,6 +448,59 @@ class SearchFragment : Fragment() {
             }
 
             searchViewModel.resetInsight()
+        }
+
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistory()) { historyList: List<History?> ->
+            layoutHistory.root.isVisible = historyList.isNotEmpty()
+            if (historyList.isEmpty()) return@collectLatestLifecycleFlow
+            withContext(Main) {
+                listOf(
+                    layoutHistory.layoutItem1,
+                    layoutHistory.layoutItem2,
+                    layoutHistory.layoutItem3,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    listItemAppBinding.tvDate.isVisible = false
+                    listItemAppBinding.ivWebappIcon.load(decodeBase64StringToBitmap(historyList.getOrNull(index)?.favicon))
+                    listItemAppBinding.tvTitle.text = historyList.getOrNull(index)?.title
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        listItemAppBinding.tvTitle.setTextAppearance(R.style.TextAppearance_Material3_BodyMedium)
+                    } else {
+                        listItemAppBinding.tvTitle.setTextAppearance(context, R.style.TextAppearance_Material3_BodyMedium)
+                    }
+                    listItemAppBinding.tvSubtitle.text = getHostFrom(url = historyList.getOrNull(index)?.link).replace("www.", "")
+                    listItemAppBinding.tvTime.text = historyList.getOrNull(index)?.time.toShortDate()
+                }
+            }
+        }
+
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { it: List<FollowingWebsite?> ->
+            withContext(Main) {
+                listOf(
+                    layoutFollowing.layoutFollowingApp1,
+                    layoutFollowing.layoutFollowingApp2,
+                    layoutFollowing.layoutFollowingApp3,
+                    layoutFollowing.layoutFollowingApp4,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(it.getOrNull(index)?.favicon))
+                    listItemAppBinding.tvAppName.text = it.getOrNull(index)?.title
+                }
+            }
+        }
+
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
+            if (collectionsTitlesList.isEmpty()) {
+                collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
+            }
+            val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList.firstOrNull())
+            withContext(Main) {
+                layoutCollections.apply {
+                    tvTitle.setTextColor(requireContext().color(R.color.purple_500))
+                    ivDropdownArrow.isVisible = true
+                    viewDummyTitle.isVisible = true
+                    tvTitle.text = collectionsTitlesList.firstOrNull()
+                }
+                updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
+            }
         }
     }
 

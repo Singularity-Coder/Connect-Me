@@ -11,7 +11,7 @@ TODO Checklist
 
 
 TODO THIS WEEK
-Speed dial
+Speed dial - launch in tabs, detail view for all items
 closing session saves to collection - timestamp - take from history by website
 Explore - Add time topics n location
 Export collection to sqlite db and csv file

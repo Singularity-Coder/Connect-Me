@@ -115,6 +115,7 @@ class PeekBottomSheetFragment : BottomSheetDialogFragment() {
         return getHostFrom(url = url)
             .replace(oldValue = "https://", newValue = "")
             .replace(oldValue = "http://", newValue = "")
+            .replace(oldValue = "www.", newValue = "")
             .replace(oldValue = "/", newValue = "")
     }
 
