@@ -220,7 +220,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentCollectionDetailBottomSheetBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(
-            flow = collectionsViewModel.getCollectionsByCollectionTitles(collectionTitle)
+            flow = collectionsViewModel.getCollectionsByCollectionTitle(collectionTitle)
         ) { it: List<CollectionWebPage?> ->
             this@CollectionDetailBottomSheetFragment.webPageList = it
             collectionDetailsAdapter.webPageList = it

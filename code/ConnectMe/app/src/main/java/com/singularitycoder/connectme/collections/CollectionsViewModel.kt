@@ -13,7 +13,7 @@ class CollectionsViewModel @Inject constructor(
 
     fun getAllCollections() = collectionsDao.getAllItemsStateFlow()
 
-    fun getCollectionsByCollectionTitles(collectionTitle: String?) = collectionsDao.getAllItemsByCollectionTitleStateFlow(collectionTitle)
+    fun getCollectionsByCollectionTitle(collectionTitle: String?) = collectionsDao.getAllItemsByCollectionTitleStateFlow(collectionTitle)
 
     suspend fun getAllUniqueCollectionTitles() = collectionsDao.getAllUniqueTitles()
 

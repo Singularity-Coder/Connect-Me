@@ -52,6 +52,7 @@ import com.singularitycoder.connectme.history.HistoryViewModel
 import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.view.addApiKey.AddApiKeyBottomSheetFragment
 import com.singularitycoder.connectme.search.view.getInsights.GetInsightsBottomSheetFragment
+import com.singularitycoder.connectme.search.view.speedDial.SpeedDialBottomSheetFragment
 import com.singularitycoder.connectme.search.view.websiteActions.WebsiteActionsBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import com.singularitycoder.flowlauncher.helper.pinterestView.CircleImageView
@@ -188,9 +189,11 @@ class SearchFragment : Fragment() {
 
         layoutCollections.apply {
             root.onSafeClick {
-                CollectionDetailBottomSheetFragment.newInstance(
-                    collectionTitle = layoutCollections.tvTitle.text.toString()
-                ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
+                etSearch.hideKeyboard()
+                SpeedDialBottomSheetFragment.newInstance(
+                    title = SpeedDialFeatures.COLLECTIONS.value,
+                    subtitle = layoutCollections.tvTitle.text.toString()
+                ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
             }
             viewDummyForDropdown.onSafeClick {
                 lifecycleScope.launch {
@@ -236,6 +239,20 @@ class SearchFragment : Fragment() {
             ivShowMore.setOnClickListener {
                 root.performClick()
             }
+        }
+
+        layoutHistory.root.onSafeClick {
+            etSearch.hideKeyboard()
+            SpeedDialBottomSheetFragment.newInstance(
+                title = SpeedDialFeatures.HISTORY.value
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
+        }
+
+        layoutFollowing.root.onSafeClick {
+            etSearch.hideKeyboard()
+            SpeedDialBottomSheetFragment.newInstance(
+                title = SpeedDialFeatures.FOLLOWING_WEBSITES.value
+            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
         }
 
         layoutVpn.apply {
@@ -316,7 +333,7 @@ class SearchFragment : Fragment() {
 
         ibAddTab.onSafeClick {
             etSearch.showKeyboard()
-            addTab(NewTabType.NEW_TAB.value)
+            addTab(SearchTab(type = NewTabType.NEW_TAB))
             etSearch.setSelection(0, etSearch.text.length)
             etSearch.setSelectAllOnFocus(true)
         }
@@ -459,21 +476,32 @@ class SearchFragment : Fragment() {
                     layoutHistory.layoutItem2,
                     layoutHistory.layoutItem3,
                 ).forEachIndexed { index, listItemAppBinding ->
+                    val newIndex = historyList.lastIndex - index
+                    if (historyList.getOrNull(newIndex)?.link.isNullOrBlank()) {
+                        listItemAppBinding.root.isVisible = false
+                        return@forEachIndexed
+                    }
                     listItemAppBinding.tvDate.isVisible = false
-                    listItemAppBinding.ivWebappIcon.load(decodeBase64StringToBitmap(historyList.getOrNull(index)?.favicon))
-                    listItemAppBinding.tvTitle.text = historyList.getOrNull(index)?.title
+                    listItemAppBinding.ivWebappIcon.load(decodeBase64StringToBitmap(historyList.getOrNull(newIndex)?.favicon))
+                    listItemAppBinding.tvTitle.text = historyList.getOrNull(newIndex)?.title
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         listItemAppBinding.tvTitle.setTextAppearance(R.style.TextAppearance_Material3_BodyMedium)
                     } else {
                         listItemAppBinding.tvTitle.setTextAppearance(context, R.style.TextAppearance_Material3_BodyMedium)
                     }
-                    listItemAppBinding.tvSubtitle.text = getHostFrom(url = historyList.getOrNull(index)?.link).replace("www.", "")
-                    listItemAppBinding.tvTime.text = historyList.getOrNull(index)?.time.toShortDate()
+                    listItemAppBinding.tvSubtitle.text = getHostFrom(url = historyList.getOrNull(newIndex)?.link).replace("www.", "")
+                    listItemAppBinding.tvTime.text = historyList.getOrNull(newIndex)?.time.toShortTime()
+                    listItemAppBinding.root.onSafeClick {
+                        loadWebPage(
+                            link = historyList.getOrNull(newIndex)?.link,
+                            favicon = historyList.getOrNull(newIndex)?.favicon
+                        )
+                    }
                 }
             }
         }
 
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { it: List<FollowingWebsite?> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { followingList: List<FollowingWebsite?> ->
             withContext(Main) {
                 listOf(
                     layoutFollowing.layoutFollowingApp1,
@@ -481,8 +509,14 @@ class SearchFragment : Fragment() {
                     layoutFollowing.layoutFollowingApp3,
                     layoutFollowing.layoutFollowingApp4,
                 ).forEachIndexed { index, listItemAppBinding ->
-                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(it.getOrNull(index)?.favicon))
-                    listItemAppBinding.tvAppName.text = it.getOrNull(index)?.title
+                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(followingList.getOrNull(index)?.favicon))
+                    listItemAppBinding.tvAppName.text = followingList.getOrNull(index)?.title
+                    listItemAppBinding.root.onSafeClick {
+                        loadWebPage(
+                            link = followingList.getOrNull(index)?.link,
+                            favicon = followingList.getOrNull(index)?.favicon
+                        )
+                    }
                 }
             }
         }
@@ -649,8 +683,10 @@ class SearchFragment : Fragment() {
         try {
             val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
             clWebsiteProfile.isVisible = selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
-            etSearch.setText(selectedWebpage?.getWebView()?.title)
-            etSearch.setSelection(0) // Adjusts the url back to the start if it is a long url
+            if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
+                etSearch.setText(selectedWebpage?.getWebView()?.title)
+                etSearch.setSelection(0) // Adjusts the url back to the start if it is a long url
+            }
             isWebsiteTitleSet = true
             scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
         } catch (_: Exception) {
@@ -664,12 +700,13 @@ class SearchFragment : Fragment() {
         websiteStuffToLoad(selectedWebpage)
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
             selectedWebpage?.getWebView()?.title
-        } else NewTabType.NEW_TAB.value
+        } else webSearchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
         binding.tabLayoutTabs.getTabAt(binding.tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
             tabText?.substring(0, 10) + "..."
         } else {
             if ((tabText?.length ?: 0) < 5) "$tabText     " else tabText
         }
+//        webSearchTabsList[binding.tabLayoutTabs.selectedTabPosition] = webSearchTabsList[binding.tabLayoutTabs.selectedTabPosition]?.copy(title = selectedWebpage?.getWebView()?.title)
         binding.etSearch.setSelection(binding.etSearch.selectionStart)
         binding.scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
         binding.viewSearchSuggestionsScrim.isVisible = false
@@ -738,10 +775,10 @@ class SearchFragment : Fragment() {
     // https://stackoverflow.com/questions/50496593/show-popup-on-long-click-on-selected-tab-of-tablayout
     // https://stackoverflow.com/questions/37833495/add-iconstext-to-tablayout
     @SuppressLint("NotifyDataSetChanged")
-    private fun FragmentSearchBinding.addTab(topic: String) {
+    private fun FragmentSearchBinding.addTab(searchTab: SearchTab) {
         /** Actual customization happens in TabLayoutMediator */
         etSearch.setText("")
-        webSearchTabsList.add(SearchTab(title = topic))
+        webSearchTabsList.add(searchTab)
         val currentTabPosition = if (webSearchTabsList.isNotEmpty()) webSearchTabsList.lastIndex else 0
         tabLayoutTabs.addTab(
             /* tab = */ tabLayoutTabs.newTab(),
@@ -759,8 +796,6 @@ class SearchFragment : Fragment() {
         }
 
         viewpagerTabs.adapter?.notifyDataSetChanged()
-
-//        tabLayoutTabs.getTabAt(tabLayoutTabs.selectedTabPosition)?.text = webSearchTabsList[webSearchTabsList.lastIndex]?.title
     }
 
     private fun FragmentSearchBinding.doOnTabClick() {
@@ -770,7 +805,7 @@ class SearchFragment : Fragment() {
         websiteStuffToLoad(selectedWebpage)
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
             selectedWebpage?.getWebView()?.title
-        } else NewTabType.NEW_TAB.value
+        } else webSearchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
         tabLayoutTabs.getTabAt(tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
             tabText?.substring(0, 10) + "..."
         } else tabText
@@ -842,7 +877,7 @@ class SearchFragment : Fragment() {
         }
 
         fun duplicateTab() {
-            addTab(NewTabType.NEW_TAB.value)
+            addTab(SearchTab(type = NewTabType.NEW_TAB))
         }
 
         val tabOptionsList = if (tabLayoutTabs.tabCount == 1) {
@@ -1119,21 +1154,21 @@ class SearchFragment : Fragment() {
             when (menuItem.itemId) {
                 R.id.menu_item_new_private_disappearing_tab -> {
                     etSearch.showKeyboard()
-                    addTab(NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value)
+                    addTab(SearchTab(type = NewTabType.NEW_PRIVATE_DISAPPEARING_TAB))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                     false
                 }
                 R.id.menu_item_new_private_tab -> {
                     etSearch.showKeyboard()
-                    addTab(NewTabType.NEW_PRIVATE_TAB.value)
+                    addTab(SearchTab(type = NewTabType.NEW_PRIVATE_TAB))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                     false
                 }
                 R.id.menu_item_new_disappearing_tab -> {
                     etSearch.showKeyboard()
-                    addTab(NewTabType.NEW_DISAPPEARING_TAB.value)
+                    addTab(SearchTab(type = NewTabType.NEW_DISAPPEARING_TAB))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                     false
@@ -1226,16 +1261,36 @@ class SearchFragment : Fragment() {
         binding.clUrlSearchHeader.isVisible = isVisible
     }
 
-    private fun FragmentSearchBinding.updateTop4WebPageViewsOfCollections(top4CollectionItemsList: List<CollectionWebPage?>) {
+    private fun FragmentSearchBinding.updateTop4WebPageViewsOfCollections(collectionWebPageList: List<CollectionWebPage?>) {
         listOf(
             layoutCollections.layoutFollowingApp1,
             layoutCollections.layoutFollowingApp2,
             layoutCollections.layoutFollowingApp3,
             layoutCollections.layoutFollowingApp4,
         ).forEachIndexed { index, listItemAppBinding ->
-            listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(top4CollectionItemsList.getOrNull(index)?.favicon))
-            listItemAppBinding.tvAppName.text = top4CollectionItemsList.getOrNull(index)?.title
+            listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(collectionWebPageList.getOrNull(index)?.favicon))
+            listItemAppBinding.tvAppName.text = collectionWebPageList.getOrNull(index)?.title
+            listItemAppBinding.root.onSafeClick {
+                etSearch.hideKeyboard()
+                val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                selectedWebpage?.loadUrl(url = collectionWebPageList.getOrNull(index)?.link ?: "")
+                clWebsiteProfile.isVisible = true
+                ivWebappProfile.load(decodeBase64StringToBitmap(collectionWebPageList.getOrNull(index)?.favicon))
+                etSearch.setText(collectionWebPageList.getOrNull(index)?.link)
+            }
         }
+    }
+
+    fun loadWebPage(
+        link: String?,
+        favicon: String?,
+    ) {
+        binding.etSearch.hideKeyboard()
+        val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+        selectedWebpage?.loadUrl(url = link ?: "")
+        binding.clWebsiteProfile.isVisible = true
+        binding.ivWebappProfile.load(decodeBase64StringToBitmap(favicon))
+        binding.etSearch.setText(link)
     }
 
     inner class SearchViewPagerAdapter(

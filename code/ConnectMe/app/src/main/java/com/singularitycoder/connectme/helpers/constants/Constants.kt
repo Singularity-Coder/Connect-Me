@@ -148,6 +148,13 @@ enum class ChatRole {
     USER, ASSISTANT, SYSTEM
 }
 
+enum class SpeedDialFeatures(val value: String) {
+    FOLLOWING_WEBSITES(value = "Following"),
+    COLLECTIONS(value = "Collections"),
+    HISTORY(value = "History"),
+    DOWNLOADS(value = "Downloads")
+}
+
 object IntentKey {
     const val LOCATION_TOGGLE_STATUS = "LOCATION_TOGGLE_STATUS"
 }
@@ -185,6 +192,7 @@ object BottomSheetTag {
     const val TAG_CREATE_COLLECTION = "TAG_CREATE_COLLECTION_BOTTOM_SHEET"
     const val TAG_COLLECTION_DETAIL = "TAG_COLLECTION_DETAIL_BOTTOM_SHEET"
     const val TAG_PEEK = "TAG_PEEK_BOTTOM_SHEET"
+    const val TAG_SPEED_DIAL = "TAG_SPEED_DIAL_BOTTOM_SHEET"
 }
 
 object WorkerData {

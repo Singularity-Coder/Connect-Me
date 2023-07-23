@@ -245,9 +245,9 @@ class HistoryFragment : Fragment() {
                     if (index == historyMap.get(date)?.lastIndex) this?.isDateShown = true
                 }
             } ?: emptyList()
-            sortedHistoryList.addAll(preparedList)
+            sortedHistoryList.addAll(preparedList.reversed())
         }
-        historyAdapter.historyList = sortedHistoryList
+        historyAdapter.historyList = sortedHistoryList.reversed()
         historyAdapter.notifyDataSetChanged()
     }
 }
