@@ -367,10 +367,8 @@ inline fun <reified T : GenericWebsite> Activity.openSearchScreen(
     (this as? MainActivity)?.showScreen(
         fragment = SearchFragment.newInstance(websiteList = listOf(genericWebsite).mapIndexed { index, website ->
             SearchTab(
-                id = index.toLong(),
-                type = NewTabType.NEW_TAB,
+                type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
                 link = website?.link,
-                isPrivate = isPrivate
             )
         }.toArrayList()),
         tag = FragmentsTag.SEARCH,

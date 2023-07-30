@@ -90,7 +90,7 @@ class SearchFragment : Fragment() {
 
     private lateinit var binding: FragmentSearchBinding
 
-    private val webSearchTabsList = mutableListOf<SearchTab?>()
+    private val searchTabsList = mutableListOf<SearchTab?>()
     private val collectionsTitlesList = mutableListOf<String?>()
 
     private val searchViewModel by activityViewModels<SearchViewModel>()
@@ -128,7 +128,7 @@ class SearchFragment : Fragment() {
         } else {
             arguments?.getParcelableArrayList(ARG_PARAM_WEBSITE_LIST) ?: emptyList()
         }
-        websiteList.forEach { webSearchTabsList.add(it) }
+        websiteList.forEach { searchTabsList.add(it) }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -146,7 +146,7 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (webSearchTabsList.size == 1 && binding.etSearch.text.isBlank()) {
+        if (searchTabsList.size == 1 && binding.etSearch.text.isBlank()) {
             binding.etSearch.showKeyboard()
         }
     }
@@ -399,13 +399,13 @@ class SearchFragment : Fragment() {
         })
 
         // https://stackoverflow.com/questions/25216749/soft-keyboard-open-and-close-listener-in-an-activity-in-android
-        etSearch.viewTreeObserver.addOnGlobalLayoutListener {
-            if (root.isKeyboardHidden()) {
-                etSearch.clearFocus()
-            } else {
-                etSearch.requestFocus()
-            }
-        }
+//        etSearch.viewTreeObserver.addOnGlobalLayoutListener {
+//            if (root.isKeyboardHidden()) {
+//                etSearch.clearFocus()
+//            } else {
+//                etSearch.requestFocus()
+//            }
+//        }
 
         iconTextActionAdapter.setOnItemClickListener { iconTextAction: IconTextAction ->
             isSearchSuggestionSelected = true
@@ -413,6 +413,11 @@ class SearchFragment : Fragment() {
             etSearch.clearFocus()
             val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
             selectedWebpage?.loadUrl(url = iconTextAction.title)
+        }
+
+        btnCloseKeyboard.onSafeClick {
+            etSearch.clearFocus()
+            etSearch.hideKeyboard()
         }
     }
 
@@ -467,7 +472,7 @@ class SearchFragment : Fragment() {
             searchViewModel.resetInsight()
         }
 
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistory()) { historyList: List<History?> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistoryFlow()) { historyList: List<History?> ->
             layoutHistory.root.isVisible = historyList.isNotEmpty()
             if (historyList.isEmpty()) return@collectLatestLifecycleFlow
             withContext(Main) {
@@ -481,6 +486,7 @@ class SearchFragment : Fragment() {
                         listItemAppBinding.root.isVisible = false
                         return@forEachIndexed
                     }
+                    listItemAppBinding.root.isVisible = true
                     listItemAppBinding.tvDate.isVisible = false
                     listItemAppBinding.ivWebappIcon.load(decodeBase64StringToBitmap(historyList.getOrNull(newIndex)?.favicon))
                     listItemAppBinding.tvTitle.text = historyList.getOrNull(newIndex)?.title
@@ -555,8 +561,8 @@ class SearchFragment : Fragment() {
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
         TabLayoutMediator(tabLayoutTabs, viewpagerTabs) { tab, position ->
-            tab.text = getDomainFrom(host = getHostFrom(url = webSearchTabsList[position]?.link)) // FIXME update webSearchTabsList when webpage loads for the previous tabs
-            tab.icon = when (webSearchTabsList[position]?.type) {
+            tab.text = getDomainFrom(host = getHostFrom(url = searchTabsList[position]?.link)) // FIXME update webSearchTabsList when webpage loads for the previous tabs
+            tab.icon = when (searchTabsList[position]?.type) {
                 NewTabType.NEW_PRIVATE_DISAPPEARING_TAB -> requireContext().drawable(R.drawable.outline_policy_24)
                 NewTabType.NEW_PRIVATE_TAB -> requireContext().drawable(R.drawable.outline_policy_24)
                 NewTabType.NEW_DISAPPEARING_TAB -> requireContext().drawable(R.drawable.outline_timer_24)
@@ -700,39 +706,44 @@ class SearchFragment : Fragment() {
         websiteStuffToLoad(selectedWebpage)
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
             selectedWebpage?.getWebView()?.title
-        } else webSearchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
+        } else searchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
         binding.tabLayoutTabs.getTabAt(binding.tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
             tabText?.substring(0, 10) + "..."
         } else {
             if ((tabText?.length ?: 0) < 5) "$tabText     " else tabText
         }
-//        webSearchTabsList[binding.tabLayoutTabs.selectedTabPosition] = webSearchTabsList[binding.tabLayoutTabs.selectedTabPosition]?.copy(title = selectedWebpage?.getWebView()?.title)
+        searchTabsList[binding.tabLayoutTabs.selectedTabPosition] = searchTabsList[binding.tabLayoutTabs.selectedTabPosition]?.copy(
+            title = selectedWebpage?.getWebView()?.title,
+            link = selectedWebpage?.getWebView()?.url,
+        )
         binding.etSearch.setSelection(binding.etSearch.selectionStart)
         binding.scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
         binding.viewSearchSuggestionsScrim.isVisible = false
         binding.cardSearchSuggestions.isVisible = false
-        searchViewModel.hasPromptList(website = getHostFrom(url = selectedWebpage?.getWebView()?.url)) {
-            searchViewModel.getTextInsight(
-                prompt = """
-                    Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and 
-                    prepare a json string with the keyword you found as the key and a sensational question prompt 
-                    about the keyword as the value. Add an appropriate emoji before the key. 
-                    Do not explain anything. Just give me the json string as your answer.
-                """.trimIndentsAndNewLines(),
-                isSaveToDb = false,
-                screen = this@SearchFragment.javaClass.simpleName
-            )
-        }
-        searchViewModel.getTextInsight(
-            prompt = """Answer questions that are within the scope of this website 
-                    ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} only. The scope can include topics and
-                     content related to this website. 
-                """.trimIndentsAndNewLines(),
-            role = ChatRole.SYSTEM.name.toLowCase(),
-            isSaveToDb = false,
-            isSendResponse = false,
-            screen = this@SearchFragment.javaClass.simpleName
-        )
+
+        // TODO temp commented to avoid unnec calls
+//        searchViewModel.hasPromptList(website = getHostFrom(url = selectedWebpage?.getWebView()?.url)) {
+//            searchViewModel.getTextInsight(
+//                prompt = """
+//                    Give me 10 keywords about ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} and
+//                    prepare a json string with the keyword you found as the key and a sensational question prompt
+//                    about the keyword as the value. Add an appropriate emoji before the key.
+//                    Do not explain anything. Just give me the json string as your answer.
+//                """.trimIndentsAndNewLines(),
+//                isSaveToDb = false,
+//                screen = this@SearchFragment.javaClass.simpleName
+//            )
+//        }
+//        searchViewModel.getTextInsight(
+//            prompt = """Answer questions that are within the scope of this website
+//                    ${getHostFrom(url = selectedWebpage?.getWebView()?.url)} only. The scope can include topics and
+//                     content related to this website.
+//                """.trimIndentsAndNewLines(),
+//            role = ChatRole.SYSTEM.name.toLowCase(),
+//            isSaveToDb = false,
+//            isSendResponse = false,
+//            screen = this@SearchFragment.javaClass.simpleName
+//        )
     }
 
     private fun websiteStuffToLoad(selectedWebpage: SearchTabFragment?) {
@@ -761,11 +772,27 @@ class SearchFragment : Fragment() {
                 requireActivity().supportFragmentManager.popBackStackImmediate()
             },
             negativeAction = {
-                // TODO get all tabs from frag ids
-                // TODO construct collectionWebpage obj
-                // TODO save obj to db
-                etSearch.clearFocus()
-                requireActivity().supportFragmentManager.popBackStackImmediate()
+                // TODO either give loader or do this in worker
+                lifecycleScope.launch {
+                    val tabsToSaveList = mutableListOf<CollectionWebPage?>()
+                    searchTabsList.forEach { it: SearchTab? ->
+                        val historyItem = historyViewModel.getHistoryItemByLink(link = it?.link)
+                        tabsToSaveList.add(
+                            CollectionWebPage(
+                                collectionTitle = "⚡️ Session ${timeNow toTimeOfType DateType.dd_MMM_yyyy_hh_mm_a}",
+                                title = historyItem?.title,
+                                favicon = historyItem?.favicon,
+                                time = timeNow,
+                                link = historyItem?.link ?: ""
+                            ),
+                        )
+                    }
+                    collectionsViewModel.addAllToCollections(collectionWebPageList = tabsToSaveList)
+                    withContext(Main) {
+                        etSearch.clearFocus()
+                        requireActivity().supportFragmentManager.popBackStackImmediate()
+                    }
+                }
             }
         )
     }
@@ -778,8 +805,8 @@ class SearchFragment : Fragment() {
     private fun FragmentSearchBinding.addTab(searchTab: SearchTab) {
         /** Actual customization happens in TabLayoutMediator */
         etSearch.setText("")
-        webSearchTabsList.add(searchTab)
-        val currentTabPosition = if (webSearchTabsList.isNotEmpty()) webSearchTabsList.lastIndex else 0
+        searchTabsList.add(searchTab)
+        val currentTabPosition = if (searchTabsList.isNotEmpty()) searchTabsList.lastIndex else 0
         tabLayoutTabs.addTab(
             /* tab = */ tabLayoutTabs.newTab(),
             /* position = */ tabLayoutTabs.tabCount,
@@ -805,7 +832,7 @@ class SearchFragment : Fragment() {
         websiteStuffToLoad(selectedWebpage)
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
             selectedWebpage?.getWebView()?.title
-        } else webSearchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
+        } else searchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
         tabLayoutTabs.getTabAt(tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
             tabText?.substring(0, 10) + "..."
         } else tabText
@@ -829,7 +856,7 @@ class SearchFragment : Fragment() {
             val tabsToCloseCount = (tabLayoutTabs.tabCount - 1) - tabLayoutTabs.selectedTabPosition
             try {
                 for (position: Int in 0 until tabsToCloseCount) {
-                    webSearchTabsList.removeAt(position)
+                    searchTabsList.removeAt(position)
                     ConnectMeUtils.webpageFragmentIdList.removeAt(position)
                     tabLayoutTabs.removeTabAt(position)
                     viewpagerTabs.adapter?.notifyDataSetChanged()
@@ -842,7 +869,7 @@ class SearchFragment : Fragment() {
             val tabsToCloseCount = (tabLayoutTabs.tabCount - 1) - tabLayoutTabs.selectedTabPosition
             try {
                 for (position: Int in 0 until tabsToCloseCount) {
-                    webSearchTabsList.removeAt(position)
+                    searchTabsList.removeAt(position)
                     ConnectMeUtils.webpageFragmentIdList.removeAt(position)
                     tabLayoutTabs.removeTabAt(position)
                     viewpagerTabs.adapter?.notifyDataSetChanged()
@@ -856,7 +883,7 @@ class SearchFragment : Fragment() {
                 for (position: Int in 0 until tabLayoutTabs.tabCount) {
                     if (position == currentTabPosition) continue
                     try {
-                        webSearchTabsList.removeAt(position)
+                        searchTabsList.removeAt(position)
                     } catch (_: Exception) {
                     }
                     ConnectMeUtils.webpageFragmentIdList.removeAt(position)
@@ -922,10 +949,10 @@ class SearchFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun closeTab() {
-        if (webSearchTabsList.size == 1) {
+        if (searchTabsList.size == 1) {
             requireActivity().supportFragmentManager.popBackStackImmediate()
         } else {
-            webSearchTabsList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
+            searchTabsList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
             ConnectMeUtils.webpageFragmentIdList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
             binding.tabLayoutTabs.removeTabAt(binding.tabLayoutTabs.selectedTabPosition) // FIXME this alone is not sufficient. Why? Same with recyclerview
 //            binding.viewpagerTabs.removeViewAt(binding.tabLayoutTabs.selectedTabPosition)
@@ -982,8 +1009,8 @@ class SearchFragment : Fragment() {
         val icon2 = requireContext().drawable(R.drawable.other_houses_black_24dp)?.changeColor(requireContext(), R.color.purple_500)
         val action2 = Action(id = QuickActionTabMenu.HOME.ordinal, icon = icon2!!, title = QuickActionTabMenu.HOME.value)
 
-        val icon2dot5 = requireContext().drawable(R.drawable.outline_library_add_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action2dot5 = Action(id = QuickActionTabMenu.COLLECT_ALL_TABS.ordinal, icon = icon2dot5!!, title = QuickActionTabMenu.COLLECT_ALL_TABS.value)
+        val icon2dot5 = requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
+        val action2dot5 = Action(id = QuickActionTabMenu.REFRESH_WEBSITE.ordinal, icon = icon2dot5!!, title = QuickActionTabMenu.REFRESH_WEBSITE.value)
 
         val icon3 = requireContext().drawable(R.drawable.baseline_auto_fix_high_24)?.changeColor(requireContext(), R.color.purple_500)
         val action3 = Action(id = QuickActionTabMenu.GET_INSIGHT.ordinal, icon = icon3!!, title = QuickActionTabMenu.GET_INSIGHT.value)
@@ -991,8 +1018,8 @@ class SearchFragment : Fragment() {
         val icon4 = requireContext().drawable(R.drawable.round_close_24)?.changeColor(requireContext(), R.color.purple_500)
         val action4 = Action(id = QuickActionTabMenu.CLOSE_ALL_TABS.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_ALL_TABS.value)
 
-        val icon5 = requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action5 = Action(id = QuickActionTabMenu.REFRESH_WEBSITE.ordinal, icon = icon5!!, title = QuickActionTabMenu.REFRESH_WEBSITE.value)
+        val icon5 = requireContext().drawable(R.drawable.outline_library_add_24)?.changeColor(requireContext(), R.color.purple_500)
+        val action5 = Action(id = QuickActionTabMenu.ADD_TO_COLLECTIONS.ordinal, icon = icon5!!, title = QuickActionTabMenu.ADD_TO_COLLECTIONS.value)
 
         val icon5dot5 = requireContext().drawable(R.drawable.ic_round_more_horiz_24)?.changeColor(requireContext(), R.color.purple_500)
         val action5dot5 = Action(id = QuickActionTabMenu.MORE_OPTIONS.ordinal, icon = icon5dot5!!, title = QuickActionTabMenu.MORE_OPTIONS.value)
@@ -1065,6 +1092,7 @@ class SearchFragment : Fragment() {
                         AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                     }
                 }
+                QuickActionTabMenu.ADD_TO_COLLECTIONS.ordinal -> addToCollections()
                 QuickActionTabMenu.MORE_OPTIONS.ordinal -> {
                     val popupMenu = android.widget.PopupMenu(requireContext(), binding.btnWebsiteQuickActions)
                     QuickActionTabMenuMoreOptions.values().forEach {
@@ -1086,7 +1114,6 @@ class SearchFragment : Fragment() {
                             QuickActionTabMenuMoreOptions.PRINT.title -> {}
                             QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
                             QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
-                            QuickActionTabMenuMoreOptions.ADD_TO_COLLECTIONS.title -> addToCollections()
                         }
                         false
                     }
@@ -1118,8 +1145,8 @@ class SearchFragment : Fragment() {
                     if (collectionTitlesList[menuPosition]?.contains("Create new") == true) {
                         CreateCollectionBottomSheetFragment.newInstance(
                             collectionWebPage = collectionWebPage,
-                            screen = this@SearchFragment::class.java.simpleName
-                        ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
+                            eventType = CollectionScreenEvents.ADD_TO_COLLECTION
+                        ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_TO_COLLECTION)
                     } else {
                         collectionsViewModel.addToCollections(collectionWebPage)
                         requireContext().showToast("Added to ${collectionTitlesList[menuPosition]}")
@@ -1297,7 +1324,7 @@ class SearchFragment : Fragment() {
         fragmentManager: FragmentManager,
         lifecycle: Lifecycle,
     ) : FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = webSearchTabsList.size
+        override fun getItemCount(): Int = searchTabsList.size
         override fun createFragment(position: Int): Fragment {
             return SearchTabFragment.newInstance(tabUrl = websiteList.getOrNull(position)?.link)
         }

@@ -20,6 +20,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionDetailBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvents
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.search.model.SearchTab
@@ -137,6 +138,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             val optionsList = listOf(
                 Pair("Open in new tab", R.drawable.round_add_circle_outline_24),
                 Pair("Open in new private tab", R.drawable.outline_policy_24),
+                Pair("Rename Collection", R.drawable.outline_drive_file_rename_outline_24),
                 Pair("Delete All", R.drawable.outline_delete_24),
             )
             requireContext().showPopupMenuWithIcons(
@@ -148,7 +150,6 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         (requireActivity() as? MainActivity)?.showScreen(
                             fragment = SearchFragment.newInstance(websiteList = collectionDetailsAdapter.webPageList.mapIndexed { index, collectionWebPage ->
                                 SearchTab(
-                                    id = index.toLong(),
                                     type = NewTabType.NEW_TAB,
                                     link = collectionWebPage?.link
                                 )
@@ -162,7 +163,6 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         (requireActivity() as? MainActivity)?.showScreen(
                             fragment = SearchFragment.newInstance(websiteList = collectionDetailsAdapter.webPageList.mapIndexed { index, collectionWebPage ->
                                 SearchTab(
-                                    id = index.toLong(),
                                     type = NewTabType.NEW_PRIVATE_TAB,
                                     link = collectionWebPage?.link
                                 )
@@ -173,6 +173,13 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         dismiss()
                     }
                     optionsList[2].first -> {
+                        CreateCollectionBottomSheetFragment.newInstance(
+                            eventType = CollectionScreenEvents.RENAME_COLLECTION,
+                            collectionWebPage = collectionDetailsAdapter.webPageList.firstOrNull()
+                        ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_RENAME_COLLECTION)
+                        dismiss()
+                    }
+                    optionsList[3].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete all items",
                             message = "Careful! You cannot undo this.",
@@ -235,10 +242,8 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
         (requireActivity() as? MainActivity)?.showScreen(
             fragment = SearchFragment.newInstance(websiteList = listOf(collectionWebPage).mapIndexed { index, collectionWebPage ->
                 SearchTab(
-                    id = index.toLong(),
-                    type = NewTabType.NEW_TAB,
+                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
                     link = collectionWebPage?.link,
-                    isPrivate = isPrivate
                 )
             }.toArrayList()),
             tag = FragmentsTag.SEARCH,

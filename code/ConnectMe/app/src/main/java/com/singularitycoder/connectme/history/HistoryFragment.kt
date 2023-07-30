@@ -206,7 +206,7 @@ class HistoryFragment : Fragment() {
     }
 
     private fun observeForData() {
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistory()) { historyList: List<History?> ->
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistoryFlow()) { historyList: List<History?> ->
             this.historyList = historyList
             prepareHistoryList(historyList)
         }
@@ -219,10 +219,8 @@ class HistoryFragment : Fragment() {
         (requireActivity() as? MainActivity)?.showScreen(
             fragment = SearchFragment.newInstance(websiteList = listOf(history).mapIndexed { index, history ->
                 SearchTab(
-                    id = index.toLong(),
-                    type = NewTabType.NEW_TAB,
+                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
                     link = history?.link,
-                    isPrivate = isPrivate
                 )
             }.toArrayList()),
             tag = FragmentsTag.SEARCH,

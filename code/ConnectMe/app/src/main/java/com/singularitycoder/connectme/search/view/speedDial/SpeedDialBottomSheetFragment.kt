@@ -176,7 +176,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         if (speedDialTitle == SpeedDialFeatures.HISTORY.value) {
-            (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistory()) { historyList: List<History?> ->
+            (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistoryFlow()) { historyList: List<History?> ->
                 val mappedSpeedDialList = historyList.map { history: History? ->
                     SpeedDial(
                         favicon = history?.favicon,

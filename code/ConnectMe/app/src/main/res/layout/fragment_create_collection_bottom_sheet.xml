@@ -41,11 +41,11 @@
             app:layout_constraintTop_toBottomOf="@+id/iv_drag_handle" />
 
         <Button
-            android:id="@+id/btn_create"
+            android:id="@+id/btn_done"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create"
+            android:text="Done"
             android:textAllCaps="false"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/divider"

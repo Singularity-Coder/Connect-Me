@@ -18,6 +18,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvents
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -107,7 +108,7 @@ class CollectionsFragment : Fragment() {
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
                         CreateCollectionBottomSheetFragment.newInstance(
-                            screen = this@CollectionsFragment::class.java.simpleName
+                            eventType = CollectionScreenEvents.CREATE_NEW_COLLECTION
                         ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
                     }
                     optionsList[1].first -> {

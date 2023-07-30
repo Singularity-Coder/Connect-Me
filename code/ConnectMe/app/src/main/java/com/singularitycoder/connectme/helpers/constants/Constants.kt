@@ -1,5 +1,6 @@
 package com.singularitycoder.connectme.helpers.constants
 
+import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
@@ -8,6 +9,7 @@ import com.singularitycoder.connectme.helpers.trimIndentsAndNewLines
 import com.singularitycoder.connectme.profile.UserProfileFragment
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.SearchTabFragment
+import kotlinx.parcelize.Parcelize
 
 const val FILE_PROVIDER = "com.singularitycoder.connectme.fileprovider"
 
@@ -144,6 +146,13 @@ val LOCAL_TEXT_PROMPTS_MAP = mapOf(
     // Have a personality. Have opinions but do not press them onto the user. Suggest some places. Suggest stuff to buy, eat, play.
 )
 
+@Parcelize
+enum class CollectionScreenEvents : Parcelable {
+    CREATE_NEW_COLLECTION,
+    ADD_TO_COLLECTION,
+    RENAME_COLLECTION
+}
+
 enum class ChatRole {
     USER, ASSISTANT, SYSTEM
 }
@@ -190,6 +199,8 @@ object BottomSheetTag {
     const val TAG_GET_INSIGHTS = "TAG_GET_INSIGHTS_BOTTOM_SHEET"
     const val TAG_IMAGE_VIEWER = "TAG_IMAGE_VIEWER_BOTTOM_SHEET"
     const val TAG_CREATE_COLLECTION = "TAG_CREATE_COLLECTION_BOTTOM_SHEET"
+    const val TAG_RENAME_COLLECTION = "TAG_RENAME_COLLECTION_BOTTOM_SHEET"
+    const val TAG_ADD_TO_COLLECTION = "TAG_ADD_TO_COLLECTION_BOTTOM_SHEET"
     const val TAG_COLLECTION_DETAIL = "TAG_COLLECTION_DETAIL_BOTTOM_SHEET"
     const val TAG_PEEK = "TAG_PEEK_BOTTOM_SHEET"
     const val TAG_SPEED_DIAL = "TAG_SPEED_DIAL_BOTTOM_SHEET"
@@ -208,7 +219,7 @@ object WorkerTag {
 enum class QuickActionTabMenu(val value: String) {
     NONE(value = ""),
     NAVIGATE_BACK(value = "Navigate Back"),
-    COLLECT_ALL_TABS(value = "Collect All Tabs"),
+    ADD_TO_COLLECTIONS(value = "Add to collections"),
     HOME(value = "Home"),
     GET_INSIGHT(value = "Get Insight"),
     MORE_OPTIONS(value = "More Options"),
@@ -226,7 +237,6 @@ enum class QuickActionTabMenuMoreOptions(
     FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
     TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
     DOWNLOAD(title = "Download", icon = R.drawable.outline_file_download_24),
-    ADD_TO_COLLECTIONS(title = "Add to collections", icon = R.drawable.outline_library_add_24),
 }
 
 enum class FeatureTab(val value: String) {

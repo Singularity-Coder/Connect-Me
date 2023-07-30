@@ -15,7 +15,11 @@ class HistoryViewModel @Inject constructor(
         historyDao.insert(history)
     }
 
-    fun getAllHistory() = historyDao.getAllItemsStateFlow()
+    fun getAllHistoryFlow() = historyDao.getAllItemsStateFlow()
+
+    suspend fun getAllHistory() = historyDao.getAll()
+
+    suspend fun getHistoryItemByLink(link: String?) = historyDao.getItemByLink(link)
 
     suspend fun getLast3HistoryItems() = historyDao.getLast3By()
 

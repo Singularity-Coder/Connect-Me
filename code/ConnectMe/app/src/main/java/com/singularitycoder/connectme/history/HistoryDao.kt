@@ -26,6 +26,10 @@ interface HistoryDao {
 
 
     @Transaction
+    @Query("SELECT * FROM ${Table.HISTORY} WHERE link LIKE :link LIMIT 1")
+    suspend fun getItemByLink(link: String?): History?
+
+    @Transaction
     @Query("SELECT * FROM ${Table.HISTORY} WHERE website LIKE :website LIMIT 1")
     suspend fun getItemByWebsite(website: String?): History?
 

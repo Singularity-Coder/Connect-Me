@@ -8,11 +8,14 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemDownloadBinding
 import com.singularitycoder.connectme.helpers.deviceWidth
 import com.singularitycoder.connectme.helpers.dpToPx
+import com.singularitycoder.connectme.helpers.onCustomLongClick
+import com.singularitycoder.connectme.helpers.onSafeClick
 
 class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var feedList = emptyList<Download>()
-    private var newsClickListener: (download: Download) -> Unit = {}
+    private var itemClickListener: (download: Download) -> Unit = {}
+    private var itemLongClickListener: (download: Download) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemDownloadBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -27,8 +30,12 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int = position
 
-    fun setOnNewsClickListener(listener: (download: Download) -> Unit) {
-        newsClickListener = listener
+    fun setOnItemClickListener(listener: (download: Download) -> Unit) {
+        itemClickListener = listener
+    }
+
+    fun setOnItemLongClickListener(listener: (download: Download) -> Unit) {
+        itemLongClickListener = listener
     }
 
     inner class NewsViewHolder(
@@ -49,8 +56,11 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 //                "\u2022"
                 tvSource.text = download.time
                 tvTitle.text = download.title
-                root.setOnClickListener {
-                    newsClickListener.invoke(download)
+                root.onSafeClick {
+                    itemClickListener.invoke(download)
+                }
+                root.onCustomLongClick {
+                    itemLongClickListener.invoke(download)
                 }
             }
         }

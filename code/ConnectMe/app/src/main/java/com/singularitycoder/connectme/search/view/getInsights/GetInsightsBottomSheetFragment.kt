@@ -321,32 +321,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                         dismiss()
                     }
                     optionsList[1].first -> {
-                        val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
-                        val popupMenu = PopupMenu(requireContext(), pair.first)
-                        OPEN_AI_MODELS_LIST.forEach {
-                            popupMenu.menu.add(
-                                0, 1, 1, menuIconWithText(
-                                    icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
-                                        context = requireContext(),
-                                        color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
-                                    ),
-                                    title = it
-                                )
-                            )
-                        }
-                        popupMenu.setOnMenuItemClickListener { aiModelMenuItem: MenuItem? ->
-                            view?.setHapticFeedback()
-                            when (aiModelMenuItem?.title?.toString()?.trim()) {
-                                OPEN_AI_MODELS_LIST[0] -> {
-                                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
-                                }
-                                OPEN_AI_MODELS_LIST[1] -> {
-                                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[1]).apply()
-                                }
-                            }
-                            false
-                        }
-                        popupMenu.show()
+                        setupAiModelMenu(view = pair.first)
                     }
                 }
             }
@@ -756,6 +731,38 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun setSearchList(insightStringsList: List<String?>) {
         chatSearchAdapter.chatSearchList = insightStringsList
         chatSearchAdapter.notifyDataSetChanged()
+    }
+
+    private fun setupAiModelMenu(view: View?) {
+        val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
+        val popupMenu = PopupMenu(requireContext(), view)
+        popupMenu.menu.add(Menu.NONE, -1, 0, "Select AI Model").apply {
+            isEnabled = false
+        }
+        OPEN_AI_MODELS_LIST.forEach {
+            popupMenu.menu.add(
+                0, 1, 1, menuIconWithText(
+                    icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
+                        context = requireContext(),
+                        color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
+                    ),
+                    title = it
+                )
+            )
+        }
+        popupMenu.setOnMenuItemClickListener { aiModelMenuItem: MenuItem? ->
+            view?.setHapticFeedback()
+            when (aiModelMenuItem?.title?.toString()?.trim()) {
+                OPEN_AI_MODELS_LIST[0] -> {
+                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
+                }
+                OPEN_AI_MODELS_LIST[1] -> {
+                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[1]).apply()
+                }
+            }
+            false
+        }
+        popupMenu.show()
     }
 
     private fun setBottomSheetBehaviour() {

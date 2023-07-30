@@ -149,10 +149,8 @@ class ExploreFragment : Fragment() {
         (requireActivity() as? MainActivity)?.showScreen(
             fragment = SearchFragment.newInstance(websiteList = listOf(explore).mapIndexed { index, explore ->
                 SearchTab(
-                    id = index.toLong(),
-                    type = NewTabType.NEW_TAB,
+                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
                     link = explore?.link,
-                    isPrivate = isPrivate
                 )
             }.toArrayList()),
             tag = FragmentsTag.SEARCH,

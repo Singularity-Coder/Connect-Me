@@ -383,19 +383,34 @@
                 app:dividerColor="@color/black_50"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_close_keyboard"
+                style="@style/Widget.App.Button.IconOnly"
+                android:layout_width="32dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="12dp"
+                app:icon="@drawable/round_close_24"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/horizontal_scroll_view"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/horizontal_scroll_view"
+                app:rippleColor="@color/purple_200" />
+
             <HorizontalScrollView
-                android:layout_width="match_parent"
+                android:id="@+id/horizontal_scroll_view"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:scrollbars="none"
+                android:layout_marginStart="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btn_close_keyboard"
                 app:layout_constraintTop_toBottomOf="@+id/divider_2">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chip_group_link_text_actions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
                     android:layout_marginEnd="12dp"
                     android:visibility="gone"
                     app:singleLine="true" />

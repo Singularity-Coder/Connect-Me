@@ -153,8 +153,8 @@ class FeedFragment : Fragment() {
             }
         }
 
-        layoutSearch.btnMore.onSafeClick {
-            val popupMenu = PopupMenu(requireContext(), it.first)
+        layoutSearch.btnMore.onSafeClick { pair: Pair<View?, Boolean> ->
+            val popupMenu = PopupMenu(requireContext(), pair.first)
             rssFeedTypeList.forEach {
                 popupMenu.menu.add(
                     0, 1, 1, menuIconWithText(
@@ -233,10 +233,8 @@ class FeedFragment : Fragment() {
         (requireActivity() as? MainActivity)?.showScreen(
             fragment = SearchFragment.newInstance(websiteList = listOf(feed).mapIndexed { index, feed ->
                 SearchTab(
-                    id = index.toLong(),
-                    type = NewTabType.NEW_TAB,
+                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
                     link = feed?.link,
-                    isPrivate = isPrivate
                 )
             }.toArrayList()),
             tag = FragmentsTag.SEARCH,

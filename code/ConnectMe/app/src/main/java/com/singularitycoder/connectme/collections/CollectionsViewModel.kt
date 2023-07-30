@@ -23,8 +23,16 @@ class CollectionsViewModel @Inject constructor(
         collectionsDao.insert(collectionWebPage)
     }
 
+    fun addAllToCollections(collectionWebPageList: List<CollectionWebPage?>) = viewModelScope.launch {
+        collectionsDao.insertAll(collectionWebPageList)
+    }
+
     fun updateCollection(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
         collectionsDao.update(collectionWebPage)
+    }
+
+    fun renameCollection(newCollectionTitle: String?, oldCollectionTitle: String?) = viewModelScope.launch {
+        collectionsDao.renameCollection(newCollectionTitle, oldCollectionTitle)
     }
 
     fun deleteItem(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {

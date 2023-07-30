@@ -13,7 +13,7 @@ interface CollectionsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(collectionWebPage: CollectionWebPage?)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<CollectionWebPage?>)
 
     @Query("SELECT Count(*) FROM ${Table.COLLECTION}") // Add WHERE if necessary
@@ -23,8 +23,8 @@ interface CollectionsDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(collectionWebPage: CollectionWebPage?)
 
-//    @Query("UPDATE ${Table.COLLECTION} SET link = :link WHERE website LIKE :website")
-//    fun updateWithPromptsList(link: String?, website: String)
+    @Query("UPDATE ${Table.COLLECTION} SET collectionTitle = :newCollectionTitle WHERE collectionTitle LIKE :oldCollectionTitle")
+    suspend fun renameCollection(newCollectionTitle: String?, oldCollectionTitle: String?)
 
 
 //    @Transaction
