@@ -1,8 +1,10 @@
 package com.singularitycoder.connectme.helpers
 
 import android.Manifest
+import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
@@ -13,9 +15,12 @@ import android.os.Environment
 import android.os.ParcelFileDescriptor
 import android.os.storage.StorageManager
 import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +28,41 @@ import kotlinx.coroutines.withContext
 import java.io.*
 import java.util.*
 
+const val KB = 1024.0
+const val MB = 1024.0 * KB
+const val GB = 1024.0 * MB
+const val TB = 1024.0 * GB
+
+fun File.sizeInBytes(): Int {
+    if (!this.exists()) return 0
+    return this.length().toInt()
+}
+
+/** metric is KB, MB, GB, TB constants which is 1024.0, etc */
+fun File.showSizeIn(metric: Double): Double {
+    if (!this.exists()) return 0.0
+    return this.sizeInBytes().div(metric)
+}
+
+fun File.extension(): String {
+    if (!this.exists()) return ""
+    return this.absolutePath.substringAfterLast(delimiter = ".").lowercase().trim()
+}
+
+fun File.nameWithExtension(): String {
+    if (!this.exists()) return ""
+    return this.absolutePath.substringAfterLast(delimiter = "/")
+}
+
+fun File.name(): String {
+    if (!this.exists()) return ""
+    return this.nameWithExtension().substringBeforeLast(".")
+}
+
+fun File.customName(prefix: String = "my_file"): String {
+    if (!this.exists()) return ""
+    return prefix.sanitize() + "_" + this.name().sanitize()
+}
 
 fun File?.customPath(directory: String?, fileName: String?): String {
     var path = this?.absolutePath
@@ -313,4 +353,55 @@ fun copyFile(
         os.close()
     } catch (_: Exception) {
     }
+}
+
+// https://github.com/android/storage-samples/tree/main/ActionOpenDocumentTree
+fun getMimeType(url: String): String {
+    val ext = MimeTypeMap.getFileExtensionFromUrl(url)
+    return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "text/plain"
+}
+
+// https://github.com/android/storage-samples/tree/main/ActionOpenDocumentTree
+fun getFilesListFrom(currentDirectory: File): List<File> {
+    val rawFilesList = currentDirectory.listFiles()?.filter { !it.isHidden }
+
+    return if (currentDirectory == Environment.getExternalStorageDirectory()) {
+        rawFilesList?.toList() ?: listOf()
+    } else {
+        listOf(currentDirectory.parentFile) + (rawFilesList?.toList() ?: listOf())
+    }
+}
+
+// https://github.com/android/storage-samples/tree/main/ActionOpenDocumentTree
+fun Activity.openFile(selectedItem: File) {
+    // Get URI and MIME type of file
+    val uri = FileProvider.getUriForFile(this.applicationContext, FILE_PROVIDER, selectedItem)
+    val mime: String = getMimeType(uri.toString())
+
+    // Open file with user selected app
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        setDataAndType(uri, mime)
+    }
+    return this.startActivity(intent)
+}
+
+fun File.getAppropriateSize(): String {
+    return when {
+        this.showSizeIn(MB) <= 0.1 -> {
+            "${String.format("%1.2f", this.showSizeIn(KB))} Kb"
+        }
+        this.showSizeIn(MB) >= GB -> {
+            "${String.format("%1.2f", this.showSizeIn(GB))} Gb"
+        }
+        else -> {
+            "${String.format("%1.2f", this.showSizeIn(MB))} Mb"
+        }
+    }
+}
+
+fun getDownloadDirectory(): File {
+    return File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_DOWNLOADS}/ConnectMe").also {
+        if (it.exists().not()) it.mkdirs()
+    } // /storage/emulated/0/Download/ConnectMe
 }

@@ -59,11 +59,12 @@ class HistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 root.onSafeClick {
                     itemClickListener.invoke(history)
                 }
-                viewDummyCenter.setOnClickListener {
+                viewDummyCenter.setOnLongClickListener {
                     itemLongClickListener.invoke(history, it)
+                    false
                 }
                 root.onCustomLongClick {
-                    viewDummyCenter.performClick()
+                    viewDummyCenter.performLongClick()
                 }
             }
         }

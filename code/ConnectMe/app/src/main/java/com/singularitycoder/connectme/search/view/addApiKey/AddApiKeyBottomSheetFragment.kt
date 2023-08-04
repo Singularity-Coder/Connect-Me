@@ -80,6 +80,6 @@ class AddApiKeyBottomSheetFragment : BottomSheetDialogFragment() {
     private fun addApiKey(apiKey: String) {
         val encryptedApiKey = AesCbcWithIntegrity.encryptString(apiKey, AesCbcWithIntegrity.AES_SECRET_KEY)
         preferences.edit().putString(Preferences.KEY_OPEN_AI_API_KEY, encryptedApiKey).apply()
-        GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
+        GetInsightsBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
     }
 }

@@ -11,9 +11,22 @@ TODO Checklist
 10. How bookmarks work
 
 
+Create download table
+dao
+On download- add to db with link and path - problem is on renaming
+so files come from files dir only. use db for source nav alone n updating the name on rename
+add folder - refresh list
+
+
+
 TODO THIS WEEK
-Rename collections
+Create downloads db - since this is not gen file man, everything can be recorded
+Downloads - add folder, sort, filter, - fix first item click bug, long press item options like move, zip, file info, etc,
 Explore - Add time topics n location
+Speed dial - downloads - need to maintain download db on donwloding file for getting the site the file was downloaded
+Website actions - downloads of partic website
+
+
 Export collection to sqlite db and csv file
 Downloads
     Downloads - first when u download image, specify directory

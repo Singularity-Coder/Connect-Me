@@ -3,6 +3,7 @@ package com.singularitycoder.connectme.collections
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.helpers.constants.Table
 import kotlinx.parcelize.Parcelize
 
@@ -20,6 +21,7 @@ data class CollectionWebPage(
     val favicon: String? = "",
     val time: Long? = 0L,
     @PrimaryKey val link: String = "",
+    val tabType: String = NewTabType.NEW_TAB.value
 ) : Parcelable
 
 data class LinksCollection(

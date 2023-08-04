@@ -143,7 +143,7 @@ class ImageViewerBottomSheetFragment : BottomSheetDialogFragment() {
     private fun setUpViewPager() {
         binding.viewpagerImageViewer.apply {
             adapter = MainViewPagerAdapter(
-                fragmentManager = requireActivity().supportFragmentManager,
+                fragmentManager = parentFragmentManager,
                 lifecycle = lifecycle
             )
             currentItem = currentImagePosition

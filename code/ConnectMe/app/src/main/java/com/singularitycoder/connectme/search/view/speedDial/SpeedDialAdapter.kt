@@ -37,7 +37,7 @@ class SpeedDialAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fun setData(speedDial: SpeedDial?) {
             itemBinding.apply {
                 tvDate.isVisible = speedDial?.isDateShown ?: false
-                tvDate.text = speedDial?.time.toShortDate()
+                tvDate.text = speedDial?.timeInString ?: speedDial?.time.toShortDate()
                 ivWebappIcon.load(decodeBase64StringToBitmap(speedDial?.favicon)) {
                     placeholder(R.drawable.ic_placeholder_rectangle)
                     error(R.drawable.ic_placeholder_rectangle)

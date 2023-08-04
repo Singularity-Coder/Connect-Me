@@ -20,7 +20,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionDetailBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvents
+import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvent
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.search.model.SearchTab
@@ -85,7 +85,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
         collectionDetailsAdapter.setOnItemClickListener { it: CollectionWebPage? ->
             PeekBottomSheetFragment.newInstance(
                 peekUrl = it?.link
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         collectionDetailsAdapter.setOnLongClickListener { collectionWebPage: CollectionWebPage?, view: View? ->
@@ -98,7 +98,9 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             )
             requireContext().showPopupMenuWithIcons(
                 view = view,
-                menuList = optionsList
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItem = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
@@ -143,7 +145,9 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             )
             requireContext().showPopupMenuWithIcons(
                 view = it.first,
-                menuList = optionsList
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItem = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
@@ -174,9 +178,9 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                     }
                     optionsList[2].first -> {
                         CreateCollectionBottomSheetFragment.newInstance(
-                            eventType = CollectionScreenEvents.RENAME_COLLECTION,
+                            eventType = CollectionScreenEvent.RENAME_COLLECTION,
                             collectionWebPage = collectionDetailsAdapter.webPageList.firstOrNull()
-                        ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_RENAME_COLLECTION)
+                        ).show(parentFragmentManager, BottomSheetTag.TAG_RENAME_COLLECTION)
                         dismiss()
                     }
                     optionsList[3].first -> {
@@ -221,6 +225,10 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                 it?.link?.contains(other = query, ignoreCase = true) == true || it?.title?.contains(other = query, ignoreCase = true) == true
             }
             collectionDetailsAdapter.notifyDataSetChanged()
+        }
+
+        etSearch.onImeClick {
+            etSearch.hideKeyboard()
         }
     }
 

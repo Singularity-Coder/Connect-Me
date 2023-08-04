@@ -22,6 +22,8 @@ import com.singularitycoder.connectme.feed.RssFollowWorker
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
+import com.singularitycoder.connectme.helpers.constants.SpeedDialFeatures
 import com.singularitycoder.connectme.helpers.constants.WorkerData
 import com.singularitycoder.connectme.helpers.constants.WorkerTag
 import com.singularitycoder.connectme.search.model.ApiResult
@@ -29,6 +31,7 @@ import com.singularitycoder.connectme.search.model.ApiState
 import com.singularitycoder.connectme.search.model.WebViewData
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.SearchTabFragment
+import com.singularitycoder.connectme.search.view.speedDial.SpeedDialBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Main
@@ -203,7 +206,13 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             )
         }
 
-        itemHistory.root.onSafeClick { }
+        itemHistory.root.onSafeClick {
+            SpeedDialBottomSheetFragment.newInstance(
+                title = SpeedDialFeatures.HISTORY.value,
+                host = getHostFrom(url = webViewData?.url)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
+            dismiss()
+        }
 
         itemDownloads.root.onSafeClick { }
 

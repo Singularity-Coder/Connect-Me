@@ -3,9 +3,9 @@ package com.singularitycoder.connectme.helpers
 import java.io.BufferedWriter
 import java.io.FileWriter
 import java.io.InputStream
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineFactory
-import javax.script.ScriptEngineManager
+//import javax.script.ScriptEngine
+//import javax.script.ScriptEngineFactory
+//import javax.script.ScriptEngineManager
 
 // https://kotlinlang.org/docs/custom-script-deps-tutorial.html
 // https://www.kodeco.com/books/kotlin-apprentice/v2.0/chapters/24-scripting-with-kotlin
@@ -71,14 +71,14 @@ object CodeExecutor {
     }
 
     // // https://docs.oracle.com/javase/6/docs/technotes/guides/scripting/programmer_guide/index.html
-    fun evalScript(code: String = "print('Hello, World')") {
+    /*fun evalScript(code: String = "print('Hello, World')") {
         val factory = ScriptEngineManager()
         val engine: ScriptEngine = factory.getEngineByName("JavaScript")
         engine.eval(code) // evaluate JavaScript code from String
-    }
+    }*/
 
     // Does not support java but maybe we can construct websites from GPT and load them in webviews
-    fun listAllSupportedScripts() {
+    /*fun listAllSupportedScripts() {
         val manager = ScriptEngineManager()
 
         // Get the list of all available engines. This seems to be empty - https://stackoverflow.com/questions/42533123/wildfly-8-2-scriptenginemanager-getenginefactories-is-empty-on-server-startup
@@ -105,5 +105,5 @@ object CodeExecutor {
         [application/javascript, application/ecmascript, text/javascript, text/ecmascript]
         [js, rhino, JavaScript, javascript, ECMAScript, ecmascript]
          */
-    }
+    }*/
 }

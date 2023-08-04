@@ -9,7 +9,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import com.singularitycoder.connectme.feed.Feed
 import com.singularitycoder.connectme.feed.FeedDao
-import org.eclipse.jetty.http.HttpMethod
+import com.singularitycoder.connectme.helpers.constants.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
 import org.w3c.dom.Document

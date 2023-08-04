@@ -2,6 +2,7 @@ package com.singularitycoder.connectme.helpers.constants
 
 import android.os.Parcelable
 import androidx.annotation.DrawableRes
+import com.singularitycoder.connectme.BuildConfig
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.toLowCase
@@ -11,7 +12,7 @@ import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.SearchTabFragment
 import kotlinx.parcelize.Parcelize
 
-const val FILE_PROVIDER = "com.singularitycoder.connectme.fileprovider"
+const val FILE_PROVIDER = "${BuildConfig.APPLICATION_ID}.fileprovider"
 
 val DUMMY_IMAGE_URLS = listOf(
     "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -146,11 +147,21 @@ val LOCAL_TEXT_PROMPTS_MAP = mapOf(
     // Have a personality. Have opinions but do not press them onto the user. Suggest some places. Suggest stuff to buy, eat, play.
 )
 
+enum class HttpMethod {
+    GET, POST
+}
+
 @Parcelize
-enum class CollectionScreenEvents : Parcelable {
+enum class CollectionScreenEvent : Parcelable {
     CREATE_NEW_COLLECTION,
     ADD_TO_COLLECTION,
     RENAME_COLLECTION
+}
+
+@Parcelize
+enum class EditEvent : Parcelable {
+    CREATE_NEW_DOWNLOAD_FOLDER,
+    RENAME_DOWNLOAD_FILE,
 }
 
 enum class ChatRole {
@@ -162,6 +173,16 @@ enum class SpeedDialFeatures(val value: String) {
     COLLECTIONS(value = "Collections"),
     HISTORY(value = "History"),
     DOWNLOADS(value = "Downloads")
+}
+
+object FragmentResultKey {
+    const val RENAME_DOWNLOAD_FILE = "RENAME_DOWNLOAD_FILE"
+    const val CREATE_NEW_DOWNLOAD_FOLDER = "CREATE_NEW_DOWNLOAD_FOLDER"
+}
+
+object FragmentResultBundleKey {
+    const val RENAME_DOWNLOAD_FILE = "RENAME_DOWNLOAD_FILE"
+    const val CREATE_NEW_DOWNLOAD_FOLDER = "CREATE_NEW_DOWNLOAD_FOLDER"
 }
 
 object IntentKey {
@@ -204,6 +225,7 @@ object BottomSheetTag {
     const val TAG_COLLECTION_DETAIL = "TAG_COLLECTION_DETAIL_BOTTOM_SHEET"
     const val TAG_PEEK = "TAG_PEEK_BOTTOM_SHEET"
     const val TAG_SPEED_DIAL = "TAG_SPEED_DIAL_BOTTOM_SHEET"
+    const val TAG_EDIT = "TAG_EDIT_BOTTOM_SHEET"
 }
 
 object WorkerData {

@@ -18,7 +18,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvents
+import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvent
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -66,13 +66,13 @@ class CollectionsFragment : Fragment() {
         collectionsAdapter.setOnItemClickListener { it: LinksCollection? ->
             CollectionDetailBottomSheetFragment.newInstance(
                 collectionTitle = it?.title
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_COLLECTION_DETAIL)
         }
 
         collectionsAdapter.setOnWebAppClickListener { it: CollectionWebPage? ->
             PeekBottomSheetFragment.newInstance(
                 peekUrl = it?.link
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         layoutSearch.ibClearSearch.onSafeClick {
@@ -108,8 +108,8 @@ class CollectionsFragment : Fragment() {
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
                         CreateCollectionBottomSheetFragment.newInstance(
-                            eventType = CollectionScreenEvents.CREATE_NEW_COLLECTION
-                        ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
+                            eventType = CollectionScreenEvent.CREATE_NEW_COLLECTION
+                        ).show(parentFragmentManager, BottomSheetTag.TAG_CREATE_COLLECTION)
                     }
                     optionsList[1].first -> {
                         requireContext().showPopupMenu(

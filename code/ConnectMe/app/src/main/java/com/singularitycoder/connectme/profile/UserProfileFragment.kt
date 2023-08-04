@@ -92,7 +92,7 @@ class UserProfileFragment : Fragment() {
             ) { menuPosition: Int ->
                 when (optionsList[menuPosition]) {
                     optionsList[0] -> {
-                        requireActivity().supportFragmentManager.popBackStackImmediate()
+                        parentFragmentManager.popBackStackImmediate()
                     }
                 }
             }
@@ -105,7 +105,7 @@ class UserProfileFragment : Fragment() {
 
     private fun FragmentUserProfileBinding.setUpViewPager() {
         viewpagerUserProfile.apply {
-            adapter = UserProfileViewPagerAdapter(fragmentManager = requireActivity().supportFragmentManager, lifecycle = lifecycle)
+            adapter = UserProfileViewPagerAdapter(fragmentManager = parentFragmentManager, lifecycle = lifecycle)
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
         tabLayoutUserProfile.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

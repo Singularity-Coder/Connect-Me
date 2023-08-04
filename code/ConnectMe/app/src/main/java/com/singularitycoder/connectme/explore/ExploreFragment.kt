@@ -95,7 +95,7 @@ class ExploreFragment : Fragment() {
         exploreAdapter.setOnItemClickListener { it: Explore? ->
             PeekBottomSheetFragment.newInstance(
                 peekUrl = it?.link
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         exploreAdapter.setOnItemLongClickListener { explore: Explore?, view: View? ->
@@ -108,7 +108,9 @@ class ExploreFragment : Fragment() {
             )
             requireContext().showPopupMenuWithIcons(
                 view = view,
-                menuList = optionsList
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItem = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {

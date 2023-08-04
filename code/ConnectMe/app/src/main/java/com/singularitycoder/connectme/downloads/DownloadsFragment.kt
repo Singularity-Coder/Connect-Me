@@ -2,23 +2,20 @@ package com.singularitycoder.connectme.downloads
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.view.*
 import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.DUMMY_FACE_URLS_2
-import com.singularitycoder.connectme.helpers.constants.Preferences
+import com.singularitycoder.connectme.helpers.constants.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.*
 import javax.inject.Inject
 
@@ -60,6 +57,8 @@ class DownloadsFragment : Fragment() {
     private var topicParam: String? = null
     private var isSelfProfile: Boolean = false
 
+    private lateinit var filesList: List<File>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         topicParam = arguments?.getString(ARG_PARAM_SCREEN_TYPE)
@@ -78,6 +77,31 @@ class DownloadsFragment : Fragment() {
         observeForData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val hasPermission = requireActivity().checkStoragePermission()
+        if (hasPermission) {
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                if (Environment.isExternalStorageLegacy().not()) {
+                    binding.llStoragePermissionRationaleView.isVisible = true
+                    return
+                }
+            }
+
+            binding.llStoragePermissionRationaleView.isVisible = false
+            binding.rvDownloads.isVisible = true
+
+            // TODO: Use getStorageDirectory instead https://developer.android.com/reference/android/os/Environment.html#getStorageDirectory()
+
+            val allDownloadFilesList = getFilesListFrom(getDownloadDirectory())
+            filesList = allDownloadFilesList.subList(1, allDownloadFilesList.lastIndex)
+            openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+        } else {
+            binding.llStoragePermissionRationaleView.isVisible = true
+            binding.rvDownloads.isVisible = false
+        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentDownloadsBinding.setupUI() {
         layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.ic_round_more_horiz_24)
@@ -87,24 +111,8 @@ class DownloadsFragment : Fragment() {
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = feedAdapter
         }
-        lifecycleScope.launch(Default) {
-            (0..30).forEach { it: Int ->
-                feedList.add(
-                    Download(
-                        imageUrl = DUMMY_FACE_URLS_2[Random().nextInt(DUMMY_FACE_URLS_2.size)],
-                        title = "Cringe Lord lords it over and gives it back to others $it",
-                        source = "Cringe Lord lords it over and gives it back to others $it",
-                        time = if (isSelfProfile) "58 Mb • 5 hr ago" else "58 Mb",
-                        link = "",
-                    )
-                )
-            }
-            withContext(Main) {
-                feedAdapter.feedList = feedList
-                feedAdapter.notifyDataSetChanged()
-            }
-        }
         preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[0]).apply()
+        ivShield.setMargins(top = (deviceHeight() / 2) - 200.dpToPx().toInt())
     }
 
     private fun FragmentDownloadsBinding.setupUserActionListeners() {
@@ -128,25 +136,112 @@ class DownloadsFragment : Fragment() {
                         setupSortOptionsMenu(view = pair.first)
                     }
                     optionsList[2].first -> {
+                        // TODO another bottom sheet for adding single named items
+                        EditBottomSheetFragment.newInstance(
+                            eventType = EditEvent.CREATE_NEW_DOWNLOAD_FOLDER
+                        ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                     }
                 }
             }
         }
 
-        feedAdapter.setOnItemClickListener { it: Download ->
+        feedAdapter.setOnItemClickListener { download: Download?, position: Int ->
+            val selectedItem = filesList.getOrNull(position) ?: return@setOnItemClickListener
+            openIfFileElseShowFilesListIfDirectory(selectedItem)
         }
 
-        feedAdapter.setOnItemLongClickListener { it: Download ->
-            // Open with...
-            // Copy link
-            // Share
-            // Hide
-            // Delete
+        feedAdapter.setOnItemLongClickListener { download: Download?, view: View? ->
+            val optionsList = listOf(
+                Pair("Open source", R.drawable.round_add_circle_outline_24),
+                Pair("Open with...", R.drawable.outline_open_in_new_24),
+                Pair("Copy to...", R.drawable.baseline_content_copy_24),
+                Pair("Move to...", R.drawable.outline_control_camera_24),
+                Pair("Zip", R.drawable.outline_folder_zip_24),
+                Pair("Rename", R.drawable.outline_drive_file_rename_outline_24),
+                Pair("Get info", R.drawable.outline_info_24),
+                Pair("Share", R.drawable.outline_share_24),
+                Pair("Copy link", R.drawable.baseline_content_copy_24),
+                Pair("Delete", R.drawable.outline_delete_24),
+            )
+            requireContext().showPopupMenuWithIcons(
+                view = view,
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItem = optionsList.last().first
+            ) { it: MenuItem? ->
+                when (it?.title?.toString()?.trim()) {
+                    optionsList[0].first -> {
+                    }
+                    optionsList[1].first -> {
+                    }
+                    optionsList[2].first -> {
+                    }
+                    optionsList[3].first -> {
+                    }
+                    optionsList[4].first -> {
+                    }
+                    optionsList[5].first -> {
+                        EditBottomSheetFragment.newInstance(
+                            eventType = EditEvent.RENAME_DOWNLOAD_FILE
+                        ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
+                    }
+                    optionsList[6].first -> {
+                    }
+                    optionsList[7].first -> {
+                    }
+                    optionsList[8].first -> {
+                    }
+                }
+            }
         }
 
         layoutSearch.etSearch.onImeClick {
             layoutSearch.etSearch.hideKeyboard()
         }
+
+        btnGivePermission.onSafeClick {
+            requireActivity().requestStoragePermission()
+        }
+
+        parentFragmentManager.setFragmentResultListener(
+            /* requestKey = */ FragmentResultKey.RENAME_DOWNLOAD_FILE,
+            /* lifecycleOwner = */ viewLifecycleOwner
+        ) { _, bundle: Bundle ->
+            val renamedFileText = bundle.getString(FragmentResultBundleKey.RENAME_DOWNLOAD_FILE)
+        }
+
+        parentFragmentManager.setFragmentResultListener(
+            /* requestKey = */ FragmentResultKey.CREATE_NEW_DOWNLOAD_FOLDER,
+            /* lifecycleOwner = */ viewLifecycleOwner
+        ) { _, bundle: Bundle ->
+            val newFolderNameText = bundle.getString(FragmentResultBundleKey.CREATE_NEW_DOWNLOAD_FOLDER)?.trim()
+            File("${getDownloadDirectory().absolutePath}/$newFolderNameText").also {
+                if (it.exists().not()) it.mkdirs()
+            }
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun openIfFileElseShowFilesListIfDirectory(currentDirectory: File) {
+        println("Parent file path: ${currentDirectory.parentFile.path}") // /storage/emulated
+
+        if (currentDirectory.isFile) return requireActivity().openFile(currentDirectory)
+
+        feedList.clear() // TODO Give a refresh option instead of loading all the time
+        filesList.forEach { file: File ->
+            val downloadItem = Download(
+                imageUrl = file.absolutePath,
+                title = file.name,
+                time = if (isSelfProfile) {
+                    "${file.getAppropriateSize()}  •  ${file.lastModified().toIntuitiveDateTime()}"
+                } else file.getAppropriateSize(),
+                link = "",
+                isDirectory = file.isDirectory
+            )
+            feedList.add(downloadItem)
+        }
+        feedAdapter.feedList = feedList
+        feedAdapter.notifyDataSetChanged()
     }
 
     private fun setupSortOptionsMenu(view: View?) {

@@ -105,7 +105,7 @@ class FeedFragment : Fragment() {
         feedAdapter.setOnItemClickListener { it: Feed? ->
             PeekBottomSheetFragment.newInstance(
                 peekUrl = it?.link
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         feedAdapter.setOnItemLongClickListener { feed, view ->
@@ -119,7 +119,9 @@ class FeedFragment : Fragment() {
             )
             requireContext().showPopupMenuWithIcons(
                 view = view,
-                menuList = optionsList
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItem = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {

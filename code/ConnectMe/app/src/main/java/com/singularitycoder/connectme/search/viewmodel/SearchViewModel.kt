@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.ChatRole
+import com.singularitycoder.connectme.helpers.constants.HttpMethod
 import com.singularitycoder.connectme.helpers.constants.Preferences
 import com.singularitycoder.connectme.helpers.constants.SearchEngine
 import com.singularitycoder.connectme.helpers.encryption.AesCbcWithIntegrity
@@ -23,7 +24,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.eclipse.jetty.http.HttpMethod
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedInputStream

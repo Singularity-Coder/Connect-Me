@@ -189,11 +189,11 @@ class SearchFragment : Fragment() {
 
         layoutCollections.apply {
             root.onSafeClick {
-                etSearch.hideKeyboard()
+                etSearch.hideKeyboard(isClearFocus = false)
                 SpeedDialBottomSheetFragment.newInstance(
                     title = SpeedDialFeatures.COLLECTIONS.value,
                     subtitle = layoutCollections.tvTitle.text.toString()
-                ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
+                ).show(parentFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
             }
             viewDummyForDropdown.onSafeClick {
                 lifecycleScope.launch {
@@ -242,17 +242,17 @@ class SearchFragment : Fragment() {
         }
 
         layoutHistory.root.onSafeClick {
-            etSearch.hideKeyboard()
+            etSearch.hideKeyboard(isClearFocus = false)
             SpeedDialBottomSheetFragment.newInstance(
                 title = SpeedDialFeatures.HISTORY.value
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
         }
 
         layoutFollowing.root.onSafeClick {
-            etSearch.hideKeyboard()
+            etSearch.hideKeyboard(isClearFocus = false)
             SpeedDialBottomSheetFragment.newInstance(
                 title = SpeedDialFeatures.FOLLOWING_WEBSITES.value
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
         }
 
         layoutVpn.apply {
@@ -281,7 +281,7 @@ class SearchFragment : Fragment() {
 
         ivWebappProfile.onSafeClick {
             WebsiteActionsBottomSheetFragment.newInstance().show(
-                /* manager = */ requireActivity().supportFragmentManager,
+                /* manager = */ parentFragmentManager,
                 /* tag = */ BottomSheetTag.WEBSITE_ACTIONS
             )
         }
@@ -555,7 +555,7 @@ class SearchFragment : Fragment() {
         viewpagerTabs.apply {
             isUserInputEnabled = false
             adapter = SearchViewPagerAdapter(
-                fragmentManager = requireActivity().supportFragmentManager,
+                fragmentManager = parentFragmentManager,
                 lifecycle = lifecycle
             )
             registerOnPageChangeCallback(viewPager2PageChangeListener)
@@ -759,17 +759,17 @@ class SearchFragment : Fragment() {
         requireContext().showAlertDialog(
             title = "Close all tabs?",
             message = """
-                Press "Close" to permanently close all tabs.
+                Press "CLOSE" to permanently close all tabs.
                 
                 Press "SAVE" to retain them in collections.
                  
             """.trimIndent(),
-            positiveBtnText = "Close",
+            positiveBtnText = "CLOSE",
             negativeBtnText = "SAVE",
             neutralBtnText = "Cancel",
+            positiveBtnColor = R.color.md_red_700,
             positiveAction = {
-                etSearch.clearFocus()
-                requireActivity().supportFragmentManager.popBackStackImmediate()
+                closeSearch()
             },
             negativeAction = {
                 // TODO either give loader or do this in worker
@@ -789,12 +789,16 @@ class SearchFragment : Fragment() {
                     }
                     collectionsViewModel.addAllToCollections(collectionWebPageList = tabsToSaveList)
                     withContext(Main) {
-                        etSearch.clearFocus()
-                        requireActivity().supportFragmentManager.popBackStackImmediate()
+                        closeSearch()
                     }
                 }
             }
         )
+    }
+
+    private fun closeSearch() {
+        binding.etSearch.clearFocus()
+        parentFragmentManager.popBackStackImmediate()
     }
 
     // https://stackoverflow.com/questions/13445594/data-sharing-between-fragments-and-activity-in-android
@@ -950,7 +954,7 @@ class SearchFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun closeTab() {
         if (searchTabsList.size == 1) {
-            requireActivity().supportFragmentManager.popBackStackImmediate()
+            parentFragmentManager.popBackStackImmediate()
         } else {
             searchTabsList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
             ConnectMeUtils.webpageFragmentIdList.removeAt(binding.tabLayoutTabs.selectedTabPosition)
@@ -1073,7 +1077,11 @@ class SearchFragment : Fragment() {
                     selectedWebpage?.loadUrl(url = "https://" + searchEngine.url.substringAfter("https://").substringBefore("/"))
                 }
                 QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
-                    binding.showCloseAllTabsPopup()
+                    if (binding.tabLayoutTabs.tabCount > 1) {
+                        binding.showCloseAllTabsPopup()
+                    } else {
+                        closeSearch()
+                    }
                 }
                 QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {
                     val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
@@ -1087,9 +1095,9 @@ class SearchFragment : Fragment() {
                     }
                     val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_KEY, "")
                     if (encryptedApiSecret.isNullOrBlank().not()) {
-                        GetInsightsBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
+                        GetInsightsBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
                     } else {
-                        AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
+                        AddApiKeyBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                     }
                 }
                 QuickActionTabMenu.ADD_TO_COLLECTIONS.ordinal -> addToCollections()
@@ -1145,8 +1153,8 @@ class SearchFragment : Fragment() {
                     if (collectionTitlesList[menuPosition]?.contains("Create new") == true) {
                         CreateCollectionBottomSheetFragment.newInstance(
                             collectionWebPage = collectionWebPage,
-                            eventType = CollectionScreenEvents.ADD_TO_COLLECTION
-                        ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_TO_COLLECTION)
+                            eventType = CollectionScreenEvent.ADD_TO_COLLECTION
+                        ).show(parentFragmentManager, BottomSheetTag.TAG_ADD_TO_COLLECTION)
                     } else {
                         collectionsViewModel.addToCollections(collectionWebPage)
                         requireContext().showToast("Added to ${collectionTitlesList[menuPosition]}")

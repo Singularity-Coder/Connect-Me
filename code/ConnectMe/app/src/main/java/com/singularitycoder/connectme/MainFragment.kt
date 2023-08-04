@@ -147,7 +147,7 @@ class MainFragment : Fragment() {
 
     private fun FragmentMainBinding.setUpViewPager() {
         viewpagerHome.apply {
-            adapter = HomeViewPagerAdapter(fragmentManager = requireActivity().supportFragmentManager, lifecycle = lifecycle)
+            adapter = HomeViewPagerAdapter(fragmentManager = parentFragmentManager, lifecycle = lifecycle)
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
         tabLayoutHome.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

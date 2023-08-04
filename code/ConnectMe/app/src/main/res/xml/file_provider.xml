@@ -31,4 +31,8 @@
     <files-path
         name="all_videos"
         path="." />
+
+    <external-path
+        name="filespath"
+        path="/" />
 </paths>

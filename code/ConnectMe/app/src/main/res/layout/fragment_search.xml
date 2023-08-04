@@ -294,7 +294,7 @@
                     android:ellipsize="end"
                     android:hint="Search the web"
                     android:imeOptions="actionSearch"
-                    android:inputType="text"
+                    android:inputType="text|textNoSuggestions"
                     android:maxLines="1"
                     android:padding="0dp"
                     android:scrollHorizontally="true"

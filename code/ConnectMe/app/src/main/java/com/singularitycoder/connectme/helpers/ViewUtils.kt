@@ -32,7 +32,6 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
-import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -186,6 +185,9 @@ fun Context.showAlertDialog(
     negativeBtnText: String = "",
     neutralBtnText: String = "",
     icon: Drawable? = null,
+    @ColorRes positiveBtnColor: Int? = null,
+    @ColorRes negativeBtnColor: Int? = null,
+    @ColorRes neutralBtnColor: Int? = null,
     positiveAction: () -> Unit = {},
     negativeAction: () -> Unit = {},
     neutralAction: () -> Unit = {},
@@ -214,13 +216,16 @@ fun Context.showAlertDialog(
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).apply {
             isAllCaps = false
             setPadding(0, 0, 16.dpToPx().toInt(), 0)
+            if (positiveBtnColor != null) setTextColor(this@showAlertDialog.color(positiveBtnColor))
         }
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).apply {
             isAllCaps = false
+            if (negativeBtnColor != null) setTextColor(this@showAlertDialog.color(negativeBtnColor))
         }
         dialog.getButton(DialogInterface.BUTTON_NEUTRAL).apply {
             isAllCaps = false
             setPadding(16.dpToPx().toInt(), 0, 0, 0)
+            if (neutralBtnColor != null) setTextColor(this@showAlertDialog.color(neutralBtnColor))
         }
     }
 }
@@ -252,6 +257,8 @@ fun Context.showPopupMenu(
 fun Context.showPopupMenuWithIcons(
     view: View?,
     title: String? = null,
+    customColorItem: String = "",
+    @ColorRes customColor: Int = 0,
     menuList: List<Pair<String, Int>>,
     onItemClick: (menuItem: MenuItem?) -> Unit
 ) {
@@ -264,7 +271,9 @@ fun Context.showPopupMenuWithIcons(
     menuList.forEach {
         popupMenu.menu.add(
             0, 1, 1, menuIconWithText(
-                icon = drawable(it.second)?.changeColor(this, R.color.purple_500),
+                icon = if (it.first == customColorItem) {
+                    drawable(it.second)?.changeColor(this, customColor)
+                } else drawable(it.second)?.changeColor(this, R.color.purple_500),
                 title = it.first
             )
         )
@@ -505,11 +514,11 @@ fun isColorLight(color: Int): Boolean {
 }
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
-fun getColor(bitmap: Bitmap?, incognito: Boolean): Int {
-    val palette = Palette.from(bitmap!!).generate()
-    val fallback = Color.TRANSPARENT
-    return if (incognito) palette.getMutedColor(fallback) else palette.getVibrantColor(fallback)
-}
+//fun getColor(bitmap: Bitmap?, incognito: Boolean): Int {
+//    val palette = Palette.from(bitmap!!).generate()
+//    val fallback = Color.TRANSPARENT
+//    return if (incognito) palette.getMutedColor(fallback) else palette.getVibrantColor(fallback)
+//}
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
 fun getShortcutIcon(bitmap: Bitmap, themeColor: Int): Bitmap {

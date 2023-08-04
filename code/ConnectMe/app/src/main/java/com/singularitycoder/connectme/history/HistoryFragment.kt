@@ -149,7 +149,7 @@ class HistoryFragment : Fragment() {
         historyAdapter.setOnClickListener { it: History? ->
             PeekBottomSheetFragment.newInstance(
                 peekUrl = it?.link
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         historyAdapter.setOnLongClickListener { history: History?, view: View? ->
@@ -162,7 +162,9 @@ class HistoryFragment : Fragment() {
             )
             requireContext().showPopupMenuWithIcons(
                 view = view,
-                menuList = optionsList
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItem = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
@@ -231,21 +233,22 @@ class HistoryFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun prepareHistoryList(historyList: List<History?>) {
         val sortedHistoryList = ArrayList<History?>()
-        val historyMap = HashMap<String?, ArrayList<History?>>()
+        val historyMap = HashMap<Long?, ArrayList<History?>>()
         historyList.sortedBy { it?.time }.forEach { it: History? ->
-            val historyArrayList = historyMap.get(it?.time?.toShortDate()) ?: ArrayList()
+            val key = convertDateToLong(date = it?.time?.toTimeOfType(type = DateType.dd_MMM_yyyy) ?: "", dateType = DateType.dd_MMM_yyyy.value)
+            val historyArrayList = historyMap.get(key) ?: ArrayList()
             historyArrayList.add(it)
-            historyMap.put(it?.time?.toShortDate(), historyArrayList)
+            historyMap.put(key, historyArrayList)
         }
-        historyMap.keys.forEach { date: String? ->
+        historyMap.keys.sortedBy { it }.forEach { date: Long? ->
             val preparedList = historyMap.get(date)?.mapIndexed { index, history ->
                 history.apply {
                     if (index == historyMap.get(date)?.lastIndex) this?.isDateShown = true
                 }
             } ?: emptyList()
-            sortedHistoryList.addAll(preparedList.reversed())
+            sortedHistoryList.addAll(preparedList)
         }
-        historyAdapter.historyList = sortedHistoryList.reversed()
+        historyAdapter.historyList = sortedHistoryList
         historyAdapter.notifyDataSetChanged()
     }
 }

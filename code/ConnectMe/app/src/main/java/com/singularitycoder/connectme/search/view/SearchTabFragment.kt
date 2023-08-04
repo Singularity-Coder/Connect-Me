@@ -488,7 +488,7 @@ class SearchTabFragment : Fragment() {
 
     private fun getSearchFragment(): SearchFragment? {
         if (peekUrl != null) return null
-        return requireActivity().supportFragmentManager.fragments.firstOrNull {
+        return parentFragmentManager.fragments.firstOrNull {
             it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
         } as? SearchFragment
     }

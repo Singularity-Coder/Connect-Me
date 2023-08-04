@@ -317,7 +317,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
-                        AddApiKeyBottomSheetFragment.newInstance().show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
+                        AddApiKeyBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                         dismiss()
                     }
                     optionsList[1].first -> {
@@ -378,7 +378,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             ImageViewerBottomSheetFragment.newInstance(
                 imageList = insight?.imageList?.toTypedArray() ?: emptyArray(),
                 currentImagePosition = currentImagePosition
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_IMAGE_VIEWER)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_IMAGE_VIEWER)
         }
 
         insightsAdapter.setOnItemClickListener { insight: Insight?, position: Int ->

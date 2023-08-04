@@ -284,13 +284,13 @@ fun EditText?.showKeyboard() {
 }
 
 /** Request focus before hiding keyboard - editText.requestFocus() */
-fun EditText?.hideKeyboard() {
+fun EditText?.hideKeyboard(isClearFocus: Boolean = true) {
     this?.requestFocus()
     if (this?.hasFocus() == true) {
         val imm = this.context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.hideSoftInputFromWindow(this.windowToken, 0)
     }
-    this?.clearFocus()
+    if (isClearFocus) this?.clearFocus()
 }
 
 fun Menu.setMarginBtwMenuIconAndText(context: Context, iconMarginDp: Int) {

@@ -1,7 +1,9 @@
 package com.singularitycoder.connectme.search.view.speedDial
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
@@ -27,19 +29,26 @@ import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.history.HistoryViewModel
 import com.singularitycoder.connectme.search.view.SearchFragment
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 
 const val ARG_PARAM_SPEED_DIAL_TITLE = "ARG_PARAM_SPEED_DIAL_TITLE"
 const val ARG_PARAM_SPEED_DIAL_SUBTITLE = "ARG_PARAM_SPEED_DIAL_SUBTITLE"
+const val ARG_PARAM_SPEED_DIAL_HOST = "ARG_PARAM_SPEED_DIAL_HOST"
 
 @AndroidEntryPoint
 class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(title: String?, subtitle: String? = null) = SpeedDialBottomSheetFragment().apply {
+        fun newInstance(
+            title: String?,
+            subtitle: String? = null,
+            host: String? = null
+        ) = SpeedDialBottomSheetFragment().apply {
             arguments = Bundle().apply {
                 putString(ARG_PARAM_SPEED_DIAL_TITLE, title)
                 putString(ARG_PARAM_SPEED_DIAL_SUBTITLE, subtitle)
+                putString(ARG_PARAM_SPEED_DIAL_HOST, host)
             }
         }
     }
@@ -49,6 +58,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
 
     private var speedDialTitle: String? = null
     private var speedDialSubtitle: String? = null
+    private var speedDialHost: String? = null
     private var speedDialList = listOf<SpeedDial?>()
 
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
@@ -60,6 +70,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
         super.onCreate(savedInstanceState)
         speedDialTitle = arguments?.getString(ARG_PARAM_SPEED_DIAL_TITLE)
         speedDialSubtitle = arguments?.getString(ARG_PARAM_SPEED_DIAL_SUBTITLE)
+        speedDialHost = arguments?.getString(ARG_PARAM_SPEED_DIAL_HOST)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -101,7 +112,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentSpeedDialBottomSheetBinding.setupUserActionListeners() {
         speedDialAdapter.setOnItemClickListener { it: SpeedDial? ->
-            val searchFragment = requireActivity().supportFragmentManager.fragments.firstOrNull {
+            val searchFragment = parentFragmentManager.fragments.firstOrNull {
                 it.javaClass.simpleName == SearchFragment.newInstance("").javaClass.simpleName
             } as? SearchFragment
             searchFragment?.loadWebPage(
@@ -186,8 +197,12 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
                         isDateShown = history?.isDateShown ?: false
                     )
                 }
-                this@SpeedDialBottomSheetFragment.speedDialList = mappedSpeedDialList
-                prepareHistoryList(mappedSpeedDialList)
+                this@SpeedDialBottomSheetFragment.speedDialList = if (speedDialHost != null) {
+                    mappedSpeedDialList.filter { getHostFrom(url = it.link).contains(other = speedDialHost!!, ignoreCase = true) }
+                } else {
+                    mappedSpeedDialList
+                }
+                prepareHistoryList(this@SpeedDialBottomSheetFragment.speedDialList)
             }
         }
 
@@ -205,26 +220,54 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
                 speedDialAdapter.notifyDataSetChanged()
             }
         }
+
+        if (speedDialTitle == SpeedDialFeatures.DOWNLOADS.value) {
+            val hasPermission = requireActivity().checkStoragePermission()
+            if (hasPermission) {
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                    if (Environment.isExternalStorageLegacy().not()) return
+                }
+                openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+            }
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun openIfFileElseShowFilesListIfDirectory(currentDirectory: File) {
+        if (currentDirectory.isFile) return requireActivity().openFile(currentDirectory)
+
+        speedDialList = getFilesListFrom(getDownloadDirectory()).map { file: File ->
+            if (file.isDirectory.not()) {
+                SpeedDial(
+                    imageUrl = file.absolutePath,
+                    title = file.name,
+                    timeInString = "${file.getAppropriateSize()}  •  ${file.lastModified().toIntuitiveDateTime()}",
+                )
+            } else null
+        }
+        speedDialAdapter.speedDialList = speedDialList.mapNotNull { it }
+        speedDialAdapter.notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun prepareHistoryList(historyList: List<SpeedDial?>) {
         val sortedHistoryList = ArrayList<SpeedDial?>()
-        val historyMap = HashMap<String?, ArrayList<SpeedDial?>>()
+        val historyMap = HashMap<Long?, ArrayList<SpeedDial?>>()
         historyList.sortedBy { it?.time }.forEach { it: SpeedDial? ->
-            val historyArrayList = historyMap.get(it?.time?.toShortDate()) ?: ArrayList()
+            val key = convertDateToLong(date = it?.time?.toTimeOfType(type = DateType.dd_MMM_yyyy) ?: "", dateType = DateType.dd_MMM_yyyy.value)
+            val historyArrayList = historyMap.get(key) ?: ArrayList()
             historyArrayList.add(it)
-            historyMap.put(it?.time?.toShortDate(), historyArrayList)
+            historyMap.put(key, historyArrayList)
         }
-        historyMap.keys.forEach { date: String? ->
+        historyMap.keys.sortedBy { it }.forEach { date: Long? ->
             val preparedList = historyMap.get(date)?.mapIndexed { index, history ->
                 history.apply {
                     if (index == historyMap.get(date)?.lastIndex) this?.isDateShown = true
                 }
             } ?: emptyList()
-            sortedHistoryList.addAll(preparedList.reversed())
+            sortedHistoryList.addAll(preparedList)
         }
-        speedDialAdapter.speedDialList = sortedHistoryList.reversed()
+        speedDialAdapter.speedDialList = sortedHistoryList
         speedDialAdapter.notifyDataSetChanged()
     }
 

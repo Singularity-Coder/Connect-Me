@@ -17,7 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.databinding.FragmentCreateCollectionBottomSheetBinding
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvents
+import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +33,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
         @JvmStatic
         fun newInstance(
             collectionWebPage: CollectionWebPage? = null,
-            eventType: CollectionScreenEvents
+            eventType: CollectionScreenEvent
         ) = CreateCollectionBottomSheetFragment().apply {
             arguments = Bundle().apply {
                 putParcelable(ARG_PARAM_COLLECTION_WEB_PAGE, collectionWebPage)
@@ -45,14 +45,14 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentCreateCollectionBottomSheetBinding
 
     private var collectionWebPage: CollectionWebPage? = null
-    private var eventType: CollectionScreenEvents? = null
+    private var eventType: CollectionScreenEvent? = null
 
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         eventType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getParcelable(ARG_PARAM_EVENT_TYPE, CollectionScreenEvents::class.java)
+            arguments?.getParcelable(ARG_PARAM_EVENT_TYPE, CollectionScreenEvent::class.java)
         } else {
             arguments?.getParcelable(ARG_PARAM_EVENT_TYPE)
         }
@@ -80,7 +80,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
         setTransparentBackground()
 
         when (eventType) {
-            CollectionScreenEvents.ADD_TO_COLLECTION -> {
+            CollectionScreenEvent.ADD_TO_COLLECTION -> {
                 etEnterLink.isVisible = false
                 etChooseCollection.isVisible = false
                 etEnterCollectionName.isVisible = true
@@ -88,7 +88,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
                 tvHeader.text = "Create collection"
                 btnDone.text = "Done"
             }
-            CollectionScreenEvents.CREATE_NEW_COLLECTION -> {
+            CollectionScreenEvent.CREATE_NEW_COLLECTION -> {
                 etEnterLink.isVisible = true
                 etChooseCollection.isVisible = true
                 etEnterCollectionName.isVisible = false
@@ -106,7 +106,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-            CollectionScreenEvents.RENAME_COLLECTION -> {
+            CollectionScreenEvent.RENAME_COLLECTION -> {
                 etEnterLink.isVisible = false
                 etChooseCollection.isVisible = false
                 etEnterCollectionName.isVisible = true
@@ -172,7 +172,7 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
                 etChooseCollection.editText?.text.toString().trim()
             }
             when (eventType) {
-                CollectionScreenEvents.CREATE_NEW_COLLECTION -> {
+                CollectionScreenEvent.CREATE_NEW_COLLECTION -> {
                     if (etEnterLink.editText?.text.toString().toLowCase().isValidURL().not()) {
                         etEnterLink.boxStrokeWidth = 2.dpToPx().toInt()
                         etEnterLink.error = "Invalid link"
@@ -205,14 +205,14 @@ class CreateCollectionBottomSheetFragment : BottomSheetDialogFragment() {
                         dismiss()
                     }
                 }
-                CollectionScreenEvents.ADD_TO_COLLECTION -> {
+                CollectionScreenEvent.ADD_TO_COLLECTION -> {
                     collectionsViewModel.addToCollections(
                         collectionWebPage?.copy(collectionTitle = collectionName)
                     )
                     requireContext().showToast("Added to ${etEnterCollectionName.editText?.text}")
                     dismiss()
                 }
-                CollectionScreenEvents.RENAME_COLLECTION -> {
+                CollectionScreenEvent.RENAME_COLLECTION -> {
                     tvHeader.text = collectionName
                     collectionsViewModel.renameCollection(
                         newCollectionTitle = collectionName,

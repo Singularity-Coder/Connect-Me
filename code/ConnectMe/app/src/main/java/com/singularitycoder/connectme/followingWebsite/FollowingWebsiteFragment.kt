@@ -78,7 +78,7 @@ class FollowingWebsiteFragment : Fragment() {
         followingWebsiteAdapter.setOnClickListener { it: FollowingWebsite? ->
             PeekBottomSheetFragment.newInstance(
                 peekUrl = it?.link
-            ).show(requireActivity().supportFragmentManager, BottomSheetTag.TAG_PEEK)
+            ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
         }
 
         followingWebsiteAdapter.setOnLongClickListener { followingWebsite: FollowingWebsite?, view: View? ->
