@@ -105,8 +105,7 @@ class DownloadsFragment : Fragment() {
 
             // TODO: Use getStorageDirectory instead https://developer.android.com/reference/android/os/Environment.html#getStorageDirectory()
 
-            val allDownloadFilesList = getFilesListFrom(getDownloadDirectory())
-            filesList = allDownloadFilesList.subList(1, allDownloadFilesList.lastIndex)
+            filesList = getFilesListFrom(getDownloadDirectory()).subList(1, getFilesListFrom(getDownloadDirectory()).lastIndex)
             openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
         } else {
             binding.llStoragePermissionRationaleView.isVisible = true
@@ -143,10 +142,10 @@ class DownloadsFragment : Fragment() {
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
                         // Filter by image, video, audio, file - dynamic filter based on the file types provided
-                        setupFileFiltering(view = pair.first)
+                        setupFilterFilesPopupMenu(view = pair.first)
                     }
                     optionsList[1].first -> {
-                        setupSortOptionsMenu(view = pair.first)
+                        setupSortFilesPopupMenu(view = pair.first)
                     }
                     optionsList[2].first -> {
                         // TODO another bottom sheet for adding single named items
@@ -165,12 +164,9 @@ class DownloadsFragment : Fragment() {
 
         feedAdapter.setOnItemLongClickListener { download: Download?, view: View? ->
             val optionsList = listOf(
-                Pair("Open source", R.drawable.round_add_circle_outline_24),
+                Pair("Open source", R.drawable.ic_round_link_24),
                 Pair("Open with...", R.drawable.outline_open_in_new_24),
-                Pair("Copy to...", R.drawable.baseline_content_copy_24),
-                Pair("Move to...", R.drawable.outline_control_camera_24),
-                Pair("Zip", R.drawable.outline_folder_zip_24),
-                Pair("Rename", R.drawable.outline_drive_file_rename_outline_24),
+                Pair("Organize", R.drawable.outline_drive_file_move_24),
                 Pair("Get info", R.drawable.outline_info_24),
                 Pair("Share", R.drawable.outline_share_24),
                 Pair("Copy link", R.drawable.baseline_content_copy_24),
@@ -184,10 +180,12 @@ class DownloadsFragment : Fragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
+                        setupOpenSourcePopupMenu(view)
                     }
                     optionsList[1].first -> {
                     }
                     optionsList[2].first -> {
+                        setupOrganizePopupMenu(view)
                     }
                     optionsList[3].first -> {
                     }
@@ -199,10 +197,6 @@ class DownloadsFragment : Fragment() {
                         ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                     }
                     optionsList[6].first -> {
-                    }
-                    optionsList[7].first -> {
-                    }
-                    optionsList[8].first -> {
                     }
                 }
             }
@@ -234,77 +228,7 @@ class DownloadsFragment : Fragment() {
         }
     }
 
-    private fun setupFileFiltering(view: View?) {
-        val popupMenu = PopupMenu(requireContext(), view)
-        popupMenu.menu.add(Menu.NONE, -1, 0, "Filter").apply {
-            isEnabled = false
-        }
-        fileFilterOptionsList.forEach { pair: Pair<String, Int> ->
-            popupMenu.menu.add(
-                0, 1, 1, menuIconWithText(
-                    icon = requireContext().drawable(pair.second)?.changeColor(
-                        context = requireContext(),
-                        color = if (selectedFileFilter == pair.first) R.color.purple_500 else R.color.light_gray_2
-                    ),
-                    title = pair.first
-                )
-            )
-        }
-        popupMenu.setOnMenuItemClickListener { fileFilterMenuItem: MenuItem? ->
-            view?.setHapticFeedback()
-            when (fileFilterMenuItem?.title?.toString()?.trim()) {
-                fileFilterOptionsList[0].first -> {
-                    selectedFileFilter = fileFilterOptionsList[0].first
-                }
-                fileFilterOptionsList[1].first -> {
-                    selectedFileFilter = fileFilterOptionsList[1].first
-                }
-                fileFilterOptionsList[2].first -> {
-                    selectedFileFilter = fileFilterOptionsList[2].first
-                }
-                fileFilterOptionsList[3].first -> {
-                    selectedFileFilter = fileFilterOptionsList[3].first
-                }
-                fileFilterOptionsList[4].first -> {
-                    selectedFileFilter = fileFilterOptionsList[4].first
-                }
-                fileFilterOptionsList[5].first -> {
-                    selectedFileFilter = fileFilterOptionsList[5].first
-                }
-                fileFilterOptionsList[6].first -> {
-                    selectedFileFilter = fileFilterOptionsList[6].first
-                }
-                fileFilterOptionsList[7].first -> {
-                    selectedFileFilter = fileFilterOptionsList[7].first
-                }
-            }
-            false
-        }
-        popupMenu.show()
-//        requireContext().showPopupMenuWithIcons(
-//            view = view,
-//            menuList = optionsList,
-//            title = "Filter"
-//        ) { it: MenuItem? ->
-//            when (it?.title?.toString()?.trim()) {
-//                optionsList[0].first -> {
-//                }
-//                optionsList[1].first -> {
-//                }
-//                optionsList[2].first -> {
-//                }
-//                optionsList[3].first -> {
-//                }
-//                optionsList[4].first -> {
-//                }
-//                optionsList[5].first -> {
-//                }
-//                optionsList[6].first -> {
-//                }
-//                optionsList[7].first -> {
-//                }
-//            }
-//        }
+    private fun observeForData() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -330,7 +254,124 @@ class DownloadsFragment : Fragment() {
         feedAdapter.notifyDataSetChanged()
     }
 
-    private fun setupSortOptionsMenu(view: View?) {
+    private fun setupOrganizePopupMenu(view: View?) {
+        val optionsList = listOf(
+            Pair("Copy to...", R.drawable.baseline_content_copy_24),
+            Pair("Move to...", R.drawable.outline_control_camera_24),
+            Pair("Zip", R.drawable.outline_folder_zip_24),
+            Pair("Rename", R.drawable.outline_drive_file_rename_outline_24),
+        )
+        requireContext().showPopupMenuWithIcons(
+            view = view,
+            menuList = optionsList,
+            title = "Organize"
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                optionsList[0].first -> {
+                }
+                optionsList[1].first -> {
+                }
+                optionsList[2].first -> {
+                }
+            }
+        }
+    }
+
+    private fun setupOpenSourcePopupMenu(view: View?) {
+        val optionsList = listOf(
+            Pair("Peek", R.drawable.outline_remove_red_eye_24),
+            Pair("New tab", R.drawable.round_add_circle_outline_24),
+            Pair("New private tab", R.drawable.outline_policy_24),
+        )
+        requireContext().showPopupMenuWithIcons(
+            view = view,
+            menuList = optionsList,
+            title = "Open source in"
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                optionsList[0].first -> {
+                }
+                optionsList[1].first -> {
+                }
+                optionsList[2].first -> {
+                }
+            }
+        }
+    }
+
+    private fun setupFilterFilesPopupMenu(view: View?) {
+        val popupMenu = PopupMenu(requireContext(), view)
+        popupMenu.menu.add(Menu.NONE, -1, 0, "Filter").apply {
+            isEnabled = false
+        }
+        fileFilterOptionsList.forEach { pair: Pair<String, Int> ->
+            popupMenu.menu.add(
+                0, 1, 1, menuIconWithText(
+                    icon = requireContext().drawable(pair.second)?.changeColor(
+                        context = requireContext(),
+                        color = if (selectedFileFilter == pair.first) R.color.purple_500 else R.color.light_gray_2
+                    ),
+                    title = pair.first
+                )
+            )
+        }
+        popupMenu.setOnMenuItemClickListener { fileFilterMenuItem: MenuItem? ->
+            view?.setHapticFeedback()
+            when (fileFilterMenuItem?.title?.toString()?.trim()) {
+                fileFilterOptionsList[0].first -> {
+                    selectedFileFilter = fileFilterOptionsList[0].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).subList(1, getFilesListFrom(getDownloadDirectory()).lastIndex)
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[1].first -> {
+                    selectedFileFilter = fileFilterOptionsList[1].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> ImageFormat.values().map { it.value }.contains(file.extension) }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[2].first -> {
+                    selectedFileFilter = fileFilterOptionsList[2].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> VideoFormat.values().map { it.value }.contains(file.extension) }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[3].first -> {
+                    selectedFileFilter = fileFilterOptionsList[3].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> AudioFormat.values().map { it.value }.contains(file.extension) }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[4].first -> {
+                    selectedFileFilter = fileFilterOptionsList[4].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> DocumentFormat.values().map { it.value }.contains(file.extension) }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[5].first -> {
+                    selectedFileFilter = fileFilterOptionsList[5].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> ArchiveFormat.values().map { it.value }.contains(file.extension) }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[6].first -> {
+                    selectedFileFilter = fileFilterOptionsList[6].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> AndroidFormat.values().map { it.value }.contains(file.extension) }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+                fileFilterOptionsList[7].first -> {
+                    selectedFileFilter = fileFilterOptionsList[7].first
+                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File ->
+                        ImageFormat.values().map { it.value }.contains(file.extension).not() &&
+                        VideoFormat.values().map { it.value }.contains(file.extension).not() &&
+                        AudioFormat.values().map { it.value }.contains(file.extension).not() &&
+                        DocumentFormat.values().map { it.value }.contains(file.extension).not() &&
+                        ArchiveFormat.values().map { it.value }.contains(file.extension).not() &&
+                        AndroidFormat.values().map { it.value }.contains(file.extension).not()
+                    }
+                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                }
+            }
+            false
+        }
+        popupMenu.show()
+    }
+
+    private fun setupSortFilesPopupMenu(view: View?) {
         val selectedOpenAiModel = preferences.getString(Preferences.KEY_DOWNLOAD_SORT_BY, "")
         val popupMenu = PopupMenu(requireContext(), view)
         popupMenu.menu.add(Menu.NONE, -1, 0, "Sort by").apply {
@@ -381,9 +422,5 @@ class DownloadsFragment : Fragment() {
             false
         }
         popupMenu.show()
-    }
-
-    private fun observeForData() {
-
     }
 }

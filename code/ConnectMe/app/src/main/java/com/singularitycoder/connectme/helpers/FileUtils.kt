@@ -388,7 +388,7 @@ fun Activity.openFile(selectedItem: File) {
 
 fun File.getAppropriateSize(): String {
     return when {
-        this.showSizeIn(MB) <= 0.1 -> {
+        this.showSizeIn(MB) < 1 -> {
             "${String.format("%1.2f", this.showSizeIn(KB))} Kb"
         }
         this.showSizeIn(MB) >= GB -> {
