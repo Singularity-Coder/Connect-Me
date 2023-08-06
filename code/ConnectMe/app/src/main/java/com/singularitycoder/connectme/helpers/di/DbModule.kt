@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.singularitycoder.connectme.collections.CollectionsDao
+import com.singularitycoder.connectme.downloads.DownloadDao
 import com.singularitycoder.connectme.feed.FeedDao
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteDao
 import com.singularitycoder.connectme.helpers.constants.DEFAULT_FOLLOWING_SITES
@@ -76,4 +77,8 @@ object DbModule {
     @Singleton
     @Provides
     fun injectFeedDao(db: ConnectMeDatabase): FeedDao = db.feedDao()
+
+    @Singleton
+    @Provides
+    fun injectDownloadDao(db: ConnectMeDatabase): DownloadDao = db.downloadDao()
 }

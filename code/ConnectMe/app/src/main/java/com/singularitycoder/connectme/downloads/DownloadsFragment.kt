@@ -57,6 +57,18 @@ class DownloadsFragment : Fragment() {
     private var topicParam: String? = null
     private var isSelfProfile: Boolean = false
 
+    private val fileFilterOptionsList = listOf(
+        Pair("All Files", R.drawable.outline_all_inclusive_24),
+        Pair("Photos", R.drawable.outline_image_24),
+        Pair("Videos", R.drawable.outline_videocam_24),
+        Pair("Audio", R.drawable.outline_audiotrack_24),
+        Pair("Documents", R.drawable.outline_article_24),
+        Pair("Archives", R.drawable.outline_folder_zip_24),
+        Pair("APKs", R.drawable.outline_android_24),
+        Pair("Other Files", R.drawable.outline_insert_drive_file_24),
+    )
+    private var selectedFileFilter: String = fileFilterOptionsList.first().first
+
     private lateinit var filesList: List<File>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,6 +143,7 @@ class DownloadsFragment : Fragment() {
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
                         // Filter by image, video, audio, file - dynamic filter based on the file types provided
+                        setupFileFiltering(view = pair.first)
                     }
                     optionsList[1].first -> {
                         setupSortOptionsMenu(view = pair.first)
@@ -221,6 +234,79 @@ class DownloadsFragment : Fragment() {
         }
     }
 
+    private fun setupFileFiltering(view: View?) {
+        val popupMenu = PopupMenu(requireContext(), view)
+        popupMenu.menu.add(Menu.NONE, -1, 0, "Filter").apply {
+            isEnabled = false
+        }
+        fileFilterOptionsList.forEach { pair: Pair<String, Int> ->
+            popupMenu.menu.add(
+                0, 1, 1, menuIconWithText(
+                    icon = requireContext().drawable(pair.second)?.changeColor(
+                        context = requireContext(),
+                        color = if (selectedFileFilter == pair.first) R.color.purple_500 else R.color.light_gray_2
+                    ),
+                    title = pair.first
+                )
+            )
+        }
+        popupMenu.setOnMenuItemClickListener { fileFilterMenuItem: MenuItem? ->
+            view?.setHapticFeedback()
+            when (fileFilterMenuItem?.title?.toString()?.trim()) {
+                fileFilterOptionsList[0].first -> {
+                    selectedFileFilter = fileFilterOptionsList[0].first
+                }
+                fileFilterOptionsList[1].first -> {
+                    selectedFileFilter = fileFilterOptionsList[1].first
+                }
+                fileFilterOptionsList[2].first -> {
+                    selectedFileFilter = fileFilterOptionsList[2].first
+                }
+                fileFilterOptionsList[3].first -> {
+                    selectedFileFilter = fileFilterOptionsList[3].first
+                }
+                fileFilterOptionsList[4].first -> {
+                    selectedFileFilter = fileFilterOptionsList[4].first
+                }
+                fileFilterOptionsList[5].first -> {
+                    selectedFileFilter = fileFilterOptionsList[5].first
+                }
+                fileFilterOptionsList[6].first -> {
+                    selectedFileFilter = fileFilterOptionsList[6].first
+                }
+                fileFilterOptionsList[7].first -> {
+                    selectedFileFilter = fileFilterOptionsList[7].first
+                }
+            }
+            false
+        }
+        popupMenu.show()
+//        requireContext().showPopupMenuWithIcons(
+//            view = view,
+//            menuList = optionsList,
+//            title = "Filter"
+//        ) { it: MenuItem? ->
+//            when (it?.title?.toString()?.trim()) {
+//                optionsList[0].first -> {
+//                }
+//                optionsList[1].first -> {
+//                }
+//                optionsList[2].first -> {
+//                }
+//                optionsList[3].first -> {
+//                }
+//                optionsList[4].first -> {
+//                }
+//                optionsList[5].first -> {
+//                }
+//                optionsList[6].first -> {
+//                }
+//                optionsList[7].first -> {
+//                }
+//            }
+//        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     private fun openIfFileElseShowFilesListIfDirectory(currentDirectory: File) {
         println("Parent file path: ${currentDirectory.parentFile.path}") // /storage/emulated
@@ -231,10 +317,10 @@ class DownloadsFragment : Fragment() {
         filesList.forEach { file: File ->
             val downloadItem = Download(
                 imageUrl = file.absolutePath,
-                title = file.name,
-                time = if (isSelfProfile) {
-                    "${file.getAppropriateSize()}  •  ${file.lastModified().toIntuitiveDateTime()}"
-                } else file.getAppropriateSize(),
+                title = file.name.substringBeforeLast(delimiter = "."),
+                time = if (file.isDirectory) {
+                    "${getFilesListFrom(currentDirectory).size} items"
+                } else "${file.extension.toUpCase()}  •  ${file.getAppropriateSize()}",
                 link = "",
                 isDirectory = file.isDirectory
             )

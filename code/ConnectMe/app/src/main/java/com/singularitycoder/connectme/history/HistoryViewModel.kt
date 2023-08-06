@@ -31,7 +31,7 @@ class HistoryViewModel @Inject constructor(
         historyDao.deleteAll()
     }
 
-    fun deleteAllHistoryByTIme(elapsedTime: Long?) = viewModelScope.launch {
+    fun deleteAllHistoryByTime(elapsedTime: Long?) = viewModelScope.launch {
         historyDao.deleteAllByTime(elapsedTime)
     }
 }

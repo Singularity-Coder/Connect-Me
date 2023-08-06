@@ -113,23 +113,23 @@ class HistoryFragment : Fragment() {
                 when (menuOptionsList[menuPosition]) {
                     menuOptionsList[0] -> {
                         val time1Hour = TimeUnit.HOURS.toMillis(1)
-                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time1Hour)
+                        historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time1Hour)
                     }
                     menuOptionsList[1] -> {
                         val time24Hours = TimeUnit.HOURS.toMillis(24)
-                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time24Hours)
+                        historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time24Hours)
                     }
                     menuOptionsList[2] -> {
                         val time7Days = TimeUnit.DAYS.toMillis(7)
-                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time7Days)
+                        historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time7Days)
                     }
                     menuOptionsList[3] -> {
                         val time4Weeks = TimeUnit.DAYS.toMillis(28)
-                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time4Weeks)
+                        historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time4Weeks)
                     }
                     menuOptionsList[4] -> {
                         val time1Year = TimeUnit.DAYS.toMillis(28 * 12)
-                        historyViewModel.deleteAllHistoryByTIme(elapsedTime = timeNow - time1Year)
+                        historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time1Year)
                     }
                     menuOptionsList[5] -> {
                         requireContext().showAlertDialog(

@@ -73,6 +73,7 @@ class SearchViewModel @Inject constructor(
             SearchEngine.YAHOO -> {
                 _searchSuggestionResultsStateFlow.value = YahooSearchSuggestionProvider().fetchSearchSuggestionResultsList(query)
             }
+            else -> Unit
         }
     }
 

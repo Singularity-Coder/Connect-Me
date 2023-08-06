@@ -8,10 +8,7 @@ import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -43,6 +40,8 @@ import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.collections.*
 import com.singularitycoder.connectme.databinding.FragmentSearchBinding
+import com.singularitycoder.connectme.downloads.Download
+import com.singularitycoder.connectme.downloads.DownloadsViewModel
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
@@ -96,6 +95,7 @@ class SearchFragment : Fragment() {
     private val searchViewModel by activityViewModels<SearchViewModel>()
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
     private val historyViewModel by viewModels<HistoryViewModel>()
+    private val downloadsViewModel by viewModels<DownloadsViewModel>()
     private val followingWebsiteViewModel by viewModels<FollowingWebsiteViewModel>()
     private val iconTextActionAdapter by lazy { IconTextActionAdapter() }
 
@@ -297,21 +297,27 @@ class SearchFragment : Fragment() {
 
         ivSearchEngine.onSafeClick {
             val popupMenu = android.widget.PopupMenu(requireContext(), it.first)
-            SearchEngine.values().forEach { it: SearchEngine ->
+            popupMenu.menu.add(Menu.NONE, -1, 0, "Search Engine").apply {
+                isEnabled = false
+            }
+            SearchEngine.values().forEach { searchEngine: SearchEngine ->
                 popupMenu.menu.add(
                     0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(it.icon),
-                        title = it.value,
+                        icon = requireContext().drawable(searchEngine.icon),
+                        title = searchEngine.value,
                         iconWidth = 24.dpToPx().toInt(),
                         iconHeight = 24.dpToPx().toInt(),
                         defaultSpace = "      "
                     )
                 )
             }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
+            popupMenu.setOnMenuItemClickListener { menuItem: MenuItem? ->
                 view?.setHapticFeedback()
-                ivSearchEngine.setImageResource(SearchEngine.getEngineBy(it?.title?.toString()).icon)
-                preferences.edit().putString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.getEngineBy(it?.title?.toString()).name).apply()
+                ivSearchEngine.setImageResource(SearchEngine.getEngineBy(menuItem?.title?.toString()).icon)
+                preferences.edit().putString(
+                    Preferences.KEY_SEARCH_SUGGESTION_PROVIDER,
+                    SearchEngine.getEngineBy(menuItem?.title?.toString()).name
+                ).apply()
                 searchViewModel.getSearchSuggestions(searchQuery)
                 popupMenu.dismiss()
                 false
@@ -502,6 +508,42 @@ class SearchFragment : Fragment() {
                             link = historyList.getOrNull(newIndex)?.link,
                             favicon = historyList.getOrNull(newIndex)?.favicon
                         )
+                    }
+                }
+            }
+        }
+
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = downloadsViewModel.getAllDownloadsFlow()) { downloadsList: List<Download?> ->
+            layoutDownloads.root.isVisible = downloadsList.isNotEmpty()
+            if (downloadsList.isEmpty()) return@collectLatestLifecycleFlow
+            withContext(Main) {
+                listOf(
+                    layoutDownloads.layoutItem1,
+                    layoutDownloads.layoutItem2,
+                    layoutDownloads.layoutItem3,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    val newIndex = downloadsList.lastIndex - index
+                    if (downloadsList.getOrNull(newIndex)?.link.isNullOrBlank()) {
+                        listItemAppBinding.root.isVisible = false
+                        return@forEachIndexed
+                    }
+                    listItemAppBinding.root.isVisible = true
+                    listItemAppBinding.tvDate.isVisible = false
+//                    listItemAppBinding.ivWebappIcon.load(downloadsList.getOrNull(newIndex)?.favicon)
+                    listItemAppBinding.tvTitle.text = downloadsList.getOrNull(newIndex)?.title
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        listItemAppBinding.tvTitle.setTextAppearance(R.style.TextAppearance_Material3_BodyMedium)
+                    } else {
+                        listItemAppBinding.tvTitle.setTextAppearance(context, R.style.TextAppearance_Material3_BodyMedium)
+                    }
+                    listItemAppBinding.tvSubtitle.text = getHostFrom(url = downloadsList.getOrNull(newIndex)?.link).replace("www.", "")
+                    listItemAppBinding.tvTime.text = downloadsList.getOrNull(newIndex)?.time
+                    // TODO if source link is null then open the file else open website
+                    listItemAppBinding.root.onSafeClick {
+//                        loadWebPage(
+//                            link = downloadsList.getOrNull(newIndex)?.link,
+//                            favicon = downloadsList.getOrNull(newIndex)?.favicon
+//                        )
                     }
                 }
             }

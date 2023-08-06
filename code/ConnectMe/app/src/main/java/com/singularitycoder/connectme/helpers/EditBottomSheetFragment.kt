@@ -64,11 +64,11 @@ class EditBottomSheetFragment : BottomSheetDialogFragment() {
         when (eventType) {
             EditEvent.RENAME_DOWNLOAD_FILE -> {
                 tvHeader.text = "Rename file"
-                etEdit.hint = "Rename file"
+                etEdit.hint = "File name"
             }
             EditEvent.CREATE_NEW_DOWNLOAD_FOLDER -> {
                 tvHeader.text = "Create new folder"
-                etEdit.hint = "Create new folder"
+                etEdit.hint = "Folder name"
             }
             else -> Unit
         }

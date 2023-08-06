@@ -293,34 +293,6 @@ fun EditText?.hideKeyboard(isClearFocus: Boolean = true) {
     if (isClearFocus) this?.clearFocus()
 }
 
-fun Menu.setMarginBtwMenuIconAndText(context: Context, iconMarginDp: Int) {
-    this.forEach { item: MenuItem ->
-        val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, iconMarginDp.toFloat(), context.resources.displayMetrics).toInt()
-        if (null != item.icon) {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
-            } else {
-                item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
-                    override fun getIntrinsicWidth(): Int = intrinsicHeight + iconMarginPx + iconMarginPx
-                }
-            }
-        }
-    }
-}
-
-// https://www.programmersought.com/article/39074216761/
-fun Menu.invokeSetMenuIconMethod() {
-    if (this.javaClass.simpleName.equals("MenuBuilder", ignoreCase = true)) {
-        try {
-            val method: Method = this.javaClass.getDeclaredMethod("setOptionalIconsVisible", java.lang.Boolean.TYPE)
-            method.isAccessible = true
-            method.invoke(this, true)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-}
-
 fun getHtmlFormattedTime(html: String): Spanned {
     return HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 }

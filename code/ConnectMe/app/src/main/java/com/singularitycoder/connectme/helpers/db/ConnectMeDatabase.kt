@@ -5,6 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.singularitycoder.connectme.collections.CollectionWebPage
 import com.singularitycoder.connectme.collections.CollectionsDao
+import com.singularitycoder.connectme.downloads.Download
+import com.singularitycoder.connectme.downloads.DownloadDao
 import com.singularitycoder.connectme.feed.Feed
 import com.singularitycoder.connectme.feed.FeedDao
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
@@ -27,6 +29,7 @@ import com.singularitycoder.connectme.search.model.WebApp
         FollowingWebsite::class,
         CollectionWebPage::class,
         Feed::class,
+        Download::class,
     ],
     version = 1,
     exportSchema = false
@@ -44,5 +47,6 @@ abstract class ConnectMeDatabase : RoomDatabase() {
     abstract fun followingWebsiteDao(): FollowingWebsiteDao
     abstract fun collectionsDao(): CollectionsDao
     abstract fun feedDao(): FeedDao
+    abstract fun downloadDao(): DownloadDao
 }
 

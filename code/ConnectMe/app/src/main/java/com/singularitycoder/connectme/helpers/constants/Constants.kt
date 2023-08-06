@@ -201,6 +201,7 @@ object Table {
     const val FEED = "table_feed"
     const val FOLLOWING_WEBSITE = "table_following_website"
     const val COLLECTION = "table_collection"
+    const val DOWNLOAD = "table_download"
 }
 
 object BroadcastKey {
@@ -312,6 +313,16 @@ enum class SearchEngine(
         value = "Yahoo",
         icon = R.drawable.yahoo,
         url = "https://search.yahoo.com/search?p={searchTerms}&fr=yfp-hrmob-s&fr2=p%3Afp%2Cm%3Asa&.tsrc=yfp-hrmob-s&fp=1&toggle=1&cop=mss&ei=UTF-8"
+    ),
+    YOUTUBE(
+        value = "Youtube",
+        icon = R.drawable.youtube,
+        url = "https://www.youtube.com/results?search_query={searchTerms}"
+    ),
+    WIKIPEDIA(
+        value = "Wikipedia",
+        icon = R.drawable.wikipedia,
+        url = "https://en.wikipedia.org/wiki/{searchTerms}"
     );
 
     companion object {

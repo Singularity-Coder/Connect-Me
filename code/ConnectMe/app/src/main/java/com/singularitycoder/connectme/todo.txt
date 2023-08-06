@@ -10,9 +10,8 @@ TODO Checklist
 9. Alarms
 10. How bookmarks work
 
+search tab - clear serarch query x button or swipe down to clear
 
-Create download table
-dao
 On download- add to db with link and path - problem is on renaming
 so files come from files dir only. use db for source nav alone n updating the name on rename
 add folder - refresh list

@@ -6,10 +6,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.*
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.TransitionDrawable
+import android.graphics.drawable.*
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
@@ -18,6 +15,7 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ImageSpan
 import android.text.style.StyleSpan
 import android.util.DisplayMetrics
+import android.util.TypedValue
 import android.view.*
 import android.view.animation.*
 import android.view.inputmethod.EditorInfo
@@ -29,6 +27,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.forEach
+import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -38,6 +38,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import java.lang.reflect.Method
 import java.util.*
 
 fun Context.getThemeAttrColor(attributeColor: Int): Int {
@@ -263,20 +264,38 @@ fun Context.showPopupMenuWithIcons(
     onItemClick: (menuItem: MenuItem?) -> Unit
 ) {
     val popupMenu = PopupMenu(this, view)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        popupMenu.menu.setGroupDividerEnabled(true)
+    }
     if (title != null) {
         popupMenu.menu.add(Menu.NONE, -1, 0, title).apply {
             isEnabled = false
         }
     }
-    menuList.forEach {
+    val groupId = if (menuList.last().first.contains(other = "delete", ignoreCase = true)) {
+        menuList.lastIndex
+    } else 0
+    menuList.forEachIndexed { index, pair ->
+        val insetDrawable = InsetDrawable(
+            /* drawable = */ if (pair.first == customColorItem) {
+                drawable(pair.second)?.changeColor(this, customColor)
+            } else drawable(pair.second)?.changeColor(this, R.color.purple_500),
+            /* insetLeft = */ 0,
+            /* insetTop = */ 0,
+            /* insetRight = */ 0,
+            /* insetBottom = */ 0
+        )
         popupMenu.menu.add(
-            0, 1, 1, menuIconWithText(
-                icon = if (it.first == customColorItem) {
-                    drawable(it.second)?.changeColor(this, customColor)
-                } else drawable(it.second)?.changeColor(this, R.color.purple_500),
-                title = it.first
+            /* groupId */ /* if (index == groupId) groupId else 0 */ 0,
+            /* itemId */ 1,
+            /* order */ 1,
+            /* title */ menuIconWithText(
+                icon = insetDrawable,
+                title = pair.first
             )
         )
+        popupMenu.menu.get(index).actionView?.setMargins(null, 0, 0, 0, 8.dpToPx().toInt())
+//        findViewById<ViewGroup>(popupMenu.menu.get(index).itemId).get(index)
     }
     popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
         view?.setHapticFeedback()
@@ -804,6 +823,34 @@ fun Activity.setStatusBarColor(@ColorRes color: Int) {
 // https://stackoverflow.com/questions/27839105/android-lollipop-change-navigation-bar-color
 fun Activity.setNavigationBarColor(@ColorRes color: Int) {
     window.navigationBarColor = ContextCompat.getColor(this, color)
+}
+
+fun Menu.setMarginBtwMenuIconAndText(context: Context, iconMarginDp: Int) {
+    this.forEach { item: MenuItem ->
+        val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, iconMarginDp.toFloat(), context.resources.displayMetrics).toInt()
+        if (null != item.icon) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+                item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
+            } else {
+                item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
+                    override fun getIntrinsicWidth(): Int = intrinsicHeight + iconMarginPx + iconMarginPx
+                }
+            }
+        }
+    }
+}
+
+// https://www.programmersought.com/article/39074216761/
+fun Menu.invokeSetMenuIconMethod() {
+    if (this.javaClass.simpleName.equals("MenuBuilder", ignoreCase = true)) {
+        try {
+            val method: Method = this.javaClass.getDeclaredMethod("setOptionalIconsVisible", java.lang.Boolean.TYPE)
+            method.isAccessible = true
+            method.invoke(this, true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }
 
 // https://stackoverflow.com/questions/2228151/how-to-enable-haptic-feedback-on-button-view

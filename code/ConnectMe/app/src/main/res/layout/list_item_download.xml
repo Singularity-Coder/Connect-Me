@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
-    android:layout_marginTop="16dp"
+    android:layout_marginTop="8dp"
     android:clipChildren="true"
     android:clipToPadding="true"
     android:orientation="vertical">
@@ -47,36 +47,21 @@
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/iv_item_image"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/purple_200"
+                android:layout_height="150dp"
+                android:background="@color/purple_50"
                 android:scaleType="centerCrop"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <View
-                android:id="@+id/view_black_fade"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="-32dp"
-                android:background="@drawable/background_black_gradient_fade"
-                android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/tv_source" />
+<!--            <View-->
+<!--                android:id="@+id/view_black_fade"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="0dp"-->
+<!--                android:layout_marginTop="-32dp"-->
+<!--                android:background="@drawable/background_black_gradient_fade"-->
+<!--                android:visibility="visible"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="@+id/tv_source" />-->
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_source"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="12:47 PM"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -95,4 +80,20 @@
         android:text="dark_energy_light_energy.png"
         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         android:textColor="@color/title_color" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_source"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="12:47 PM"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -8,11 +8,11 @@ import com.singularitycoder.connectme.R
 // https://www.dafont.com/radicalis.font
 
 val typefaceList = listOf(
-    R.font.milkshake,
+//    R.font.milkshake,
     R.font.croissant_one_regular,
     R.font.beround_semibold,
-    R.font.berkshire_swash_regular,
+//    R.font.berkshire_swash_regular,
     R.font.caviar_dreams_bold,
-    R.font.arima_madurai_medium,
+//    R.font.arima_madurai_medium,
     R.font.oleo_script_regular,
 )

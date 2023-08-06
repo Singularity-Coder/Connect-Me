@@ -106,4 +106,9 @@
         <item name="android:strokeColor">@color/input_box_stroke_color</item>
         <item name="boxStrokeColor">@color/input_box_stroke_color</item>
     </style>
+
+<!--    https://stackoverflow.com/questions/42214592/androidlinespacingmultiplier-doesnt-work-in-androidtextappearance-->
+    <style name="LineSpacing" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:lineSpacingMultiplier">1.8</item>
+    </style>
 </resources>
