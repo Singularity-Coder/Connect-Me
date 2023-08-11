@@ -383,7 +383,11 @@ fun Activity.openFile(selectedItem: File) {
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         setDataAndType(uri, mime)
     }
-    return this.startActivity(intent)
+    try {
+        this.startActivity(intent)
+    } catch (_: Exception) {
+        showToast("Sorry. Cannot open this file.")
+    }
 }
 
 fun File.getAppropriateSize(): String {
@@ -400,8 +404,9 @@ fun File.getAppropriateSize(): String {
     }
 }
 
+/** /storage/emulated/0/Download/ConnectMe */
 fun getDownloadDirectory(): File {
     return File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_DOWNLOADS}/ConnectMe").also {
         if (it.exists().not()) it.mkdirs()
-    } // /storage/emulated/0/Download/ConnectMe
+    }
 }

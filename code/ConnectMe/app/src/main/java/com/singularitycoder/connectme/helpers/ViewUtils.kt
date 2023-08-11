@@ -305,6 +305,38 @@ fun Context.showPopupMenuWithIcons(
     popupMenu.show()
 }
 
+fun Context.showSingleSelectionPopupMenu(
+    view: View?,
+    title: String? = null,
+    selectedOption: String? = null,
+    @ColorRes enabledColor: Int = R.color.purple_500,
+    @ColorRes disabledColor: Int = android.R.color.transparent,
+    menuList: List<Pair<String, Int>>,
+    onItemClick: (menuItem: MenuItem?) -> Unit
+) {
+    val popupMenu = PopupMenu(this, view)
+    popupMenu.menu.add(Menu.NONE, -1, 0, title).apply {
+        isEnabled = false
+    }
+    menuList.forEach { pair: Pair<String, Int> ->
+        popupMenu.menu.add(
+            0, 1, 1, menuIconWithText(
+                icon = this.drawable(pair.second)?.changeColor(
+                    context = this,
+                    color = if (selectedOption == pair.first) enabledColor else disabledColor
+                ),
+                title = pair.first
+            )
+        )
+    }
+    popupMenu.setOnMenuItemClickListener { menuItem: MenuItem? ->
+        view?.setHapticFeedback()
+        onItemClick.invoke(menuItem)
+        false
+    }
+    popupMenu.show()
+}
+
 // Create custom list item to get correct width
 // Refer for a fix - https://stackoverflow.com/questions/14200724/listpopupwindow-not-obeying-wrap-content-width-spec
 fun Context.showListPopupMenu(

@@ -20,7 +20,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@color/purple_50">
 
             <View
                 android:id="@+id/view_dummy_center"
@@ -31,19 +32,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/tv_file_extension"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:background="@color/purple_100"
-                android:gravity="center"
-                android:text="pdf"
-                android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                android:textColor="@color/purple_500"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/iv_item_image"
                 android:layout_width="match_parent"
@@ -52,15 +40,41 @@
                 android:scaleType="centerCrop"
                 app:layout_constraintTop_toTopOf="parent" />
 
-<!--            <View-->
-<!--                android:id="@+id/view_black_fade"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="0dp"-->
-<!--                android:layout_marginTop="-32dp"-->
-<!--                android:background="@drawable/background_black_gradient_fade"-->
-<!--                android:visibility="visible"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                app:layout_constraintTop_toTopOf="@+id/tv_source" />-->
+            <!--            <View-->
+            <!--                android:id="@+id/view_black_fade_item_icon"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:layout_height="0dp"-->
+            <!--                android:layout_marginStart="4dp"-->
+            <!--                android:layout_marginTop="4dp"-->
+            <!--                android:layout_marginEnd="4dp"-->
+            <!--                android:layout_marginBottom="4dp"-->
+            <!--                android:background="@drawable/background_black_gradient_fade"-->
+            <!--                android:visibility="gone"-->
+            <!--                app:layout_constraintBottom_toBottomOf="@+id/iv_item_icon"-->
+            <!--                app:layout_constraintEnd_toEndOf="@+id/iv_item_icon"-->
+            <!--                app:layout_constraintStart_toStartOf="@+id/iv_item_icon"-->
+            <!--                app:layout_constraintTop_toTopOf="@+id/iv_item_icon" />-->
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_item_icon_dummy"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/iv_item_icon"
+                app:layout_constraintEnd_toEndOf="@+id/iv_item_icon"
+                app:layout_constraintStart_toStartOf="@+id/iv_item_icon"
+                app:layout_constraintTop_toTopOf="@+id/iv_item_icon" />
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_item_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/outline_insert_drive_file_24"
+                android:tint="@color/purple_500"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -85,11 +99,11 @@
         android:id="@+id/tv_source"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="2dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:paddingStart="8dp"
         android:text="12:47 PM"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="@android:color/darker_gray"

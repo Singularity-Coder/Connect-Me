@@ -1,5 +1,7 @@
 package com.singularitycoder.connectme.helpers.constants
 
+// https://developer.android.com/guide/topics/media/platform/supported-formats
+
 enum class ImageFormat(val value: String) {
     BMP(value = "bmp"),
     GIF(value = "gif"),

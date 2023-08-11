@@ -126,6 +126,13 @@ val DEFAULT_WEB_APPS = listOf(
         time = timeNow,
         link = "https://www.w3schools.com/"
     ),
+    CollectionWebPage(
+        collectionTitle = "📚 Education",
+        title = "GeeksforGeeks | A computer science portal for geeks",
+        favicon = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARzQklUCAgI CHwIZIgAAAEESURBVDiN7Y8xTgJhFIS/9y/WwgngAuAeYS3cWMoNOMISiK0cAALegBtISdgGb/Bn Sax3b0BP9h8LAxqMBbEzftV7M8lkBv75NXY8utP0wZkmYDegSmJejPPnL94CrA2qgizbjTcrgMZn lJpCyxDkzVnHwaI3S1sS3qFlgEwhlM4RYzS/NTinO7sbOJgDlbBVMdpMfpzQm6UTg6dLtgu9FqM8 aZwLx/8jVANhHqksxnl28qbpEtifGsTz+47q2stsC3jg2iALol8HlVeOLcaLsMpQG9G3KIr9cF06 AD9clxZFMWIPShCtOoTb3XizenvM/SGQSGagRDI7BBI/XJeXTP7LvAM6WXp2vhWlYQAAAABJRU5E rkJggg== ",
+        time = timeNow,
+        link = "https://www.geeksforgeeks.org/"
+    ),
 
 
     CollectionWebPage(

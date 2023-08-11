@@ -86,8 +86,6 @@ val TOP_LEVEL_DOMAINS = listOf(
     ".arpa",
 )
 
-val OPEN_AI_MODELS_LIST = listOf("gpt-4", "gpt-3.5-turbo")
-
 // Many of them dont work with GPT either because its not connected to internet or denies it. Need to find OS model.
 // https://consumeraffairs.nic.in/organisation-and-units/division/consumer-protection-unit/consumer-rights
 // Let's work this out in a step by step way to be sure we have the right answer

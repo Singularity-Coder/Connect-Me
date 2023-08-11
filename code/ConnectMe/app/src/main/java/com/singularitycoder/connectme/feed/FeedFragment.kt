@@ -18,7 +18,6 @@ import androidx.work.*
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
-import com.singularitycoder.connectme.explore.Explore
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
@@ -50,15 +49,20 @@ class FeedFragment : Fragment() {
 
     private lateinit var binding: FragmentFeedBinding
 
-    private val feedAdapter = FeedAdapter()
-    private val rssFeedTypeList = listOf("All Feeds", "Saved Feed")
 
     private var feedList = listOf<Feed?>()
     private var feedSavedList = listOf<Feed?>()
     private var topicParam: String? = null
-    private var selectedFeed: String? = rssFeedTypeList.first()
+
+    private val feedAdapter = FeedAdapter()
 
     private val websiteActionsViewModel by activityViewModels<WebsiteActionsViewModel>()
+
+    private val rssFeedTypeList = listOf(
+        Pair("All Feeds", R.drawable.round_check_24),
+        Pair("Saved Feed", R.drawable.round_check_24)
+    )
+    private var selectedFeed: String? = rssFeedTypeList.first().first
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,35 +160,23 @@ class FeedFragment : Fragment() {
         }
 
         layoutSearch.btnMore.onSafeClick { pair: Pair<View?, Boolean> ->
-            val popupMenu = PopupMenu(requireContext(), pair.first)
-            rssFeedTypeList.forEach {
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
-                            context = requireContext(),
-                            color = if (selectedFeed == it) R.color.purple_500 else android.R.color.transparent
-                        ),
-                        title = it
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
-                when (it?.title?.toString()?.trim()) {
-                    rssFeedTypeList[0] -> {
-                        selectedFeed = rssFeedTypeList[0]
+            requireContext().showSingleSelectionPopupMenu(
+                view = pair.first,
+                title = "Filter",
+                selectedOption = selectedFeed,
+                menuList = rssFeedTypeList,
+            ) { menuItem: MenuItem? ->
+                selectedFeed = menuItem?.title?.toString()?.trim() ?: ""
+                when (menuItem?.title?.toString()?.trim()) {
+                    rssFeedTypeList[0].first -> {
                         feedAdapter.feedList = feedList
-                        feedAdapter.notifyDataSetChanged()
                     }
-                    rssFeedTypeList[1] -> {
-                        selectedFeed = rssFeedTypeList[1]
+                    rssFeedTypeList[1].first -> {
                         feedAdapter.feedList = feedSavedList
-                        feedAdapter.notifyDataSetChanged()
                     }
                 }
-                false
+                feedAdapter.notifyDataSetChanged()
             }
-            popupMenu.show()
         }
 
         layoutSearch.ibClearSearch.onSafeClick {

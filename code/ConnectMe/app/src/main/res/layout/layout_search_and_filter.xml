@@ -4,20 +4,34 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:paddingStart="8dp"
     android:paddingEnd="8dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_navigate_back"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/round_arrow_back_24"
+        android:tint="@color/purple_500"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/card_search"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/card_search" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_search"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:backgroundTint="@color/black_50"
         app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
         app:layout_constraintEnd_toStartOf="@+id/btn_more"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/iv_navigate_back"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout

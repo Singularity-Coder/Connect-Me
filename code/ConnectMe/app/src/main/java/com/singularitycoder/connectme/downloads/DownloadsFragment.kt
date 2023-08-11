@@ -5,10 +5,12 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.text.Editable
 import android.view.*
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
@@ -40,22 +42,15 @@ class DownloadsFragment : Fragment() {
 
     private lateinit var binding: FragmentDownloadsBinding
 
-    private val feedAdapter = DownloadsAdapter()
-    private val feedList = mutableListOf<Download>()
-    private val sortByOptionsList = listOf(
-        "Most recent",
-        "File name (A to Z)",
-        "File name (Z to A)",
-        "Modified (newest first)",
-        "Modified (oldest first)",
-        "Type (A to Z)",
-        "Type (Z to A)",
-        "Size (largest first)",
-        "Size (smallest first)",
-    )
+    private val downloadsViewModel by viewModels<DownloadsViewModel>()
+
+    private val downloadsAdapter = DownloadsAdapter()
+    private val downloadsList = mutableListOf<Download>()
+    private val fileNavigationStack = Stack<File?>()
 
     private var topicParam: String? = null
     private var isSelfProfile: Boolean = false
+    private var filesList = mutableListOf<File>()
 
     private val fileFilterOptionsList = listOf(
         Pair("All Files", R.drawable.outline_all_inclusive_24),
@@ -65,11 +60,23 @@ class DownloadsFragment : Fragment() {
         Pair("Documents", R.drawable.outline_article_24),
         Pair("Archives", R.drawable.outline_folder_zip_24),
         Pair("APKs", R.drawable.outline_android_24),
+        Pair("Folders", R.drawable.outline_folder_24),
         Pair("Other Files", R.drawable.outline_insert_drive_file_24),
     )
     private var selectedFileFilter: String = fileFilterOptionsList.first().first
 
-    private lateinit var filesList: List<File>
+    private val sortByOptionsList = listOf(
+        Pair("Most recent", R.drawable.round_check_24),
+        Pair("File name (A to Z)", R.drawable.round_check_24),
+        Pair("File name (Z to A)", R.drawable.round_check_24),
+        Pair("Modified (newest first)", R.drawable.round_check_24),
+        Pair("Modified (oldest first)", R.drawable.round_check_24),
+        Pair("Type (A to Z)", R.drawable.round_check_24),
+        Pair("Type (Z to A)", R.drawable.round_check_24),
+        Pair("Size (largest first)", R.drawable.round_check_24),
+        Pair("Size (smallest first)", R.drawable.round_check_24),
+    )
+    private var selectedFileSorting: String = sortByOptionsList.first().first
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,26 +98,8 @@ class DownloadsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        val hasPermission = requireActivity().checkStoragePermission()
-        if (hasPermission) {
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-                if (Environment.isExternalStorageLegacy().not()) {
-                    binding.llStoragePermissionRationaleView.isVisible = true
-                    return
-                }
-            }
-
-            binding.llStoragePermissionRationaleView.isVisible = false
-            binding.rvDownloads.isVisible = true
-
-            // TODO: Use getStorageDirectory instead https://developer.android.com/reference/android/os/Environment.html#getStorageDirectory()
-
-            filesList = getFilesListFrom(getDownloadDirectory()).subList(1, getFilesListFrom(getDownloadDirectory()).lastIndex)
-            openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-        } else {
-            binding.llStoragePermissionRationaleView.isVisible = true
-            binding.rvDownloads.isVisible = false
-        }
+        if (filesList.isNotEmpty()) return
+        loadRootFolderFiles()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -120,12 +109,14 @@ class DownloadsFragment : Fragment() {
         layoutSearch.btnMore.isVisible = isSelfProfile
         rvDownloads.apply {
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
-            adapter = feedAdapter
+            adapter = downloadsAdapter
         }
-        preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[0]).apply()
         ivShield.setMargins(top = (deviceHeight() / 2) - 200.dpToPx().toInt())
+        layoutSearch.etSearch.hint = "Search in ${getDownloadDirectory().name}"
+        fileNavigationStack.push(getDownloadDirectory())
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun FragmentDownloadsBinding.setupUserActionListeners() {
         root.setOnClickListener { }
 
@@ -157,12 +148,19 @@ class DownloadsFragment : Fragment() {
             }
         }
 
-        feedAdapter.setOnItemClickListener { download: Download?, position: Int ->
+        downloadsAdapter.setOnItemClickListener { download: Download?, position: Int ->
             val selectedItem = filesList.getOrNull(position) ?: return@setOnItemClickListener
+            if (selectedItem.isDirectory) {
+                selectedFileFilter = fileFilterOptionsList.first().first
+                selectedFileSorting = sortByOptionsList.first().first
+                fileNavigationStack.push(selectedItem)
+                updateFileNavigation()
+                filesList = getFilesListFrom(selectedItem).toMutableList()
+            }
             openIfFileElseShowFilesListIfDirectory(selectedItem)
         }
 
-        feedAdapter.setOnItemLongClickListener { download: Download?, view: View? ->
+        downloadsAdapter.setOnItemLongClickListener { download: Download?, view: View?, position: Int? ->
             val optionsList = listOf(
                 Pair("Open source", R.drawable.ic_round_link_24),
                 Pair("Open with...", R.drawable.outline_open_in_new_24),
@@ -197,6 +195,14 @@ class DownloadsFragment : Fragment() {
                         ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                     }
                     optionsList[6].first -> {
+                        val file = File("${download?.path}")
+                        if (file.exists()) {
+                            file.delete()
+                            filesList.removeAt(position ?: 0)
+                            downloadsList.removeAt(position ?: 0)
+                            downloadsViewModel.deleteItem(download)
+                            downloadsAdapter.notifyItemRemoved(position ?: 0)
+                        }
                     }
                 }
             }
@@ -206,8 +212,33 @@ class DownloadsFragment : Fragment() {
             layoutSearch.etSearch.hideKeyboard()
         }
 
+        layoutSearch.ibClearSearch.onSafeClick {
+            layoutSearch.etSearch.setText("")
+        }
+
+        layoutSearch.etSearch.doAfterTextChanged { query: Editable? ->
+            layoutSearch.ibClearSearch.isVisible = query.isNullOrBlank().not()
+            if (query.isNullOrBlank()) {
+                val folderToNavigate = fileNavigationStack.peek() ?: getDownloadDirectory()
+                openIfFileElseShowFilesListIfDirectory(folderToNavigate)
+                return@doAfterTextChanged
+            }
+            downloadsAdapter.downloadsList = downloadsList.filter { it.title.contains(other = query, ignoreCase = true) }
+            downloadsAdapter.notifyDataSetChanged()
+        }
+
         btnGivePermission.onSafeClick {
             requireActivity().requestStoragePermission()
+        }
+
+        layoutSearch.ivNavigateBack.onSafeClick {
+            selectedFileFilter = fileFilterOptionsList.first().first
+            selectedFileSorting = sortByOptionsList.first().first
+            fileNavigationStack.pop()
+            val previousFolder = fileNavigationStack.peek() ?: getDownloadDirectory()
+            updateFileNavigation()
+            filesList = getFilesListFrom(previousFolder).toMutableList()
+            openIfFileElseShowFilesListIfDirectory(previousFolder)
         }
 
         parentFragmentManager.setFragmentResultListener(
@@ -222,7 +253,7 @@ class DownloadsFragment : Fragment() {
             /* lifecycleOwner = */ viewLifecycleOwner
         ) { _, bundle: Bundle ->
             val newFolderNameText = bundle.getString(FragmentResultBundleKey.CREATE_NEW_DOWNLOAD_FOLDER)?.trim()
-            File("${getDownloadDirectory().absolutePath}/$newFolderNameText").also {
+            File("${fileNavigationStack.peek()?.absolutePath}/$newFolderNameText").also {
                 if (it.exists().not()) it.mkdirs()
             }
         }
@@ -231,27 +262,68 @@ class DownloadsFragment : Fragment() {
     private fun observeForData() {
     }
 
+    private fun updateFileNavigation() {
+        binding.layoutSearch.ivNavigateBack.isVisible = fileNavigationStack.size > 1
+        binding.layoutSearch.etSearch.hint = "Search in ${fileNavigationStack.peek()?.name}"
+    }
+
+    private fun loadRootFolderFiles() {
+        //        if (
+        //            selectedFileFilter != fileFilterOptionsList.first().first ||
+        //            selectedFileSorting != sortByOptionsList.first().first
+        //        ) return
+
+        val hasPermission = requireActivity().checkStoragePermission()
+        if (hasPermission) {
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                if (Environment.isExternalStorageLegacy().not()) {
+                    binding.llStoragePermissionRationaleView.isVisible = true
+                    return
+                }
+            }
+
+            binding.llStoragePermissionRationaleView.isVisible = false
+            binding.rvDownloads.isVisible = true
+
+            // TODO: Use getStorageDirectory instead https://developer.android.com/reference/android/os/Environment.html#getStorageDirectory()
+
+            //            filesList = if (getFilesListFrom(getDownloadDirectory()).size > 1) {
+            //                getFilesListFrom(getDownloadDirectory()).subList(fromIndex = 1, toIndex = getFilesListFrom(getDownloadDirectory()).lastIndex).toMutableList()
+            //            } else mutableListOf()
+            filesList = getFilesListFrom(getDownloadDirectory()).toMutableList()
+            openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+        } else {
+            binding.llStoragePermissionRationaleView.isVisible = true
+            binding.rvDownloads.isVisible = false
+        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     private fun openIfFileElseShowFilesListIfDirectory(currentDirectory: File) {
         println("Parent file path: ${currentDirectory.parentFile.path}") // /storage/emulated
 
-        if (currentDirectory.isFile) return requireActivity().openFile(currentDirectory)
+        if (currentDirectory.isFile) {
+            requireActivity().openFile(currentDirectory)
+            return
+        }
 
-        feedList.clear() // TODO Give a refresh option instead of loading all the time
+        downloadsList.clear() // TODO Give a refresh option instead of loading all the time
         filesList.forEach { file: File ->
             val downloadItem = Download(
-                imageUrl = file.absolutePath,
-                title = file.name.substringBeforeLast(delimiter = "."),
+                path = file.absolutePath,
+                title = file.nameWithoutExtension,
                 time = if (file.isDirectory) {
                     "${getFilesListFrom(currentDirectory).size} items"
                 } else "${file.extension.toUpCase()}  •  ${file.getAppropriateSize()}",
                 link = "",
+                extension = file.extension,
                 isDirectory = file.isDirectory
             )
-            feedList.add(downloadItem)
+//            if (file.absolutePath == currentDirectory.absolutePath) return@forEach
+            downloadsList.add(downloadItem)
         }
-        feedAdapter.feedList = feedList
-        feedAdapter.notifyDataSetChanged()
+        downloadsAdapter.downloadsList = downloadsList
+        downloadsAdapter.notifyDataSetChanged()
     }
 
     private fun setupOrganizePopupMenu(view: View?) {
@@ -300,127 +372,107 @@ class DownloadsFragment : Fragment() {
     }
 
     private fun setupFilterFilesPopupMenu(view: View?) {
-        val popupMenu = PopupMenu(requireContext(), view)
-        popupMenu.menu.add(Menu.NONE, -1, 0, "Filter").apply {
-            isEnabled = false
+        requireContext().showSingleSelectionPopupMenu(
+            view = view,
+            title = "Filter",
+            disabledColor = R.color.light_gray_2,
+            selectedOption = selectedFileFilter,
+            menuList = fileFilterOptionsList,
+        ) { menuItem: MenuItem? ->
+            selectedFileSorting = sortByOptionsList.first().first
+            selectedFileFilter = menuItem?.title?.toString()?.trim() ?: ""
+            applyFileFilters()
         }
-        fileFilterOptionsList.forEach { pair: Pair<String, Int> ->
-            popupMenu.menu.add(
-                0, 1, 1, menuIconWithText(
-                    icon = requireContext().drawable(pair.second)?.changeColor(
-                        context = requireContext(),
-                        color = if (selectedFileFilter == pair.first) R.color.purple_500 else R.color.light_gray_2
-                    ),
-                    title = pair.first
-                )
-            )
-        }
-        popupMenu.setOnMenuItemClickListener { fileFilterMenuItem: MenuItem? ->
-            view?.setHapticFeedback()
-            when (fileFilterMenuItem?.title?.toString()?.trim()) {
-                fileFilterOptionsList[0].first -> {
-                    selectedFileFilter = fileFilterOptionsList[0].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).subList(1, getFilesListFrom(getDownloadDirectory()).lastIndex)
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[1].first -> {
-                    selectedFileFilter = fileFilterOptionsList[1].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> ImageFormat.values().map { it.value }.contains(file.extension) }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[2].first -> {
-                    selectedFileFilter = fileFilterOptionsList[2].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> VideoFormat.values().map { it.value }.contains(file.extension) }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[3].first -> {
-                    selectedFileFilter = fileFilterOptionsList[3].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> AudioFormat.values().map { it.value }.contains(file.extension) }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[4].first -> {
-                    selectedFileFilter = fileFilterOptionsList[4].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> DocumentFormat.values().map { it.value }.contains(file.extension) }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[5].first -> {
-                    selectedFileFilter = fileFilterOptionsList[5].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> ArchiveFormat.values().map { it.value }.contains(file.extension) }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[6].first -> {
-                    selectedFileFilter = fileFilterOptionsList[6].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File -> AndroidFormat.values().map { it.value }.contains(file.extension) }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
-                fileFilterOptionsList[7].first -> {
-                    selectedFileFilter = fileFilterOptionsList[7].first
-                    filesList = getFilesListFrom(getDownloadDirectory()).filter { file: File ->
-                        ImageFormat.values().map { it.value }.contains(file.extension).not() &&
-                        VideoFormat.values().map { it.value }.contains(file.extension).not() &&
-                        AudioFormat.values().map { it.value }.contains(file.extension).not() &&
-                        DocumentFormat.values().map { it.value }.contains(file.extension).not() &&
-                        ArchiveFormat.values().map { it.value }.contains(file.extension).not() &&
-                        AndroidFormat.values().map { it.value }.contains(file.extension).not()
-                    }
-                    openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
-                }
+    }
+
+    private fun applyFileFilters() {
+        /** The first dir is the downloads dir itself. So avoiding that. */
+//        val allFilesList = if (getFilesListFrom(getDownloadDirectory()).size > 1) {
+//            getFilesListFrom(getDownloadDirectory()).subList(fromIndex = 1, toIndex = getFilesListFrom(getDownloadDirectory()).lastIndex).toMutableList()
+//        } else mutableListOf()
+        val allFilesList = getFilesListFrom(currentDirectory = fileNavigationStack.peek() ?: return).toMutableList()
+        when (selectedFileFilter) {
+            fileFilterOptionsList[0].first -> {
+                filesList = allFilesList
             }
-            false
+            fileFilterOptionsList[1].first -> {
+                filesList = allFilesList.filter { file: File -> ImageFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
+            }
+            fileFilterOptionsList[2].first -> {
+                filesList = allFilesList.filter { file: File -> VideoFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
+            }
+            fileFilterOptionsList[3].first -> {
+                filesList = allFilesList.filter { file: File -> AudioFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
+            }
+            fileFilterOptionsList[4].first -> {
+                filesList = allFilesList.filter { file: File -> DocumentFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
+            }
+            fileFilterOptionsList[5].first -> {
+                filesList = allFilesList.filter { file: File -> ArchiveFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
+            }
+            fileFilterOptionsList[6].first -> {
+                filesList = allFilesList.filter { file: File -> AndroidFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
+            }
+            fileFilterOptionsList[7].first -> {
+                filesList = allFilesList.filter { file: File -> file.isDirectory }.toMutableList()
+            }
+            fileFilterOptionsList[8].first -> {
+                filesList = allFilesList.filter { file: File ->
+                    ImageFormat.values().map { it.value }.contains(file.extension).not() &&
+                            VideoFormat.values().map { it.value }.contains(file.extension).not() &&
+                            AudioFormat.values().map { it.value }.contains(file.extension).not() &&
+                            DocumentFormat.values().map { it.value }.contains(file.extension).not() &&
+                            ArchiveFormat.values().map { it.value }.contains(file.extension).not() &&
+                            AndroidFormat.values().map { it.value }.contains(file.extension).not() &&
+                            file.isDirectory.not()
+                }.toMutableList()
+            }
         }
-        popupMenu.show()
+        openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
     }
 
     private fun setupSortFilesPopupMenu(view: View?) {
-        val selectedOpenAiModel = preferences.getString(Preferences.KEY_DOWNLOAD_SORT_BY, "")
-        val popupMenu = PopupMenu(requireContext(), view)
-        popupMenu.menu.add(Menu.NONE, -1, 0, "Sort by").apply {
-            isEnabled = false
+        requireContext().showSingleSelectionPopupMenu(
+            view = view,
+            title = "Sort by",
+            selectedOption = selectedFileSorting,
+            menuList = sortByOptionsList,
+        ) { menuItem: MenuItem? ->
+            selectedFileSorting = menuItem?.title?.toString()?.trim() ?: ""
+            applyFileSorting()
         }
-        sortByOptionsList.forEach {
-            popupMenu.menu.add(
-                0, 1, 1, menuIconWithText(
-                    icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
-                        context = requireContext(),
-                        color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
-                    ),
-                    title = it
-                )
-            )
-        }
-        popupMenu.setOnMenuItemClickListener { aiModelMenuItem: MenuItem? ->
-            view?.setHapticFeedback()
-            when (aiModelMenuItem?.title?.toString()?.trim()) {
-                sortByOptionsList[0] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[0]).apply()
-                }
-                sortByOptionsList[1] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[1]).apply()
-                }
-                sortByOptionsList[2] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[2]).apply()
-                }
-                sortByOptionsList[3] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[3]).apply()
-                }
-                sortByOptionsList[4] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[4]).apply()
-                }
-                sortByOptionsList[5] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[5]).apply()
-                }
-                sortByOptionsList[6] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[6]).apply()
-                }
-                sortByOptionsList[7] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[7]).apply()
-                }
-                sortByOptionsList[8] -> {
-                    preferences.edit().putString(Preferences.KEY_DOWNLOAD_SORT_BY, sortByOptionsList[8]).apply()
-                }
+    }
+
+    private fun applyFileSorting() {
+        when (selectedFileSorting) {
+            sortByOptionsList[0].first -> {
+                filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
             }
-            false
+            sortByOptionsList[1].first -> {
+                filesList = filesList.sortedBy { it.name.toLowCase() }.toMutableList()
+            }
+            sortByOptionsList[2].first -> {
+                filesList = filesList.sortedByDescending { it.name.toLowCase() }.toMutableList()
+            }
+            sortByOptionsList[3].first -> {
+                filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
+            }
+            sortByOptionsList[4].first -> {
+                filesList = filesList.sortedByDescending { it.lastModified() }.toMutableList()
+            }
+            sortByOptionsList[5].first -> {
+                filesList = filesList.sortedBy { it.extension.toLowCase() }.toMutableList()
+            }
+            sortByOptionsList[6].first -> {
+                filesList = filesList.sortedByDescending { it.extension.toLowCase() }.toMutableList()
+            }
+            sortByOptionsList[7].first -> {
+                filesList = filesList.sortedByDescending { it.sizeInBytes() }.toMutableList()
+            }
+            sortByOptionsList[8].first -> {
+                filesList = filesList.sortedBy { it.sizeInBytes() }.toMutableList()
+            }
         }
-        popupMenu.show()
+        openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
     }
 }

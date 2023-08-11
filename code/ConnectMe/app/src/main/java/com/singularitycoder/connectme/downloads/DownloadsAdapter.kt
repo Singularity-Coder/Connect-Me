@@ -1,22 +1,35 @@
 package com.singularitycoder.connectme.downloads
 
+import android.content.res.ColorStateList
+import android.os.Build.VERSION.SDK_INT
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.decode.VideoFrameDecoder
 import coil.load
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.ListItemDownloadBinding
-import com.singularitycoder.connectme.helpers.deviceWidth
-import com.singularitycoder.connectme.helpers.dpToPx
-import com.singularitycoder.connectme.helpers.onCustomLongClick
-import com.singularitycoder.connectme.helpers.onSafeClick
+import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var feedList = emptyList<Download?>()
+    var downloadsList = emptyList<Download?>()
     private var itemClickListener: (download: Download?, position: Int) -> Unit = { _, _ -> }
-    private var itemLongClickListener: (download: Download?, view: View?) -> Unit = { _, _ -> }
+    private var itemLongClickListener: (download: Download?, view: View?, position: Int?) -> Unit = { _, _, _ -> }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val itemBinding = ListItemDownloadBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -24,10 +37,10 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as NewsViewHolder).setData(feedList[position])
+        (holder as NewsViewHolder).setData(downloadsList[position])
     }
 
-    override fun getItemCount(): Int = feedList.size
+    override fun getItemCount(): Int = downloadsList.size
 
     override fun getItemViewType(position: Int): Int = position
 
@@ -35,7 +48,13 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         itemClickListener = listener
     }
 
-    fun setOnItemLongClickListener(listener: (download: Download?, view: View?) -> Unit) {
+    fun setOnItemLongClickListener(
+        listener: (
+            download: Download?,
+            view: View?,
+            position: Int?
+        ) -> Unit
+    ) {
         itemLongClickListener = listener
     }
 
@@ -46,14 +65,82 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             itemBinding.apply {
                 ivItemImage.layoutParams.height = (deviceWidth() / 3) - 20.dpToPx().toInt() // 20 is margin size
                 ivItemImage.layoutParams.width = (deviceWidth() / 2) - 20.dpToPx().toInt()
+                ivItemIcon.layoutParams.height = ivItemImage.layoutParams.height / 3
+                ivItemIcon.layoutParams.width = ivItemImage.layoutParams.height / 3
                 tvSource.text = download?.time
                 tvTitle.text = download?.title
 
-                if (download?.isDirectory == true) {
+                ivItemImage.visibility = View.INVISIBLE
+                ivItemIconDummy.isVisible = false
+                ivItemIcon.isVisible = true
 
+                if (download?.isDirectory == true) {
+                    ivItemIcon.setImageResource(R.drawable.outline_folder_24)
                 } else {
-                    ivItemImage.load(download?.imageUrl) {
-                        placeholder(R.color.black)
+                    when (download?.extension?.toLowCase()?.trim()) {
+                        in ImageFormat.values().map { it.value.toLowCase().trim() } -> {
+                            ivItemImage.isVisible = true
+                            ivItemIcon.isVisible = false
+                            if (download?.extension?.contains(ImageFormat.GIF.value, true) == true) {
+                                CoroutineScope(IO).launch {
+                                    val imageLoader = ImageLoader.Builder(root.context)
+                                        .components {
+                                            if (SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(GifDecoder.Factory())
+                                        }
+                                        .build()
+                                    val imageRequest = ImageRequest.Builder(root.context).data(download.path).build()
+                                    val drawable = imageLoader.execute(imageRequest).drawable
+                                    withContext(Main) {
+                                        ivItemImage.load(drawable)
+                                    }
+                                }
+                            } else {
+                                ivItemImage.load(download?.path)
+                            }
+                        }
+                        in VideoFormat.values().map { it.value.toLowCase().trim() } -> {
+                            ivItemImage.isVisible = true
+                            ivItemIcon.apply {
+                                isVisible = true
+                                setImageResource(R.drawable.round_play_arrow_24)
+                                imageTintList = ColorStateList.valueOf(root.context.color(R.color.purple_50))
+                            }
+                            ivItemIconDummy.apply {
+                                isVisible = true
+                                setImageResource(R.drawable.round_play_arrow_24)
+                                imageTintList = ColorStateList.valueOf(root.context.color(R.color.purple_500))
+                                setMargins(all = -8.dpToPx().toInt())
+                            }
+                            CoroutineScope(IO).launch {
+                                val imageLoader = ImageLoader.Builder(root.context)
+                                    .components {
+                                        add(VideoFrameDecoder.Factory())
+                                    }
+                                    .build()
+                                val imageRequest = ImageRequest.Builder(root.context).data(download?.path).build()
+                                val drawable = imageLoader.execute(imageRequest).drawable
+                                withContext(Main) {
+                                    ivItemImage.load(drawable) {
+                                        videoFrameMillis(1000)
+                                    }
+                                }
+                            }
+                        }
+                        in AudioFormat.values().map { it.value.toLowCase().trim() } -> {
+                            ivItemIcon.setImageResource(R.drawable.outline_audiotrack_24)
+                        }
+                        in DocumentFormat.values().map { it.value.toLowCase().trim() } -> {
+                            ivItemIcon.setImageResource(R.drawable.outline_article_24)
+                        }
+                        in ArchiveFormat.values().map { it.value.toLowCase().trim() } -> {
+                            ivItemIcon.setImageResource(R.drawable.outline_folder_zip_24)
+                        }
+                        in AndroidFormat.values().map { it.value.toLowCase().trim() } -> {
+                            ivItemIcon.setImageResource(R.drawable.outline_android_24)
+                        }
+                        else -> {
+                            ivItemIcon.setImageResource(R.drawable.outline_insert_drive_file_24)
+                        }
                     }
                 }
 
@@ -61,7 +148,7 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     itemClickListener.invoke(download, bindingAdapterPosition)
                 }
                 viewDummyCenter.setOnLongClickListener {
-                    itemLongClickListener.invoke(download, it)
+                    itemLongClickListener.invoke(download, it, bindingAdapterPosition)
                     false
                 }
                 root.onCustomLongClick {

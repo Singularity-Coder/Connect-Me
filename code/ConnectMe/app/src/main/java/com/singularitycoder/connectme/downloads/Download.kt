@@ -10,9 +10,10 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Download(
     @PrimaryKey val id: Long = 0,
-    val imageUrl: String? = "",
+    val path: String? = "",
     val title: String = "",
     val time: String? = "",
     val link: String? = "",
+    val extension: String? = "",
     val isDirectory: Boolean = false
 ) : Parcelable

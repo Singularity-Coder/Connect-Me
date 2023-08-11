@@ -159,7 +159,7 @@ class MainFragment : Fragment() {
         TabLayoutMediator(tabLayoutHome, viewpagerHome) { tab, position ->
             tab.text = FeatureTab.values()[position].value
         }.attach()
-        tabLayoutHome.selectTab(tabLayoutHome.getTabAt(1))
+        tabLayoutHome.selectTab(tabLayoutHome.getTabAt(2))
     }
 
     inner class HomeViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {

@@ -75,6 +75,11 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private var apiResult: ApiResult? = null
     private var insightStringsList: List<String?> = emptyList()
 
+    private val openAiModelsList = listOf(
+        Pair("gpt-4", R.drawable.round_check_24),
+        Pair("gpt-3.5-turbo", R.drawable.round_check_24),
+    )
+
     private val recordAudioPermissionResult = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isPermissionGranted: Boolean? ->
         isPermissionGranted ?: return@registerForActivityResult
 
@@ -175,7 +180,10 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
         val imageSizeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listOf("256x256", "512x512", "1024x1024"))
         (etImageSize.editText as? AutoCompleteTextView)?.setAdapter(imageSizeAdapter)
 
-        preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
+        val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
+        if (selectedOpenAiModel.isNullOrBlank()) {
+            preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, openAiModelsList[0].first).apply()
+        }
 
         lifecycleScope.launch {
             getInsightStringsList()
@@ -735,34 +743,17 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun setupAiModelMenu(view: View?) {
         val selectedOpenAiModel = preferences.getString(Preferences.KEY_OPEN_AI_MODEL, "")
-        val popupMenu = PopupMenu(requireContext(), view)
-        popupMenu.menu.add(Menu.NONE, -1, 0, "Select AI Model").apply {
-            isEnabled = false
+        requireContext().showSingleSelectionPopupMenu(
+            view = view,
+            title = "Select AI Model",
+            selectedOption = selectedOpenAiModel,
+            menuList = openAiModelsList,
+        ) { menuItem: MenuItem? ->
+            preferences.edit().putString(
+                Preferences.KEY_OPEN_AI_MODEL,
+                menuItem?.title?.toString()?.trim() ?: ""
+            ).apply()
         }
-        OPEN_AI_MODELS_LIST.forEach {
-            popupMenu.menu.add(
-                0, 1, 1, menuIconWithText(
-                    icon = requireContext().drawable(R.drawable.round_check_24)?.changeColor(
-                        context = requireContext(),
-                        color = if (selectedOpenAiModel == it) R.color.purple_500 else android.R.color.transparent
-                    ),
-                    title = it
-                )
-            )
-        }
-        popupMenu.setOnMenuItemClickListener { aiModelMenuItem: MenuItem? ->
-            view?.setHapticFeedback()
-            when (aiModelMenuItem?.title?.toString()?.trim()) {
-                OPEN_AI_MODELS_LIST[0] -> {
-                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[0]).apply()
-                }
-                OPEN_AI_MODELS_LIST[1] -> {
-                    preferences.edit().putString(Preferences.KEY_OPEN_AI_MODEL, OPEN_AI_MODELS_LIST[1]).apply()
-                }
-            }
-            false
-        }
-        popupMenu.show()
     }
 
     private fun setBottomSheetBehaviour() {

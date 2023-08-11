@@ -95,6 +95,12 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             }
         }
 
+        itemPrivacyReport.apply {
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_lock_24))
+            tvTitle.text = "Privacy Report"
+            tvSubtitle.text = "No trackers contacted"
+            ivArrow.isVisible = true
+        }
         itemHistory.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_history_24))
             tvTitle.text = "History"

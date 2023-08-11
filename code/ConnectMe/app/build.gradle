@@ -75,7 +75,6 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.6.1"
     implementation "androidx.activity:activity-ktx:1.7.2"
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation "io.coil-kt:coil:2.2.2"
     implementation "androidx.recyclerview:recyclerview:1.3.1"
 //    implementation ("androidx.recyclerview:recyclerview-selection:1.1.0") {
 //        because "For control over item selection of both touch and mouse driven selection"
@@ -92,6 +91,12 @@ dependencies {
 //    implementation group: 'net.sourceforge.htmlunit', name: 'htmlunit-android', version: '2.66.0'
 //    implementation files('libs/JavaxScript.jar')
 //    implementation files('libs/crux-2.0.1-all.jar')
+
+    // Coil Stuff
+    var coil_version = "2.2.2"
+    implementation "io.coil-kt:coil:$coil_version"
+    implementation "io.coil-kt:coil-gif:$coil_version"
+    implementation "io.coil-kt:coil-video:$coil_version"
 
     // Coroutines
     var coroutine_version = "1.6.4"

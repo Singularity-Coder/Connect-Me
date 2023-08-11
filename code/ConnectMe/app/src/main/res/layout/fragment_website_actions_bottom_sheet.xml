@@ -325,23 +325,15 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <include
+                        android:id="@+id/item_privacy_report"
+                        layout="@layout/list_item_website_action" />
+
+                    <include
                         android:id="@+id/item_history"
                         layout="@layout/list_item_website_action" />
 
                     <include
                         android:id="@+id/item_downloads"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_permissions"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_clear_cookies"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
-                        android:id="@+id/item_clear_cache"
                         layout="@layout/list_item_website_action" />
 
                     <include
@@ -362,6 +354,18 @@
 
                     <include
                         android:id="@+id/item_block_cookie_popups"
+                        layout="@layout/list_item_website_action" />
+
+                    <include
+                        android:id="@+id/item_permissions"
+                        layout="@layout/list_item_website_action" />
+
+                    <include
+                        android:id="@+id/item_clear_cookies"
+                        layout="@layout/list_item_website_action" />
+
+                    <include
+                        android:id="@+id/item_clear_cache"
                         layout="@layout/list_item_website_action" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>

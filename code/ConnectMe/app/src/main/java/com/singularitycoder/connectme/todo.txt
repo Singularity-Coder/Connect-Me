@@ -10,6 +10,7 @@ TODO Checklist
 9. Alarms
 10. How bookmarks work
 
+Auto play videos n gifs in downloads
 search tab - clear serarch query x button or swipe down to clear
 
 On download- add to db with link and path - problem is on renaming
