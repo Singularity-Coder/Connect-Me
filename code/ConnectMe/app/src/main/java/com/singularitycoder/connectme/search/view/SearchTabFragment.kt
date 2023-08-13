@@ -394,7 +394,21 @@ class SearchTabFragment : Fragment() {
         @MenuRes menuRes: Int
     ) {
         view ?: return
-        val popupMenu = PopupMenu(requireContext(), view).apply {
+        val popupMenu = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            android.widget.PopupMenu(
+                /* context = */ requireContext(),
+                /* anchor = */ view,
+                /* gravity = */ 0,
+                /* popupStyleAttr = */ 0,
+                /* popupStyleRes = */ R.style.PopupMenuTheme
+            )
+        } else {
+            android.widget.PopupMenu(
+                /* context = */ requireContext(),
+                /* anchor = */ view
+            )
+        }
+        popupMenu.apply {
             this.menu.invokeSetMenuIconMethod()
             menuInflater.inflate(menuRes, this.menu)
 //            this.menu.removeItemAt(3)
@@ -405,15 +419,13 @@ class SearchTabFragment : Fragment() {
             when (menuItem.itemId) {
                 R.id.menu_item_peek -> {
                 }
-
                 R.id.menu_item_open_new_tab -> {
 //            openInNewTab(requireContext(), url, isIncognito)
                 }
-                R.id.menu_item_new_private_tab -> {
+                R.id.menu_item_open_new_private_tab -> {
                 }
-                R.id.menu_item_new_disappearing_tab -> {
+                R.id.menu_item_open_new_disappearing_tab -> {
                 }
-
                 R.id.menu_item_copy_link_address -> {
                     if (webView.hitTestResult.extra.isNullOrBlank().not()) {
                         requireContext().clipboard()?.text = webView.hitTestResult.extra
@@ -422,7 +434,6 @@ class SearchTabFragment : Fragment() {
                 }
                 R.id.menu_item_copy_link_text -> {
                 }
-
                 R.id.menu_item_add_to_collection -> {
                     addToCollection(title = webView.hitTestResult.extra, url = webView.hitTestResult.extra)
                 }
@@ -437,7 +448,7 @@ class SearchTabFragment : Fragment() {
             root.removeView(menuDummyView)
             false
         }
-        popupMenu.setOnDismissListener { it: PopupMenu? ->
+        popupMenu.setOnDismissListener {
             root.removeView(menuDummyView)
         }
         popupMenu.menu.setMarginBtwMenuIconAndText(

@@ -15,11 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
-import androidx.annotation.MenuRes
 import androidx.appcompat.widget.ListPopupWindow
-import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
-import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -334,7 +330,7 @@ class SearchFragment : Fragment() {
         }
 
         ibAddTab.onCustomLongClick {
-            showAddTabPopupMenu(view = it, menuRes = R.menu.new_tab_popup_menu)
+            showAddTabPopupMenu(view = it)
         }
 
         ibAddTab.onSafeClick {
@@ -1142,38 +1138,34 @@ class SearchFragment : Fragment() {
                         AddApiKeyBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                     }
                 }
-                QuickActionTabMenu.ADD_TO_COLLECTIONS.ordinal -> addToCollections()
+                QuickActionTabMenu.ADD_TO_COLLECTIONS.ordinal -> addToCollectionsPopupMenu()
                 QuickActionTabMenu.MORE_OPTIONS.ordinal -> {
-                    val popupMenu = android.widget.PopupMenu(requireContext(), binding.btnWebsiteQuickActions)
-                    QuickActionTabMenuMoreOptions.values().forEach {
-                        popupMenu.menu.add(
-                            0, 1, 1, menuIconWithText(
-                                icon = requireContext().drawable(it.icon)?.changeColor(requireContext(), R.color.purple_500),
-                                title = it.title
-                            )
-                        )
-                    }
-                    popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                        view?.setHapticFeedback()
-                        when (it?.title?.toString()?.trim()) {
-                            QuickActionTabMenuMoreOptions.FIND_IN_PAGE.title -> {}
-                            QuickActionTabMenuMoreOptions.ADD_SHORTCUT.title -> {
-                                val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
-                                requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
-                            }
-                            QuickActionTabMenuMoreOptions.PRINT.title -> {}
-                            QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
-                            QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
-                        }
-                        false
-                    }
-                    popupMenu.show()
+                    showMoreQuickActionsPopupMenu()
                 }
             }
         }
     }
 
-    private fun addToCollections() {
+    private fun showMoreQuickActionsPopupMenu() {
+        val optionsList = QuickActionTabMenuMoreOptions.values().map { Pair(it.title, it.icon) }
+        requireContext().showPopupMenuWithIcons(
+            view = binding.btnWebsiteQuickActions,
+            menuList = optionsList
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                QuickActionTabMenuMoreOptions.FIND_IN_PAGE.title -> {}
+                QuickActionTabMenuMoreOptions.ADD_SHORTCUT.title -> {
+                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
+                }
+                QuickActionTabMenuMoreOptions.PRINT.title -> {}
+                QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
+                QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
+            }
+        }
+    }
+
+    private fun addToCollectionsPopupMenu() {
         lifecycleScope.launch {
             val collectionTitlesList = collectionsViewModel.getAllUniqueCollectionTitles().toArrayList().apply {
                 add("Create new")
@@ -1218,53 +1210,38 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun FragmentSearchBinding.showAddTabPopupMenu(
-        view: View?,
-        @MenuRes menuRes: Int
-    ) {
+    private fun FragmentSearchBinding.showAddTabPopupMenu(view: View?) {
         view ?: return
-        val popupMenu = PopupMenu(requireContext(), view).apply {
-            this.menu.invokeSetMenuIconMethod()
-            menuInflater.inflate(menuRes, this.menu)
-        }
-        popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
-            when (menuItem.itemId) {
-                R.id.menu_item_new_private_disappearing_tab -> {
+        val optionsList = listOf(
+            Pair("New private disappearing tab", R.drawable.outline_policy_24),
+            Pair("New private tab", R.drawable.outline_policy_24),
+            Pair("New disappearing tab", R.drawable.outline_timer_24),
+        )
+        requireContext().showPopupMenuWithIcons(
+            view = view,
+            menuList = optionsList
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                optionsList[0].first -> {
                     etSearch.showKeyboard()
                     addTab(SearchTab(type = NewTabType.NEW_PRIVATE_DISAPPEARING_TAB))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
-                    false
                 }
-                R.id.menu_item_new_private_tab -> {
+                optionsList[1].first -> {
                     etSearch.showKeyboard()
                     addTab(SearchTab(type = NewTabType.NEW_PRIVATE_TAB))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
-                    false
                 }
-                R.id.menu_item_new_disappearing_tab -> {
+                optionsList[2].first -> {
                     etSearch.showKeyboard()
                     addTab(SearchTab(type = NewTabType.NEW_DISAPPEARING_TAB))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
-                    false
                 }
-                else -> false
             }
         }
-        popupMenu.setOnDismissListener { it: PopupMenu? ->
-        }
-        popupMenu.menu.setMarginBtwMenuIconAndText(
-            context = requireContext(),
-            iconMarginDp = 10
-        )
-        popupMenu.menu.forEach { it: MenuItem ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                it.iconTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_500)
-            }
-        }
-        popupMenu.show()
     }
 
     fun getFaviconImageView(): ShapeableImageView = binding.ivWebappProfile

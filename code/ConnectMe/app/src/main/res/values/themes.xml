@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.ConnectMe" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
@@ -110,5 +110,11 @@
 <!--    https://stackoverflow.com/questions/42214592/androidlinespacingmultiplier-doesnt-work-in-androidtextappearance-->
     <style name="LineSpacing" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:lineSpacingMultiplier">1.8</item>
+    </style>
+
+<!--    https://stackoverflow.com/questions/12636101/how-to-style-popupmenu-->
+<!--    <item name="android:popupAnimationStyle"></item>-->
+    <style name="PopupMenuTheme" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/bg_popup_menu_rounded</item>
     </style>
 </resources>

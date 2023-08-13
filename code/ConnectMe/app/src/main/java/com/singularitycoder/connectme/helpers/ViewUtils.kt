@@ -237,7 +237,21 @@ fun Context.showPopupMenu(
     menuList: List<String?>,
     onItemClick: (position: Int) -> Unit
 ) {
-    PopupMenu(this, view).apply {
+    val popupMenu = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        PopupMenu(
+            /* context = */ this,
+            /* anchor = */ view,
+            /* gravity = */ 0,
+            /* popupStyleAttr = */ 0,
+            /* popupStyleRes = */ R.style.PopupMenuTheme
+        )
+    } else {
+        PopupMenu(
+            /* context = */ this,
+            /* anchor = */ view
+        )
+    }
+    popupMenu.apply {
         if (title != null) {
             menu.add(Menu.NONE, -1, 0, title).apply {
                 isEnabled = false
@@ -263,7 +277,20 @@ fun Context.showPopupMenuWithIcons(
     menuList: List<Pair<String, Int>>,
     onItemClick: (menuItem: MenuItem?) -> Unit
 ) {
-    val popupMenu = PopupMenu(this, view)
+    val popupMenu = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        PopupMenu(
+            /* context = */ this,
+            /* anchor = */ view,
+            /* gravity = */ 0,
+            /* popupStyleAttr = */ 0,
+            /* popupStyleRes = */ R.style.PopupMenuTheme
+        )
+    } else {
+        PopupMenu(
+            /* context = */ this,
+            /* anchor = */ view
+        )
+    }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         popupMenu.menu.setGroupDividerEnabled(true)
     }
@@ -314,7 +341,20 @@ fun Context.showSingleSelectionPopupMenu(
     menuList: List<Pair<String, Int>>,
     onItemClick: (menuItem: MenuItem?) -> Unit
 ) {
-    val popupMenu = PopupMenu(this, view)
+    val popupMenu = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        PopupMenu(
+            /* context = */ this,
+            /* anchor = */ view,
+            /* gravity = */ 0,
+            /* popupStyleAttr = */ 0,
+            /* popupStyleRes = */ R.style.PopupMenuTheme
+        )
+    } else {
+        PopupMenu(
+            /* context = */ this,
+            /* anchor = */ view
+        )
+    }
     popupMenu.menu.add(Menu.NONE, -1, 0, title).apply {
         isEnabled = false
     }
