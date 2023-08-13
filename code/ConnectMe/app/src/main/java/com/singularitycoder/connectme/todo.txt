@@ -158,3 +158,8 @@ STEP 1: Navigate to ADB tools path in studio terminal
 cd /Users/harekrsna/Library/Android/sdk/platform-tools
 STEP 2: Then to execute ADB commands prefix the command with ./
 ./adb help
+
+
+
+x >> 1 is a faster way to divide by 2. Bitwise right shift
+

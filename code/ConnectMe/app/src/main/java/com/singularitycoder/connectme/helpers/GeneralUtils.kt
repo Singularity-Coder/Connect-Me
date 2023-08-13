@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Point
-import android.graphics.drawable.InsetDrawable
 import android.location.LocationManager
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -18,7 +17,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.text.Spanned
-import android.util.TypedValue
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -29,7 +27,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -47,7 +44,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.lang.reflect.Method
 import java.util.*
 
 fun Context.isRecordAudioPermissionGranted(): Boolean {

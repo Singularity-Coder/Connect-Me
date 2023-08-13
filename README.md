@@ -7,6 +7,7 @@ A mobile browser with tabs. Genius?
 ![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss2.1.png)
 ![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss3.png)
 ![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss4.png)
+![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss4.5.png)
 ![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss5.png)
 ![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss6.png)
 ![alt text](https://github.com/Singularity-Coder/Connect-Me/blob/main/assets/ss7.png)

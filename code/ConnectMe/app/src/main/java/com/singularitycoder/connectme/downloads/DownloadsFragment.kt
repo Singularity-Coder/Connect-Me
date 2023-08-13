@@ -55,7 +55,7 @@ class DownloadsFragment : Fragment() {
     private val fileFilterOptionsList = listOf(
         Pair("All Files", R.drawable.outline_all_inclusive_24),
         Pair("Photos", R.drawable.outline_image_24),
-        Pair("Videos", R.drawable.outline_videocam_24),
+        Pair("Videos", R.drawable.outline_movie_24),
         Pair("Audio", R.drawable.outline_audiotrack_24),
         Pair("Documents", R.drawable.outline_article_24),
         Pair("Archives", R.drawable.outline_folder_zip_24),
@@ -66,15 +66,12 @@ class DownloadsFragment : Fragment() {
     private var selectedFileFilter: String = fileFilterOptionsList.first().first
 
     private val sortByOptionsList = listOf(
-        Pair("Most recent", R.drawable.round_check_24),
-        Pair("File name (A to Z)", R.drawable.round_check_24),
-        Pair("File name (Z to A)", R.drawable.round_check_24),
-        Pair("Modified (newest first)", R.drawable.round_check_24),
-        Pair("Modified (oldest first)", R.drawable.round_check_24),
-        Pair("Type (A to Z)", R.drawable.round_check_24),
-        Pair("Type (Z to A)", R.drawable.round_check_24),
-        Pair("Size (largest first)", R.drawable.round_check_24),
-        Pair("Size (smallest first)", R.drawable.round_check_24),
+        Pair("Newest date first", R.drawable.round_check_24),
+        Pair("Oldest date first", R.drawable.round_check_24),
+        Pair("Largest first", R.drawable.round_check_24),
+        Pair("Smallest first", R.drawable.round_check_24),
+        Pair("Name  A  -->  Z", R.drawable.round_check_24),
+        Pair("Name  Z  -->  A", R.drawable.round_check_24),
     )
     private var selectedFileSorting: String = sortByOptionsList.first().first
 
@@ -98,7 +95,7 @@ class DownloadsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (filesList.isNotEmpty()) return
+//        if (filesList.isNotEmpty()) return
         loadRootFolderFiles()
     }
 
@@ -195,14 +192,22 @@ class DownloadsFragment : Fragment() {
                         ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                     }
                     optionsList[6].first -> {
-                        val file = File("${download?.path}")
-                        if (file.exists()) {
-                            file.delete()
-                            filesList.removeAt(position ?: 0)
-                            downloadsList.removeAt(position ?: 0)
-                            downloadsViewModel.deleteItem(download)
-                            downloadsAdapter.notifyItemRemoved(position ?: 0)
-                        }
+                        requireContext().showAlertDialog(
+                            title = "Delete file",
+                            message = download?.title ?: "",
+                            positiveBtnText = "Delete",
+                            negativeBtnText = "Cancel",
+                            positiveAction = {
+                                val file = File("${download?.path}")
+                                if (file.exists()) {
+                                    file.delete()
+                                    filesList.removeAt(position ?: 0)
+                                    downloadsList.removeAt(position ?: 0)
+                                    downloadsViewModel.deleteItem(download)
+                                    downloadsAdapter.notifyItemRemoved(position ?: 0)
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -268,11 +273,6 @@ class DownloadsFragment : Fragment() {
     }
 
     private fun loadRootFolderFiles() {
-        //        if (
-        //            selectedFileFilter != fileFilterOptionsList.first().first ||
-        //            selectedFileSorting != sortByOptionsList.first().first
-        //        ) return
-
         val hasPermission = requireActivity().checkStoragePermission()
         if (hasPermission) {
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
@@ -324,6 +324,7 @@ class DownloadsFragment : Fragment() {
         }
         downloadsAdapter.downloadsList = downloadsList
         downloadsAdapter.notifyDataSetChanged()
+        binding.nestedScrollView.scrollTo(0, 0)
     }
 
     private fun setupOrganizePopupMenu(view: View?) {
@@ -445,32 +446,23 @@ class DownloadsFragment : Fragment() {
 
     private fun applyFileSorting() {
         when (selectedFileSorting) {
-            sortByOptionsList[0].first -> {
-                filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
-            }
             sortByOptionsList[1].first -> {
-                filesList = filesList.sortedBy { it.name.toLowCase() }.toMutableList()
+                filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
             }
             sortByOptionsList[2].first -> {
-                filesList = filesList.sortedByDescending { it.name.toLowCase() }.toMutableList()
-            }
-            sortByOptionsList[3].first -> {
-                filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
-            }
-            sortByOptionsList[4].first -> {
                 filesList = filesList.sortedByDescending { it.lastModified() }.toMutableList()
             }
-            sortByOptionsList[5].first -> {
-                filesList = filesList.sortedBy { it.extension.toLowCase() }.toMutableList()
-            }
-            sortByOptionsList[6].first -> {
-                filesList = filesList.sortedByDescending { it.extension.toLowCase() }.toMutableList()
-            }
-            sortByOptionsList[7].first -> {
+            sortByOptionsList[3].first -> {
                 filesList = filesList.sortedByDescending { it.sizeInBytes() }.toMutableList()
             }
-            sortByOptionsList[8].first -> {
+            sortByOptionsList[4].first -> {
                 filesList = filesList.sortedBy { it.sizeInBytes() }.toMutableList()
+            }
+            sortByOptionsList[5].first -> {
+                filesList = filesList.sortedBy { it.name.toLowCase() }.toMutableList()
+            }
+            sortByOptionsList[6].first -> {
+                filesList = filesList.sortedByDescending { it.name.toLowCase() }.toMutableList()
             }
         }
         openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)

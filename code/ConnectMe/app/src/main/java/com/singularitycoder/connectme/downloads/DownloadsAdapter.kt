@@ -21,7 +21,6 @@ import com.singularitycoder.connectme.helpers.constants.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -74,73 +73,73 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 ivItemIconDummy.isVisible = false
                 ivItemIcon.isVisible = true
 
-                if (download?.isDirectory == true) {
-                    ivItemIcon.setImageResource(R.drawable.outline_folder_24)
-                } else {
-                    when (download?.extension?.toLowCase()?.trim()) {
-                        in ImageFormat.values().map { it.value.toLowCase().trim() } -> {
-                            ivItemImage.isVisible = true
-                            ivItemIcon.isVisible = false
-                            if (download?.extension?.contains(ImageFormat.GIF.value, true) == true) {
-                                CoroutineScope(IO).launch {
-                                    val imageLoader = ImageLoader.Builder(root.context)
-                                        .components {
-                                            if (SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(GifDecoder.Factory())
-                                        }
-                                        .build()
-                                    val imageRequest = ImageRequest.Builder(root.context).data(download.path).build()
-                                    val drawable = imageLoader.execute(imageRequest).drawable
-                                    withContext(Main) {
-                                        ivItemImage.load(drawable)
-                                    }
-                                }
-                            } else {
-                                ivItemImage.load(download?.path)
-                            }
-                        }
-                        in VideoFormat.values().map { it.value.toLowCase().trim() } -> {
-                            ivItemImage.isVisible = true
-                            ivItemIcon.apply {
-                                isVisible = true
-                                setImageResource(R.drawable.round_play_arrow_24)
-                                imageTintList = ColorStateList.valueOf(root.context.color(R.color.purple_50))
-                            }
-                            ivItemIconDummy.apply {
-                                isVisible = true
-                                setImageResource(R.drawable.round_play_arrow_24)
-                                imageTintList = ColorStateList.valueOf(root.context.color(R.color.purple_500))
-                                setMargins(all = -8.dpToPx().toInt())
-                            }
+                val fileExtension = download?.extension?.toLowCase()?.trim()
+                when {
+                    fileExtension in ImageFormat.values().map { it.value.toLowCase().trim() } -> {
+                        ivItemImage.isVisible = true
+                        ivItemIcon.isVisible = false
+                        if (download?.extension?.contains(ImageFormat.GIF.value, true) == true) {
                             CoroutineScope(IO).launch {
                                 val imageLoader = ImageLoader.Builder(root.context)
                                     .components {
-                                        add(VideoFrameDecoder.Factory())
+                                        if (SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(GifDecoder.Factory())
                                     }
                                     .build()
-                                val imageRequest = ImageRequest.Builder(root.context).data(download?.path).build()
+                                val imageRequest = ImageRequest.Builder(root.context).data(download.path).build()
                                 val drawable = imageLoader.execute(imageRequest).drawable
                                 withContext(Main) {
-                                    ivItemImage.load(drawable) {
-                                        videoFrameMillis(1000)
-                                    }
+                                    ivItemImage.load(drawable)
+                                }
+                            }
+                        } else {
+                            ivItemImage.load(download?.path)
+                        }
+                    }
+                    fileExtension in VideoFormat.values().map { it.value.toLowCase().trim() } -> {
+                        ivItemImage.isVisible = true
+                        ivItemIcon.apply {
+                            isVisible = true
+                            setImageResource(R.drawable.round_play_arrow_24)
+                            imageTintList = ColorStateList.valueOf(root.context.color(R.color.purple_50))
+                        }
+                        ivItemIconDummy.apply {
+                            isVisible = true
+                            setImageResource(R.drawable.round_play_arrow_24)
+                            imageTintList = ColorStateList.valueOf(root.context.color(R.color.purple_500))
+                            setMargins(all = -8.dpToPx().toInt())
+                        }
+                        CoroutineScope(IO).launch {
+                            val imageLoader = ImageLoader.Builder(root.context)
+                                .components {
+                                    add(VideoFrameDecoder.Factory())
+                                }
+                                .build()
+                            val imageRequest = ImageRequest.Builder(root.context).data(download?.path).build()
+                            val drawable = imageLoader.execute(imageRequest).drawable
+                            withContext(Main) {
+                                ivItemImage.load(drawable) {
+                                    videoFrameMillis(1000)
                                 }
                             }
                         }
-                        in AudioFormat.values().map { it.value.toLowCase().trim() } -> {
-                            ivItemIcon.setImageResource(R.drawable.outline_audiotrack_24)
-                        }
-                        in DocumentFormat.values().map { it.value.toLowCase().trim() } -> {
-                            ivItemIcon.setImageResource(R.drawable.outline_article_24)
-                        }
-                        in ArchiveFormat.values().map { it.value.toLowCase().trim() } -> {
-                            ivItemIcon.setImageResource(R.drawable.outline_folder_zip_24)
-                        }
-                        in AndroidFormat.values().map { it.value.toLowCase().trim() } -> {
-                            ivItemIcon.setImageResource(R.drawable.outline_android_24)
-                        }
-                        else -> {
-                            ivItemIcon.setImageResource(R.drawable.outline_insert_drive_file_24)
-                        }
+                    }
+                    fileExtension in AudioFormat.values().map { it.value.toLowCase().trim() } -> {
+                        ivItemIcon.setImageResource(R.drawable.outline_audiotrack_24)
+                    }
+                    fileExtension in DocumentFormat.values().map { it.value.toLowCase().trim() } -> {
+                        ivItemIcon.setImageResource(R.drawable.outline_article_24)
+                    }
+                    fileExtension in ArchiveFormat.values().map { it.value.toLowCase().trim() } -> {
+                        ivItemIcon.setImageResource(R.drawable.outline_folder_zip_24)
+                    }
+                    fileExtension in AndroidFormat.values().map { it.value.toLowCase().trim() } -> {
+                        ivItemIcon.setImageResource(R.drawable.outline_android_24)
+                    }
+                    download?.isDirectory == true -> {
+                        ivItemIcon.setImageResource(R.drawable.outline_folder_24)
+                    }
+                    else -> {
+                        ivItemIcon.setImageResource(R.drawable.outline_insert_drive_file_24)
                     }
                 }
 
