@@ -202,7 +202,12 @@ class SearchFragment : Fragment() {
                             /* resource = */ android.R.layout.simple_list_item_1,
                             /* objects = */ collectionsTitlesList
                         )
-                        ListPopupWindow(requireContext(), null, R.attr.listPopupWindowStyle).apply {
+                        ListPopupWindow(
+                            /* context = */ requireContext(),
+                            /* attrs = */ null,
+                            /* defStyleAttr = */ /* R.attr.listPopupWindowStyle */ 0,
+                            /* defStyleRes = */ R.style.ListPopupWindowTheme
+                        ).apply {
                             anchorView = it.first
                             setAdapter(adapter)
                             setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
@@ -291,34 +296,25 @@ class SearchFragment : Fragment() {
             viewSearchSuggestionsScrim.isVisible = it
         }
 
-        ivSearchEngine.onSafeClick {
-            val popupMenu = android.widget.PopupMenu(requireContext(), it.first)
-            popupMenu.menu.add(Menu.NONE, -1, 0, "Search Engine").apply {
-                isEnabled = false
-            }
-            SearchEngine.values().forEach { searchEngine: SearchEngine ->
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = requireContext().drawable(searchEngine.icon),
-                        title = searchEngine.value,
-                        iconWidth = 24.dpToPx().toInt(),
-                        iconHeight = 24.dpToPx().toInt(),
-                        defaultSpace = "      "
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { menuItem: MenuItem? ->
-                view?.setHapticFeedback()
-                ivSearchEngine.setImageResource(SearchEngine.getEngineBy(menuItem?.title?.toString()).icon)
+        ivSearchEngine.onSafeClick { pair: Pair<View?, Boolean> ->
+            val optionsList = SearchEngine.values().map { Pair(it.title, it.icon) }
+            requireContext().showPopupMenuWithIcons(
+                view = pair.first,
+                menuList = optionsList,
+                title = "Search Engine",
+                isColoredIcon = false,
+                iconWidth = 24.dpToPx().toInt(),
+                iconHeight = 24.dpToPx().toInt(),
+                defaultSpaceBtwIconTitle = "      "
+            ) { it: MenuItem? ->
+                val selectedSearchEngine = it?.title?.toString()?.trim()
+                ivSearchEngine.setImageResource(SearchEngine.getEngineBy(selectedSearchEngine).icon)
                 preferences.edit().putString(
                     Preferences.KEY_SEARCH_SUGGESTION_PROVIDER,
-                    SearchEngine.getEngineBy(menuItem?.title?.toString()).name
+                    SearchEngine.getEngineBy(selectedSearchEngine).name
                 ).apply()
                 searchViewModel.getSearchSuggestions(searchQuery)
-                popupMenu.dismiss()
-                false
             }
-            popupMenu.show()
         }
 
         cardAddTab.onSafeClick {

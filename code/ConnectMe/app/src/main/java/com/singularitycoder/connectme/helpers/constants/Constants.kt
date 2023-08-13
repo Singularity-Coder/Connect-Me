@@ -288,44 +288,44 @@ enum class NewTabType(val value: String) {
 }
 
 enum class SearchEngine(
-    val value: String,
+    val title: String,
     @DrawableRes val icon: Int,
     val url: String
 ) {
     GOOGLE(
-        value = "Google",
+        title = "Google",
         icon = R.drawable.google,
         url = "https://google.com/search?ie=UTF-8&source=android-browser&q={searchTerms}"
     ),
     BING(
-        value = "Bing",
+        title = "Bing",
         icon = R.drawable.bing,
         url = "https://www.bing.com/search?ie=UTF-8&source=android-browser&q={searchTerms}"
     ),
     DUCK(
-        value = "DuckDuckGo",
+        title = "DuckDuckGo",
         icon = R.drawable.duckduckgo,
         url = "https://duckduckgo.com/?va=u&t=hf&q={searchTerms}&ia=web"
     ),
     YAHOO(
-        value = "Yahoo",
+        title = "Yahoo",
         icon = R.drawable.yahoo,
         url = "https://search.yahoo.com/search?p={searchTerms}&fr=yfp-hrmob-s&fr2=p%3Afp%2Cm%3Asa&.tsrc=yfp-hrmob-s&fp=1&toggle=1&cop=mss&ei=UTF-8"
     ),
     YOUTUBE(
-        value = "Youtube",
+        title = "Youtube",
         icon = R.drawable.youtube,
         url = "https://www.youtube.com/results?search_query={searchTerms}"
     ),
     WIKIPEDIA(
-        value = "Wikipedia",
+        title = "Wikipedia",
         icon = R.drawable.wikipedia,
         url = "https://en.wikipedia.org/wiki/{searchTerms}"
     );
 
     companion object {
         fun getEngineBy(name: String?): SearchEngine {
-            return values().firstOrNull { it.value.toLowCase().trim() == name?.toLowCase()?.trim() } ?: GOOGLE
+            return values().firstOrNull { it.title.toLowCase().trim() == name?.toLowCase()?.trim() } ?: GOOGLE
         }
     }
 }

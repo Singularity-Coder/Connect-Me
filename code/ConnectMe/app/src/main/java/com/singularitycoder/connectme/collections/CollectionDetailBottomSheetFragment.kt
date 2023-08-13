@@ -100,7 +100,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                 view = view,
                 menuList = optionsList,
                 customColor = R.color.md_red_700,
-                customColorItem = optionsList.last().first
+                customColorItemText = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
@@ -147,7 +147,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                 view = it.first,
                 menuList = optionsList,
                 customColor = R.color.md_red_700,
-                customColorItem = optionsList.last().first
+                customColorItemText = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {

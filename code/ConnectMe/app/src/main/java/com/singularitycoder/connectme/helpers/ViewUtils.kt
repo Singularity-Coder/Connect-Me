@@ -269,12 +269,17 @@ fun Context.showPopupMenu(
     }
 }
 
+// TODO set bottom n top margins - popupStyleAttr or popupStyleRes for both PopupMenu n ListPopupWindow. Default attributes like R.attr.listPopupWindowStyle seem to have their own background which is overriding mine
 fun Context.showPopupMenuWithIcons(
     view: View?,
     title: String? = null,
-    customColorItem: String = "",
+    customColorItemText: String = "",
     @ColorRes customColor: Int = 0,
     menuList: List<Pair<String, Int>>,
+    iconWidth: Int = -1,
+    iconHeight: Int = -1,
+    defaultSpaceBtwIconTitle: String = "    ",
+    isColoredIcon: Boolean = true,
     onItemClick: (menuItem: MenuItem?) -> Unit
 ) {
     val popupMenu = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -282,7 +287,7 @@ fun Context.showPopupMenuWithIcons(
             /* context = */ this,
             /* anchor = */ view,
             /* gravity = */ 0,
-            /* popupStyleAttr = */ 0,
+            /* popupStyleAttr = */ /* R.attr.popupMenuStyle */ 0,
             /* popupStyleRes = */ R.style.PopupMenuTheme
         )
     } else {
@@ -303,10 +308,15 @@ fun Context.showPopupMenuWithIcons(
         menuList.lastIndex
     } else 0
     menuList.forEachIndexed { index, pair ->
+        val icon = if (pair.first == customColorItemText) {
+            drawable(pair.second)?.changeColor(this, customColor)
+        } else {
+            drawable(pair.second)?.apply {
+                if (isColoredIcon) changeColor(this@showPopupMenuWithIcons, R.color.purple_500)
+            }
+        }
         val insetDrawable = InsetDrawable(
-            /* drawable = */ if (pair.first == customColorItem) {
-                drawable(pair.second)?.changeColor(this, customColor)
-            } else drawable(pair.second)?.changeColor(this, R.color.purple_500),
+            /* drawable = */ icon,
             /* insetLeft = */ 0,
             /* insetTop = */ 0,
             /* insetRight = */ 0,
@@ -318,10 +328,13 @@ fun Context.showPopupMenuWithIcons(
             /* order */ 1,
             /* title */ menuIconWithText(
                 icon = insetDrawable,
-                title = pair.first
+                title = pair.first,
+                iconWidth = iconWidth,
+                iconHeight = iconHeight,
+                defaultSpace = defaultSpaceBtwIconTitle
             )
         )
-        popupMenu.menu.get(index).actionView?.setMargins(null, 0, 0, 0, 8.dpToPx().toInt())
+        popupMenu.menu.get(index).actionView?.setMargins(start = 0, top = 0, end = 0, bottom = 8.dpToPx().toInt())
 //        findViewById<ViewGroup>(popupMenu.menu.get(index).itemId).get(index)
     }
     popupMenu.setOnMenuItemClickListener { it: MenuItem? ->

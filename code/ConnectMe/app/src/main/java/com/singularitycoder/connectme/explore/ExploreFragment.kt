@@ -110,7 +110,7 @@ class ExploreFragment : Fragment() {
                 view = view,
                 menuList = optionsList,
                 customColor = R.color.md_red_700,
-                customColorItem = optionsList.last().first
+                customColorItemText = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {

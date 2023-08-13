@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -125,7 +124,7 @@ class FeedFragment : Fragment() {
                 view = view,
                 menuList = optionsList,
                 customColor = R.color.md_red_700,
-                customColorItem = optionsList.last().first
+                customColorItemText = optionsList.last().first
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
