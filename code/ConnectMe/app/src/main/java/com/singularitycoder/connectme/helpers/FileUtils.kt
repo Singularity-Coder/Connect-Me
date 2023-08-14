@@ -3,6 +3,10 @@ package com.singularitycoder.connectme.helpers
 import android.Manifest
 import android.app.Activity
 import android.app.DownloadManager
+import android.app.PendingIntent
+import android.app.RecoverableSecurityException
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,8 +18,11 @@ import android.os.Build
 import android.os.Environment
 import android.os.ParcelFileDescriptor
 import android.os.storage.StorageManager
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -27,6 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.*
 import java.util.*
+
 
 const val KB = 1024.0
 const val MB = 1024.0 * KB
@@ -409,4 +417,118 @@ fun getDownloadDirectory(): File {
     return File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_DOWNLOADS}/ConnectMe").also {
         if (it.exists().not()) it.mkdirs()
     }
+}
+
+/**
+ * https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
+ * A class to read write external shared storage for android R.
+ * Since Android 11 you can only access the android specified directories such as
+ * DCIM, Download, Documents, Pictures, Movies, Music etc.
+ */
+fun Context.createNewMediaUri(
+    directory: String?,
+    filename: String?,
+    mimetype: String?
+): Uri? {
+    val contentResolver = this.contentResolver
+    val contentValues = ContentValues()
+
+    //Set filename, if you don't system automatically use current timestamp as name
+    contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+
+    //Set mimetype if you want
+    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimetype)
+
+    //To create folder in Android directories use below code
+    //pass your folder path here, it will create new folder inside directory
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, directory)
+    }
+
+    //pass new ContentValues() for no values.
+    //Specified uri will save object automatically in android specified directories.
+    //ex. MediaStore.Images.Media.EXTERNAL_CONTENT_URI will save object into android Pictures directory.
+    //ex. MediaStore.Videos.Media.EXTERNAL_CONTENT_URI will save object into android Movies directory.
+    //if content values not provided, system will automatically add values after object was written.
+    return contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+}
+
+/**
+ * https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
+ * If [ContentResolver] failed to delete the file, use trick,
+ * SDK version is >= 29(Q)? use [SecurityException] and again request for delete.
+ * SDK version is >= 30(R)? use [MediaStore.createDeleteRequest].
+ */
+fun Context.deleteFile(
+    launcher: ActivityResultLauncher<IntentSenderRequest?>,
+    fileUri: Uri
+) {
+    val contentResolver = this.contentResolver
+    try {
+        //delete object using resolver
+        contentResolver.delete(fileUri, null, null)
+    } catch (e: SecurityException) {
+        var pendingIntent: PendingIntent? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val collection: ArrayList<Uri> = ArrayList()
+            collection.add(fileUri)
+            pendingIntent = MediaStore.createDeleteRequest(contentResolver, collection)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            //if exception is recoverable then again send delete request using intent
+            if (e is RecoverableSecurityException) {
+                pendingIntent = e.userAction.actionIntent
+            }
+        }
+        if (pendingIntent != null) {
+            val sender = pendingIntent.intentSender
+            val request: IntentSenderRequest = IntentSenderRequest.Builder(sender).build()
+            launcher.launch(request)
+        }
+    }
+}
+
+// https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
+fun Context.renameFile(
+    fileUri: Uri?,
+    newName: String?
+) {
+    fileUri ?: return
+    // create content values with new name and update
+    val contentValues = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, newName)
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        this.contentResolver.update(fileUri, contentValues, null)
+    }
+}
+
+// https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
+fun Context.duplicateFile(fileUri: Uri): Uri? {
+    val contentResolver = this.contentResolver
+    val output = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
+    val input = getPathFrom(fileUri)
+    try {
+        FileInputStream(input).use { inputStream ->  //input stream
+            val out = contentResolver.openOutputStream(output!!) //output stream
+            val buf = ByteArray(1024)
+            var len: Int
+            while (inputStream.read(buf).also { len = it } > 0) {
+                out!!.write(buf, 0, len) //write input file data to output file
+            }
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return output
+}
+
+// https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
+fun Context.getPathFrom(fileUri: Uri): String? {
+    val cursor = this.contentResolver.query(fileUri, null, null, null, null) ?: return null
+    var text: String? = null
+    if (cursor.moveToNext()) {
+        text = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA) ?: -1)
+    }
+    cursor.close()
+    return text
 }

@@ -2,6 +2,7 @@ package com.singularitycoder.connectme.downloads
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -51,6 +52,7 @@ class DownloadsFragment : Fragment() {
     private var topicParam: String? = null
     private var isSelfProfile: Boolean = false
     private var filesList = mutableListOf<File>()
+    private var downloadItemToRename: Download? = null
 
     private val fileFilterOptionsList = listOf(
         Pair("All Files", R.drawable.outline_all_inclusive_24),
@@ -95,7 +97,7 @@ class DownloadsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        if (filesList.isNotEmpty()) return
+        if (filesList.isNotEmpty()) return
         loadRootFolderFiles()
     }
 
@@ -121,7 +123,8 @@ class DownloadsFragment : Fragment() {
             val optionsList = listOf(
                 Pair("Filter", R.drawable.round_filter_list_24),
                 Pair("Sort by", R.drawable.round_sort_24),
-                Pair("Add New Folder", R.drawable.outline_create_new_folder_24)
+                Pair("Add New Folder", R.drawable.outline_create_new_folder_24),
+                Pair("Refresh", R.drawable.round_refresh_24)
             )
             requireContext().showPopupMenuWithIcons(
                 view = pair.first,
@@ -136,10 +139,12 @@ class DownloadsFragment : Fragment() {
                         setupSortFilesPopupMenu(view = pair.first)
                     }
                     optionsList[2].first -> {
-                        // TODO another bottom sheet for adding single named items
                         EditBottomSheetFragment.newInstance(
                             eventType = EditEvent.CREATE_NEW_DOWNLOAD_FOLDER
                         ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
+                    }
+                    optionsList[3].first -> {
+                        openIfFileElseShowFilesListIfDirectory(fileNavigationStack.peek() ?: return@showPopupMenuWithIcons)
                     }
                 }
             }
@@ -161,10 +166,11 @@ class DownloadsFragment : Fragment() {
             val optionsList = listOf(
                 Pair("Open source", R.drawable.ic_round_link_24),
                 Pair("Open with...", R.drawable.outline_open_in_new_24),
-                Pair("Organize", R.drawable.outline_drive_file_move_24),
                 Pair("Get info", R.drawable.outline_info_24),
                 Pair("Share", R.drawable.outline_share_24),
                 Pair("Copy link", R.drawable.baseline_content_copy_24),
+                Pair("Organize", R.drawable.outline_drive_file_move_24),
+                Pair("Quick actions", R.drawable.outline_electric_bolt_24),
                 Pair("Delete", R.drawable.outline_delete_24),
             )
             requireContext().showPopupMenuWithIcons(
@@ -175,23 +181,23 @@ class DownloadsFragment : Fragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
-                        setupOpenSourcePopupMenu(view)
+                        setupOpenSourcePopupMenu(view, download)
                     }
                     optionsList[1].first -> {
                     }
                     optionsList[2].first -> {
-                        setupOrganizePopupMenu(view)
                     }
                     optionsList[3].first -> {
                     }
                     optionsList[4].first -> {
                     }
                     optionsList[5].first -> {
-                        EditBottomSheetFragment.newInstance(
-                            eventType = EditEvent.RENAME_DOWNLOAD_FILE
-                        ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
+                        setupOrganizePopupMenu(view, download)
                     }
                     optionsList[6].first -> {
+                        setupQuickActionsPopupMenu(view, download)
+                    }
+                    optionsList[7].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete file",
                             message = download?.title ?: "",
@@ -250,7 +256,11 @@ class DownloadsFragment : Fragment() {
             /* requestKey = */ FragmentResultKey.RENAME_DOWNLOAD_FILE,
             /* lifecycleOwner = */ viewLifecycleOwner
         ) { _, bundle: Bundle ->
-            val renamedFileText = bundle.getString(FragmentResultBundleKey.RENAME_DOWNLOAD_FILE)
+            val newFileName = bundle.getString(FragmentResultBundleKey.RENAME_DOWNLOAD_FILE)
+            requireContext().renameFile(
+                fileUri = Uri.fromFile(File(downloadItemToRename?.path ?: "")),
+                newName = newFileName
+            )
         }
 
         parentFragmentManager.setFragmentResultListener(
@@ -313,13 +323,13 @@ class DownloadsFragment : Fragment() {
                 path = file.absolutePath,
                 title = file.nameWithoutExtension,
                 time = if (file.isDirectory) {
-                    "${getFilesListFrom(currentDirectory).size} items"
+                    "${getFilesListFrom(file).size} items"
                 } else "${file.extension.toUpCase()}  •  ${file.getAppropriateSize()}",
                 link = "",
                 extension = file.extension,
                 isDirectory = file.isDirectory
             )
-//            if (file.absolutePath == currentDirectory.absolutePath) return@forEach
+//            if (file.absolutePath == fileNavigationStack.peek()?.absolutePath) return@forEach
             downloadsList.add(downloadItem)
         }
         downloadsAdapter.downloadsList = downloadsList
@@ -327,12 +337,14 @@ class DownloadsFragment : Fragment() {
         binding.nestedScrollView.scrollTo(0, 0)
     }
 
-    private fun setupOrganizePopupMenu(view: View?) {
+    private fun setupOrganizePopupMenu(
+        view: View?,
+        download: Download?
+    ) {
         val optionsList = listOf(
+            Pair("Rename", R.drawable.outline_drive_file_rename_outline_24),
             Pair("Copy to...", R.drawable.baseline_content_copy_24),
             Pair("Move to...", R.drawable.outline_control_camera_24),
-            Pair("Zip", R.drawable.outline_folder_zip_24),
-            Pair("Rename", R.drawable.outline_drive_file_rename_outline_24),
         )
         requireContext().showPopupMenuWithIcons(
             view = view,
@@ -341,16 +353,21 @@ class DownloadsFragment : Fragment() {
         ) { it: MenuItem? ->
             when (it?.title?.toString()?.trim()) {
                 optionsList[0].first -> {
+                    downloadItemToRename = download
+                    EditBottomSheetFragment.newInstance(
+                        eventType = EditEvent.RENAME_DOWNLOAD_FILE
+                    ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                 }
-                optionsList[1].first -> {
-                }
-                optionsList[2].first -> {
-                }
+                optionsList[1].first -> {}
+                optionsList[2].first -> {}
             }
         }
     }
 
-    private fun setupOpenSourcePopupMenu(view: View?) {
+    private fun setupOpenSourcePopupMenu(
+        view: View?,
+        download: Download?
+    ) {
         val optionsList = listOf(
             Pair("Peek", R.drawable.outline_remove_red_eye_24),
             Pair("New tab", R.drawable.round_add_circle_outline_24),
@@ -368,6 +385,40 @@ class DownloadsFragment : Fragment() {
                 }
                 optionsList[2].first -> {
                 }
+            }
+        }
+    }
+
+    private fun setupQuickActionsPopupMenu(
+        view: View?,
+        download: Download?
+    ) {
+        val optionsList = mutableListOf(
+            Pair("Duplicate", R.drawable.outline_file_copy_24),
+            Pair("Zip", R.drawable.outline_folder_zip_24)
+        )
+        if (download?.extension?.toLowCase()?.trim() in ImageFormat.values().map { it.value.toLowCase().trim() }) {
+            optionsList.add(Pair("Create PDF", R.drawable.outline_picture_as_pdf_24))
+            optionsList.add(Pair("Remove background", R.drawable.outline_border_clear_24))
+            optionsList.add(Pair("Convert image", R.drawable.outline_transform_24))
+            optionsList.add(Pair("Rotate right", R.drawable.outline_rotate_right_24))
+            optionsList.add(Pair("Rotate left", R.drawable.baseline_rotate_left_24))
+            optionsList.add(Pair("Markup", R.drawable.outline_draw_24))
+        }
+        requireContext().showPopupMenuWithIcons(
+            view = view,
+            menuList = optionsList,
+            title = "Quick Actions"
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                optionsList[0].first -> {}
+                optionsList[1].first -> {}
+                optionsList[2].first -> {}
+                optionsList[3].first -> {}
+                optionsList[4].first -> {}
+                optionsList[5].first -> {}
+                optionsList[6].first -> {}
+                optionsList[7].first -> {}
             }
         }
     }
