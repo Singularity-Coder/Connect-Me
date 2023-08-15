@@ -97,8 +97,9 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
 
         itemPrivacyReport.apply {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_lock_24))
-            tvTitle.text = "Privacy Report"
-            tvSubtitle.text = "No trackers contacted"
+            tvTitle.text = "Site Privacy"
+            tvSubtitle.text = "Identity is secure"
+            tvSubtitle.setTextColor(requireContext().color(R.color.md_green_500))
             ivArrow.isVisible = true
         }
         itemHistory.apply {
@@ -139,12 +140,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_block_24))
             tvTitle.text = "Block Ads"
             tvSubtitle.text = "Blocks all Ads and Trackers"
-            switchOnOff.isVisible = true
-        }
-        itemReadingMode.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.outline_chrome_reader_mode_24))
-            tvTitle.text = "Reading Mode"
-            tvSubtitle.text = "Distraction free reading"
             switchOnOff.isVisible = true
         }
         itemVpn.apply {
@@ -240,17 +235,6 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         itemAdBlocker.apply {
-            root.onSafeClick { switchOnOff.performClick() }
-            switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
-                if (isChecked) {
-                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                } else {
-                    switchOnOff.thumbTintList = ColorStateList.valueOf(requireContext().color(R.color.white))
-                }
-            }
-        }
-
-        itemReadingMode.apply {
             root.onSafeClick { switchOnOff.performClick() }
             switchOnOff.setOnCheckedChangeListener { compoundButton, isChecked ->
                 if (isChecked) {

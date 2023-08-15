@@ -17,6 +17,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -340,8 +341,8 @@ class SearchFragment : Fragment() {
             requireContext().showToast("Voice Search")
         }
 
-        btnQrScan.onSafeClick {
-            requireContext().showToast("QR Scan")
+        btnMoreUrlActions.onSafeClick {
+            showSearchTabUrlActions(it.first)
         }
 
         /** The webpage loads in [SearchTabFragment] */
@@ -416,6 +417,66 @@ class SearchFragment : Fragment() {
         btnCloseKeyboard.onSafeClick {
             etSearch.clearFocus()
             etSearch.hideKeyboard()
+        }
+
+        scrollViewNewTabOptions.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            println("scrollY: $scrollY oldScrollY: $oldScrollY".trimIndent())
+            if (scrollY - oldScrollY > 20) {
+                etSearch.hideKeyboard()
+            }
+
+            if (scrollY == 0) {
+                etSearch.showKeyboard()
+            }
+        })
+    }
+
+    private fun showSearchTabUrlActions(view: View?) {
+        val optionsList = listOf(
+            Pair("Share", R.drawable.outline_share_24),
+            Pair("Copy", R.drawable.baseline_content_copy_24),
+            Pair("Scan", R.drawable.round_filter_center_focus_24),
+            Pair("Select", R.drawable.outline_select_all_24),
+            Pair("Home", R.drawable.outline_home_24),
+            Pair("Clear", R.drawable.round_close_24),
+        )
+        requireContext().showPopupMenuWithIcons(
+            view = view,
+            menuList = optionsList
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                optionsList[0].first -> {
+                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    // Delay a bit to allow popup menu hide animation to play
+                    doAfter(300) {
+                        requireContext().shareUrl(
+                            url = binding.etSearch.text.toString(),
+                            webView = selectedWebpage?.getWebView()
+                        )
+                    }
+                }
+                optionsList[1].first -> {
+                    if (binding.etSearch.text.isNullOrBlank().not()) {
+                        requireContext().clipboard()?.text = binding.etSearch.text
+                        binding.root.showSnackBar("Copied link: ${requireContext().clipboard()?.text}")
+                    }
+                }
+                optionsList[2].first -> {}
+                optionsList[3].first -> {
+                    binding.etSearch.setSelection(0, binding.etSearch.text.length)
+                    binding.etSearch.setSelectAllOnFocus(true)
+                }
+                optionsList[4].first -> {
+                    if (binding.etSearch.text.isNullOrBlank()) return@showPopupMenuWithIcons
+                    if (binding.etSearch.text.toString().toLowCase().isValidURL().not()) return@showPopupMenuWithIcons
+                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    selectedWebpage?.loadUrl(url = getHostFrom(url = binding.etSearch.text.toString().trim()))
+                    binding.etSearch.hideKeyboard()
+                }
+                optionsList[5].first -> {
+                    binding.etSearch.setText("")
+                }
+            }
         }
     }
 
@@ -612,25 +673,25 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setupLinkEditingFeatures() {
-        listOf("Copy", "Share", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
+        listOf("L", "R", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
             .forEach { action: String ->
                 val chip = Chip(requireContext()).apply {
                     text = action
                     isCheckable = false
                     isClickable = false
                     when (action) {
-                        "Copy" -> {
+                        "L" -> {
                             setTextColor(requireContext().color(R.color.purple_500))
                             chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.baseline_content_copy_24)
+                            chipIcon = requireContext().drawable(R.drawable.round_first_page_24)
                             chipIconSize = 16.dpToPx()
                             chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
                             iconStartPadding = 6.dpToPx()
                         }
-                        "Share" -> {
+                        "R" -> {
                             setTextColor(requireContext().color(R.color.purple_500))
                             chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.outline_share_24)
+                            chipIcon = requireContext().drawable(R.drawable.round_last_page_24)
                             chipIconSize = 16.dpToPx()
                             chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
                             iconStartPadding = 6.dpToPx()
@@ -645,45 +706,51 @@ class SearchFragment : Fragment() {
                     }
                     textAlignment = View.TEXT_ALIGNMENT_CENTER
                     elevation = 0f
-                    onSafeClick {
-                        when (action.trim()) {
-                            "Copy" -> {
-                                if (etSearch.text.isNullOrBlank().not()) {
-                                    requireContext().clipboard()?.text = etSearch.text
-                                    binding.root.showSnackBar("Copied link: ${requireContext().clipboard()?.text}")
-                                }
+                }
+                chip.onSafeClick {
+                    when (action.trim()) {
+                        "L" -> {
+                            try {
+                                etSearch.setSelection(etSearch.selectionStart - 1)
+                            } catch (_: Exception) {
                             }
-                            "Share" -> {
-                                val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
-                                // Delay a bit to allow popup menu hide animation to play
-                                doAfter(300) {
-                                    requireContext().shareUrl(
-                                        url = etSearch.text.toString(),
-                                        webView = selectedWebpage?.getWebView()
-                                    )
-                                }
+                        }
+                        "R" -> {
+                            try {
+                                etSearch.setSelection(etSearch.selectionStart + 1)
+                            } catch (_: Exception) {
                             }
-                            "/" -> {
-                                etSearch.text.insert(etSearch.selectionStart, "/")
-                            }
-                            "." -> {
-                                etSearch.text.insert(etSearch.selectionStart, ".")
-                            }
-                            ".com" -> {
-                                etSearch.text.insert(etSearch.selectionStart, ".com")
-                            }
-                            ".in" -> {
-                                etSearch.text.insert(etSearch.selectionStart, ".in")
-                            }
-                            "www." -> {
-                                etSearch.text.insert(etSearch.selectionStart, "www.")
-                            }
-                            "https://" -> {
-                                etSearch.text.insert(etSearch.selectionStart, "https://")
-                            }
-                            "http://" -> {
-                                etSearch.text.insert(etSearch.selectionStart, "http://")
-                            }
+                        }
+                        "/" -> {
+                            etSearch.text.insert(etSearch.selectionStart, "/")
+                        }
+                        "." -> {
+                            etSearch.text.insert(etSearch.selectionStart, ".")
+                        }
+                        ".com" -> {
+                            etSearch.text.insert(etSearch.selectionStart, ".com")
+                        }
+                        ".in" -> {
+                            etSearch.text.insert(etSearch.selectionStart, ".in")
+                        }
+                        "www." -> {
+                            etSearch.text.insert(etSearch.selectionStart, "www.")
+                        }
+                        "https://" -> {
+                            etSearch.text.insert(etSearch.selectionStart, "https://")
+                        }
+                        "http://" -> {
+                            etSearch.text.insert(etSearch.selectionStart, "http://")
+                        }
+                    }
+                }
+                chip.onCustomLongClick {
+                    when (action.trim()) {
+                        "L" -> {
+                            etSearch.setSelection(0)
+                        }
+                        "R" -> {
+                            etSearch.setSelection(etSearch.text.length)
                         }
                     }
                 }
@@ -697,7 +764,7 @@ class SearchFragment : Fragment() {
         isSearchSuggestionSelected = false
         chipGroupLinkTextActions.isVisible = true
         btnWebsiteQuickActions.isVisible = false
-        btnQrScan.isVisible = true
+        btnMoreUrlActions.isVisible = true
         btnVoiceSearch.isVisible = true
         ivWebappProfile.isVisible = false
         ivSearchEngine.isVisible = true
@@ -715,7 +782,7 @@ class SearchFragment : Fragment() {
         chipGroupLinkTextActions.isVisible = false
         etSearch.clearFocus()
         btnWebsiteQuickActions.isVisible = true
-        btnQrScan.isVisible = false
+        btnMoreUrlActions.isVisible = false
         btnVoiceSearch.isVisible = false
         ivWebappProfile.isVisible = true
         ivSearchEngine.isVisible = false
@@ -1156,6 +1223,7 @@ class SearchFragment : Fragment() {
                 }
                 QuickActionTabMenuMoreOptions.PRINT.title -> {}
                 QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
+                QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
                 QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
             }
         }

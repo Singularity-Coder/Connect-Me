@@ -352,13 +352,13 @@
                     app:rippleColor="@color/purple_200" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_qr_scan"
+                    android:id="@+id/btn_more_url_actions"
                     style="@style/Widget.App.Button.IconOnly"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_marginEnd="12dp"
                     android:visibility="gone"
-                    app:icon="@drawable/round_filter_center_focus_24"
+                    app:icon="@drawable/ic_round_more_horiz_24"
                     app:rippleColor="@color/purple_200" />
 
                 <com.google.android.material.button.MaterialButton

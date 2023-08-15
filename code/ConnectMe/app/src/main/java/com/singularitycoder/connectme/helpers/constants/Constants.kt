@@ -258,6 +258,7 @@ enum class QuickActionTabMenuMoreOptions(
     FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
     TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
     DOWNLOAD(title = "Download", icon = R.drawable.outline_file_download_24),
+    READING_MODE(title = "Reading mode", icon = R.drawable.outline_chrome_reader_mode_24),
 }
 
 enum class FeatureTab(val value: String) {

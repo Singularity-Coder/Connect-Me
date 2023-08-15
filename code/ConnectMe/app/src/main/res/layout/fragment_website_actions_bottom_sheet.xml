@@ -345,10 +345,6 @@
                         layout="@layout/list_item_website_action" />
 
                     <include
-                        android:id="@+id/item_reading_mode"
-                        layout="@layout/list_item_website_action" />
-
-                    <include
                         android:id="@+id/item_vpn"
                         layout="@layout/list_item_website_action" />
 

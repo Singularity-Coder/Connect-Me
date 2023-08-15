@@ -257,6 +257,8 @@ class DownloadsFragment : Fragment() {
             /* lifecycleOwner = */ viewLifecycleOwner
         ) { _, bundle: Bundle ->
             val newFileName = bundle.getString(FragmentResultBundleKey.RENAME_DOWNLOAD_FILE)
+            // TODO sanitize name - remove periods, n other spec chars n replace with underscores - append extension on done
+            // TODO update donwload item
             requireContext().renameFile(
                 fileUri = Uri.fromFile(File(downloadItemToRename?.path ?: "")),
                 newName = newFileName

@@ -18,6 +18,12 @@ so files come from files dir only. use db for source nav alone n updating the na
 add folder - refresh list
 
 
+Site Privacy Settings
+- VPN hides/jumbles IP address of device
+- Ad blocker - Ads, trackers and analytics will be blocked
+- URL sanitisation - remove tracking ids from links
+- Use HTTPS - encrypted data both send n receive
+
 
 TODO THIS WEEK
 Create downloads db - since this is not gen file man, everything can be recorded
@@ -68,6 +74,7 @@ Reader Mode:
     Font size
     TTS
     Dark mode for reader alone
+    remove images option
 Webview notifications
 Private tab close option -> Close all private tabs
 Textsize adjustment in webpage - slider
@@ -149,7 +156,6 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 
 TODO Interesting
 1. https://medium.com/@joseph.pyram/9-parts-of-a-url-that-you-should-know-89fea8e11713
-
 
 
 ADB
