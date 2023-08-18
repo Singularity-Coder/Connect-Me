@@ -32,12 +32,16 @@ import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.reflect.Method
 import java.util.*
 
@@ -215,15 +219,18 @@ fun Context.showAlertDialog(
         val dialog = create()
         dialog.show()
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).apply {
+            setHapticFeedback()
             isAllCaps = false
             setPadding(0, 0, 16.dpToPx().toInt(), 0)
             if (positiveBtnColor != null) setTextColor(this@showAlertDialog.color(positiveBtnColor))
         }
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).apply {
+            setHapticFeedback()
             isAllCaps = false
             if (negativeBtnColor != null) setTextColor(this@showAlertDialog.color(negativeBtnColor))
         }
         dialog.getButton(DialogInterface.BUTTON_NEUTRAL).apply {
+            setHapticFeedback()
             isAllCaps = false
             setPadding(16.dpToPx().toInt(), 0, 0, 0)
             if (neutralBtnColor != null) setTextColor(this@showAlertDialog.color(neutralBtnColor))
@@ -270,6 +277,8 @@ fun Context.showPopupMenu(
 }
 
 // TODO set bottom n top margins - popupStyleAttr or popupStyleRes for both PopupMenu n ListPopupWindow. Default attributes like R.attr.listPopupWindowStyle seem to have their own background which is overriding mine
+// popupStyleAttr = R.attr.popupMenuStyle
+// popupStyleAttr = com.google.android.material.R.attr.popupMenuStyle
 fun Context.showPopupMenuWithIcons(
     view: View?,
     title: String? = null,
@@ -287,7 +296,7 @@ fun Context.showPopupMenuWithIcons(
             /* context = */ this,
             /* anchor = */ view,
             /* gravity = */ 0,
-            /* popupStyleAttr = */ /* R.attr.popupMenuStyle */ 0,
+            /* popupStyleAttr = */ 0,
             /* popupStyleRes = */ R.style.PopupMenuTheme
         )
     } else {
@@ -334,7 +343,7 @@ fun Context.showPopupMenuWithIcons(
                 defaultSpace = defaultSpaceBtwIconTitle
             )
         )
-        popupMenu.menu.get(index).actionView?.setMargins(start = 0, top = 0, end = 0, bottom = 8.dpToPx().toInt())
+//        popupMenu.menu.get(index).actionView?.setMargins(start = 0, top = 0, end = 0, bottom = 8.dpToPx().toInt())
 //        findViewById<ViewGroup>(popupMenu.menu.get(index).itemId).get(index)
     }
     popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
@@ -390,20 +399,53 @@ fun Context.showSingleSelectionPopupMenu(
     popupMenu.show()
 }
 
+/** Use this if the list is dynamic n to set a fixed width irrespective of the width of the item */
 // Create custom list item to get correct width
 // Refer for a fix - https://stackoverflow.com/questions/14200724/listpopupwindow-not-obeying-wrap-content-width-spec
+// defStyleAttr = com.google.android.material.R.attr.listPopupWindowStyle
 fun Context.showListPopupMenu(
     anchorView: View,
     adapter: ArrayAdapter<String>,
     onItemClick: (position: Int) -> Unit
 ) {
 //    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, todayOptions)
-    ListPopupWindow(this, null, com.google.android.material.R.attr.listPopupWindowStyle).apply {
+    ListPopupWindow(
+        /* context = */ this,
+        /* attrs = */ null,
+        /* defStyleAttr = */ com.google.android.material.R.attr.listPopupWindowStyle
+    ).apply {
         this.anchorView = anchorView
         setAdapter(adapter)
 //        setContentWidth(ListPopupWindow.WRAP_CONTENT)
 //        setContentWidth(measureContentWidth(adapter))
         width = ListPopupWindow.MATCH_PARENT
+        setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+            view?.setHapticFeedback()
+            onItemClick.invoke(position)
+            this.dismiss()
+        }
+        show()
+    }
+}
+
+fun Context.showListPopupMenu2(
+    anchorView: View?,
+    menuList: List<String?>,
+    onItemClick: (position: Int) -> Unit
+) {
+    val adapter = ArrayAdapter(
+        /* context = */ this,
+        /* resource = */ android.R.layout.simple_list_item_1,
+        /* objects = */ menuList
+    )
+    ListPopupWindow(
+        /* context = */ this,
+        /* attrs = */ null,
+        /* defStyleAttr = */ /* R.attr.listPopupWindowStyle */ 0,
+        /* defStyleRes = */ R.style.ListPopupWindowTheme
+    ).apply {
+        this.anchorView = anchorView
+        setAdapter(adapter)
         setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
             view?.setHapticFeedback()
             onItemClick.invoke(position)

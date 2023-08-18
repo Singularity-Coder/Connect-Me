@@ -11,7 +11,6 @@ import android.util.Base64
 import android.view.*
 import android.webkit.*
 import androidx.annotation.MenuRes
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.forEach
@@ -437,7 +436,9 @@ class SearchTabFragment : Fragment() {
                 R.id.menu_item_add_to_collection -> {
                     addToCollection(title = webView.hitTestResult.extra, url = webView.hitTestResult.extra)
                 }
-                R.id.menu_item_download_link -> {
+                R.id.menu_item_qr_code -> {
+                }
+                R.id.menu_item_save_offline -> {
                     downloadFileAsk(url = webView.hitTestResult.extra, contentDisposition = null, mimeType = null)
                 }
                 R.id.menu_item_share_link -> {

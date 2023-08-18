@@ -28,6 +28,12 @@
             android:icon="@drawable/outline_timer_24"
             android:title="Open in new disappearing tab"
             app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_open_in_background"
+            android:icon="@drawable/outline_open_in_new_24"
+            android:title="Open in background"
+            app:showAsAction="withText" />
     </group>
 
     <group android:id="@+id/group3">
@@ -52,9 +58,15 @@
             app:showAsAction="withText" />
 
         <item
-            android:id="@+id/menu_item_download_link"
-            android:icon="@drawable/outline_file_download_24"
-            android:title="Download Link"
+            android:id="@+id/menu_item_qr_code"
+            android:icon="@drawable/outline_qr_code_24"
+            android:title="QR code"
+            app:showAsAction="withText" />
+
+        <item
+            android:id="@+id/menu_item_save_offline"
+            android:icon="@drawable/outline_airplanemode_active_24"
+            android:title="Safe for offline"
             app:showAsAction="withText" />
 
         <item

@@ -45,11 +45,11 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
+class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance() = GetInsightsBottomSheetFragment()
+        fun newInstance() = InsightsBottomSheetFragment()
     }
 
     @Inject
@@ -212,7 +212,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
             } else {
                 searchViewModel.getTextInsight(
                     prompt = prompt.second,
-                    screen = this@GetInsightsBottomSheetFragment.javaClass.simpleName
+                    screen = this@InsightsBottomSheetFragment.javaClass.simpleName
                 )
                 val insight = Insight(
                     userType = ChatRole.USER.ordinal,
@@ -248,14 +248,14 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 if (isTextInsight) {
                     searchViewModel.getTextInsight(
                         prompt = etAskAnything.text.toString(),
-                        screen = this@GetInsightsBottomSheetFragment.javaClass.simpleName
+                        screen = this@InsightsBottomSheetFragment.javaClass.simpleName
                     )
                 } else {
                     searchViewModel.getImageInsight(
                         prompt = etAskAnything.text.toString(),
                         numOfImages = etImageQuantity.editText?.text.toString().trim().toIntOrNull() ?: 2,
                         imageSize = etImageSize.editText?.text.toString().trim(),
-                        screen = this@GetInsightsBottomSheetFragment.javaClass.simpleName
+                        screen = this@InsightsBottomSheetFragment.javaClass.simpleName
                     )
                 }
                 etAskAnything.setText("")
@@ -447,7 +447,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun FragmentGetInsightsBottomSheetBinding.observeForData() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
             if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
-            if (it.screen != this@GetInsightsBottomSheetFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
+            if (it.screen != this@InsightsBottomSheetFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
 
             fun removeLoadingItem() {
                 if (insightsAdapter.insightsList.isEmpty()) return
@@ -491,7 +491,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
                 else -> Unit
             }
 
-            this@GetInsightsBottomSheetFragment.apiResult = it
+            this@InsightsBottomSheetFragment.apiResult = it
             insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
 //            scrollViewConversation.scrollTo(scrollViewConversation.height, scrollViewConversation.height)
             rvInsights.scrollToPosition(insightsAdapter.insightsList.lastIndex)
@@ -732,7 +732,7 @@ class GetInsightsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private suspend fun getInsightStringsList() {
         val insightStringsList = searchViewModel.getAllInsightStringsBy(website = getHostFrom(searchViewModel.getWebViewData().url))
-        this@GetInsightsBottomSheetFragment.insightStringsList = insightStringsList
+        this@InsightsBottomSheetFragment.insightStringsList = insightStringsList
     }
 
     @SuppressLint("NotifyDataSetChanged")

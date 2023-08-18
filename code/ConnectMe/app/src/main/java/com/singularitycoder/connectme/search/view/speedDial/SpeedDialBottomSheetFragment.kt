@@ -1,14 +1,15 @@
 package com.singularitycoder.connectme.search.view.speedDial
 
 import android.annotation.SuppressLint
-import android.os.Build
+import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Environment
 import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.annotation.DrawableRes
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -18,13 +19,16 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.collections.CollectionWebPage
 import com.singularitycoder.connectme.collections.CollectionsViewModel
 import com.singularitycoder.connectme.databinding.FragmentSpeedDialBottomSheetBinding
+import com.singularitycoder.connectme.downloads.Download
+import com.singularitycoder.connectme.downloads.DownloadsViewModel
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsite
 import com.singularitycoder.connectme.followingWebsite.FollowingWebsiteViewModel
 import com.singularitycoder.connectme.helpers.*
-import com.singularitycoder.connectme.helpers.constants.SpeedDialFeatures
+import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.history.HistoryViewModel
 import com.singularitycoder.connectme.search.view.SearchFragment
@@ -64,6 +68,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
     private val collectionsViewModel by viewModels<CollectionsViewModel>()
     private val historyViewModel by viewModels<HistoryViewModel>()
     private val followingWebsiteViewModel by viewModels<FollowingWebsiteViewModel>()
+    private val downloadsViewModel by viewModels<DownloadsViewModel>()
     private val speedDialAdapter: SpeedDialAdapter by lazy { SpeedDialAdapter() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,6 +125,12 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
                 favicon = it?.favicon
             )
             dismiss()
+        }
+
+        if (speedDialTitle == SpeedDialFeatures.DOWNLOADS.value) {
+            speedDialAdapter.setOnItemLongClickListener { it: SpeedDial? ->
+                requireActivity().openFile(selectedItem = File(it?.path ?: ""))
+            }
         }
 
         ivSearch.onSafeClick {
@@ -222,12 +233,48 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         if (speedDialTitle == SpeedDialFeatures.DOWNLOADS.value) {
-            val hasPermission = requireActivity().checkStoragePermission()
-            if (hasPermission) {
-                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-                    if (Environment.isExternalStorageLegacy().not()) return
+            (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = downloadsViewModel.getAllDownloadsFlow()) { downloadsList: List<Download?> ->
+                fun getBitmap(@DrawableRes drawableRes: Int): Bitmap? {
+                    return requireContext().drawable(drawableRes)
+                        ?.changeColor(requireContext(), R.color.purple_500)
+                        ?.toBitmapOrNull(width = 32.dpToPx().toInt(), height = 32.dpToPx().toInt())
                 }
-                openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+                speedDialList = downloadsList.map { download: Download? ->
+                    val fileExtension = download?.extension?.toLowCase()?.trim()
+                    val bitmap = when (fileExtension) {
+                        in ImageFormat.values().map { it.value.toLowCase().trim() } -> {
+                            getBitmap(drawableRes = R.drawable.outline_image_24)
+                        }
+                        in VideoFormat.values().map { it.value.toLowCase().trim() } -> {
+                            getBitmap(drawableRes = R.drawable.outline_movie_24)
+                        }
+                        in AudioFormat.values().map { it.value.toLowCase().trim() } -> {
+                            getBitmap(drawableRes = R.drawable.outline_audiotrack_24)
+                        }
+                        in DocumentFormat.values().map { it.value.toLowCase().trim() } -> {
+                            getBitmap(drawableRes = R.drawable.outline_article_24)
+                        }
+                        in ArchiveFormat.values().map { it.value.toLowCase().trim() } -> {
+                            getBitmap(drawableRes = R.drawable.outline_folder_zip_24)
+                        }
+                        in AndroidFormat.values().map { it.value.toLowCase().trim() } -> {
+                            getBitmap(drawableRes = R.drawable.outline_android_24)
+                        }
+                        else -> {
+                            getBitmap(drawableRes = R.drawable.outline_insert_drive_file_24)
+                        }
+                    }
+                    SpeedDial(
+                        type = speedDialTitle,
+                        bitmap = bitmap,
+                        title = download?.title,
+                        time = download?.time,
+                        link = download?.link ?: "",
+                        path = download?.path ?: ""
+                    )
+                }
+                speedDialAdapter.speedDialList = speedDialList
+                speedDialAdapter.notifyDataSetChanged()
             }
         }
     }

@@ -382,16 +382,16 @@ fun getFilesListFrom(currentDirectory: File): List<File> {
 
 // https://github.com/android/storage-samples/tree/main/ActionOpenDocumentTree
 fun Activity.openFile(selectedItem: File) {
-    // Get URI and MIME type of file
-    val uri = FileProvider.getUriForFile(this.applicationContext, FILE_PROVIDER, selectedItem)
-    val mime: String = getMimeType(uri.toString())
-
-    // Open file with user selected app
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        setDataAndType(uri, mime)
-    }
     try {
+        // Get URI and MIME type of file
+        val uri = FileProvider.getUriForFile(this.applicationContext, FILE_PROVIDER, selectedItem)
+        val mime: String = getMimeType(uri.toString())
+
+        // Open file with user selected app
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            setDataAndType(uri, mime)
+        }
         this.startActivity(intent)
     } catch (_: Exception) {
         showToast("Sorry. Cannot open this file.")
@@ -401,13 +401,13 @@ fun Activity.openFile(selectedItem: File) {
 fun File.getAppropriateSize(): String {
     return when {
         this.showSizeIn(MB) < 1 -> {
-            "${String.format("%1.2f", this.showSizeIn(KB))} Kb"
+            "${String.format("%1.2f", this.showSizeIn(KB))} KB"
         }
         this.showSizeIn(MB) >= GB -> {
-            "${String.format("%1.2f", this.showSizeIn(GB))} Gb"
+            "${String.format("%1.2f", this.showSizeIn(GB))} GB"
         }
         else -> {
-            "${String.format("%1.2f", this.showSizeIn(MB))} Mb"
+            "${String.format("%1.2f", this.showSizeIn(MB))} MB"
         }
     }
 }

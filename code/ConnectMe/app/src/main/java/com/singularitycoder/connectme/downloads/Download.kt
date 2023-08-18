@@ -12,7 +12,8 @@ data class Download(
     @PrimaryKey val id: Long = 0,
     val path: String? = "",
     val title: String = "",
-    val time: String? = "",
+    val time: Long? = 0L,
+    val size: String? = "",
     val link: String? = "",
     val extension: String? = "",
     val isDirectory: Boolean = false

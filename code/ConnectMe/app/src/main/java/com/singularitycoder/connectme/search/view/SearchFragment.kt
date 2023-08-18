@@ -4,18 +4,18 @@ import android.annotation.SuppressLint
 import android.app.ActionBar
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.view.*
 import android.view.inputmethod.EditorInfo
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
-import androidx.appcompat.widget.ListPopupWindow
+import androidx.annotation.DrawableRes
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doAfterTextChanged
@@ -47,7 +47,7 @@ import com.singularitycoder.connectme.history.History
 import com.singularitycoder.connectme.history.HistoryViewModel
 import com.singularitycoder.connectme.search.model.*
 import com.singularitycoder.connectme.search.view.addApiKey.AddApiKeyBottomSheetFragment
-import com.singularitycoder.connectme.search.view.getInsights.GetInsightsBottomSheetFragment
+import com.singularitycoder.connectme.search.view.getInsights.InsightsBottomSheetFragment
 import com.singularitycoder.connectme.search.view.speedDial.SpeedDialBottomSheetFragment
 import com.singularitycoder.connectme.search.view.websiteActions.WebsiteActionsBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.SearchViewModel
@@ -59,6 +59,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 // TODO drag and drop the tabs outside the tab row to close the tabs
@@ -198,30 +199,17 @@ class SearchFragment : Fragment() {
                         collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
                     }
                     withContext(Main) {
-                        val adapter = ArrayAdapter(
-                            /* context = */ requireContext(),
-                            /* resource = */ android.R.layout.simple_list_item_1,
-                            /* objects = */ collectionsTitlesList
-                        )
-                        ListPopupWindow(
-                            /* context = */ requireContext(),
-                            /* attrs = */ null,
-                            /* defStyleAttr = */ /* R.attr.listPopupWindowStyle */ 0,
-                            /* defStyleRes = */ R.style.ListPopupWindowTheme
-                        ).apply {
-                            anchorView = it.first
-                            setAdapter(adapter)
-                            setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-                                layoutCollections.tvTitle.text = collectionsTitlesList[position]
-                                lifecycleScope.launch {
-                                    val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList[position])
-                                    withContext(Main) {
-                                        updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
-                                    }
+                        requireContext().showListPopupMenu2(
+                            anchorView = it.first,
+                            menuList = collectionsTitlesList.toList()
+                        ) { position: Int ->
+                            layoutCollections.tvTitle.text = collectionsTitlesList[position]
+                            lifecycleScope.launch {
+                                val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList[position])
+                                withContext(Main) {
+                                    updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
                                 }
-                                this.dismiss()
                             }
-                            show()
                         }
                     }
                 }
@@ -247,6 +235,13 @@ class SearchFragment : Fragment() {
             etSearch.hideKeyboard(isClearFocus = false)
             SpeedDialBottomSheetFragment.newInstance(
                 title = SpeedDialFeatures.HISTORY.value
+            ).show(parentFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
+        }
+
+        layoutDownloads.root.onSafeClick {
+            etSearch.hideKeyboard(isClearFocus = false)
+            SpeedDialBottomSheetFragment.newInstance(
+                title = SpeedDialFeatures.DOWNLOADS.value
             ).show(parentFragmentManager, BottomSheetTag.TAG_SPEED_DIAL)
         }
 
@@ -422,7 +417,7 @@ class SearchFragment : Fragment() {
         scrollViewNewTabOptions.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             println("scrollY: $scrollY oldScrollY: $oldScrollY".trimIndent())
             if (scrollY - oldScrollY > 20) {
-                etSearch.hideKeyboard()
+                etSearch.hideKeyboard(isClearFocus = false)
             }
 
             if (scrollY == 0) {
@@ -435,7 +430,8 @@ class SearchFragment : Fragment() {
         val optionsList = listOf(
             Pair("Share", R.drawable.outline_share_24),
             Pair("Copy", R.drawable.baseline_content_copy_24),
-            Pair("Scan", R.drawable.round_filter_center_focus_24),
+            Pair("QR code", R.drawable.outline_qr_code_24),
+            Pair("Scan", R.drawable.round_qr_code_scanner_24),
             Pair("Select", R.drawable.outline_select_all_24),
             Pair("Home", R.drawable.outline_home_24),
             Pair("Clear", R.drawable.round_close_24),
@@ -462,18 +458,19 @@ class SearchFragment : Fragment() {
                     }
                 }
                 optionsList[2].first -> {}
-                optionsList[3].first -> {
+                optionsList[3].first -> {}
+                optionsList[4].first -> {
                     binding.etSearch.setSelection(0, binding.etSearch.text.length)
                     binding.etSearch.setSelectAllOnFocus(true)
                 }
-                optionsList[4].first -> {
+                optionsList[5].first -> {
                     if (binding.etSearch.text.isNullOrBlank()) return@showPopupMenuWithIcons
                     if (binding.etSearch.text.toString().toLowCase().isValidURL().not()) return@showPopupMenuWithIcons
                     val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                     selectedWebpage?.loadUrl(url = getHostFrom(url = binding.etSearch.text.toString().trim()))
                     binding.etSearch.hideKeyboard()
                 }
-                optionsList[5].first -> {
+                optionsList[6].first -> {
                     binding.etSearch.setText("")
                 }
             }
@@ -481,56 +478,129 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.observeForData() {
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
-            if (searchSuggestionsList.isEmpty() || searchQuery.isBlank()) {
-                cardSearchSuggestions.isVisible = false
-                return@collectLatestLifecycleFlow
-            }
-            try {
-                cardSearchSuggestions.isVisible = etSearch.isKeyboardVisible()
-            } catch (_: Exception) {
-            }
-            val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
-            root.getWindowVisibleDisplayFrame(rect)
-            val heightDiff: Int = root.rootView.height - (rect.bottom - rect.top)
-            if (searchSuggestionsList.size > 5) {
-                rvSearchSuggestions.layoutParams.height = heightDiff - 32.dpToPx().toInt()
-            } else {
-                rvSearchSuggestions.layoutParams.height = ActionBar.LayoutParams.WRAP_CONTENT
-            }
-            val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
-            val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
-            iconTextActionAdapter.setQuery(query = searchQuery)
-            iconTextActionAdapter.setList(searchSuggestionsList.map { searchSuggestion: String ->
-                IconTextAction(
-                    title = searchSuggestion,
-                    icon = searchEngine.icon,
-                    actionIcon = R.drawable.round_south_west_24
-                )
-            })
-        }
+        setupSearchSuggestionsFlowUpdates()
 
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
-            if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
-            if (it.screen != this@SearchFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
+        setupInsightsFlowUpdates()
 
-            when (it.apiState) {
-                ApiState.SUCCESS -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
-                    val promptsJson = "{" + it.insight?.insight?.substringAfter("{")?.substringBefore("}")?.trim() + "}"
-                    searchViewModel.addPrompt(
-                        Prompt(
-                            website = getHostFrom(url = selectedWebpage?.getWebView()?.url),
-                            promptsJson = promptsJson
-                        )
-                    )
+        setupHistoryFlowUpdates()
+
+        setupDownloadsFlowUpdates()
+
+        setupFollowingWebsitesFlowUpdates()
+
+        setupCollectionsFlowUpdates()
+    }
+
+    private fun FragmentSearchBinding.setupCollectionsFlowUpdates() {
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
+            if (collectionsTitlesList.isEmpty()) {
+                collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
+            }
+            val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList.firstOrNull())
+            withContext(Main) {
+                layoutCollections.apply {
+                    tvTitle.setTextColor(requireContext().color(R.color.purple_500))
+                    ivDropdownArrow.isVisible = true
+                    viewDummyTitle.isVisible = true
+                    tvTitle.text = collectionsTitlesList.firstOrNull()
                 }
-                else -> Unit
+                updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
             }
-
-            searchViewModel.resetInsight()
         }
+    }
 
+    private fun FragmentSearchBinding.setupFollowingWebsitesFlowUpdates() {
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { followingList: List<FollowingWebsite?> ->
+            withContext(Main) {
+                listOf(
+                    layoutFollowing.layoutFollowingApp1,
+                    layoutFollowing.layoutFollowingApp2,
+                    layoutFollowing.layoutFollowingApp3,
+                    layoutFollowing.layoutFollowingApp4,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(followingList.getOrNull(index)?.favicon))
+                    listItemAppBinding.tvAppName.text = followingList.getOrNull(index)?.title
+                    listItemAppBinding.root.onSafeClick {
+                        loadWebPage(
+                            link = followingList.getOrNull(index)?.link,
+                            favicon = followingList.getOrNull(index)?.favicon
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun FragmentSearchBinding.setupDownloadsFlowUpdates() {
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = downloadsViewModel.getAllDownloadsFlow()) { downloadsList: List<Download?> ->
+            layoutDownloads.root.isVisible = downloadsList.isNotEmpty()
+            if (downloadsList.isEmpty()) return@collectLatestLifecycleFlow
+            withContext(Main) {
+                listOf(
+                    layoutDownloads.layoutItem1,
+                    layoutDownloads.layoutItem2,
+                    layoutDownloads.layoutItem3,
+                ).forEachIndexed { index, listItemAppBinding ->
+                    fun getBitmap(@DrawableRes drawableRes: Int): Bitmap? {
+                        return requireContext().drawable(drawableRes)
+                            ?.changeColor(requireContext(), R.color.purple_500)
+                            ?.toBitmapOrNull(width = 32.dpToPx().toInt(), height = 32.dpToPx().toInt())
+                    }
+                    val newIndex = downloadsList.lastIndex - index
+                    val download = downloadsList.getOrNull(newIndex)
+                    if (download?.link.isNullOrBlank()) {
+                        listItemAppBinding.root.isVisible = false
+                        return@forEachIndexed
+                    }
+                    val file = File(download?.path ?: "")
+                    val fileExtension = download?.extension?.toLowCase()?.trim()
+                    when (fileExtension) {
+                        in ImageFormat.values().map { it.value.toLowCase().trim() } -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_image_24))
+                        }
+                        in VideoFormat.values().map { it.value.toLowCase().trim() } -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_movie_24))
+                        }
+                        in AudioFormat.values().map { it.value.toLowCase().trim() } -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_audiotrack_24))
+                        }
+                        in DocumentFormat.values().map { it.value.toLowCase().trim() } -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_article_24))
+                        }
+                        in ArchiveFormat.values().map { it.value.toLowCase().trim() } -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_folder_zip_24))
+                        }
+                        in AndroidFormat.values().map { it.value.toLowCase().trim() } -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_android_24))
+                        }
+                        else -> {
+                            listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_insert_drive_file_24))
+                        }
+                    }
+                    listItemAppBinding.ivWebappIcon.setBackgroundColor(requireContext().color(R.color.purple_50))
+                    listItemAppBinding.ivWebappIcon.scaleType = ImageView.ScaleType.CENTER
+                    listItemAppBinding.root.isVisible = true
+                    listItemAppBinding.tvDate.isVisible = false
+                    listItemAppBinding.tvTitle.text = download?.title
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        listItemAppBinding.tvTitle.setTextAppearance(R.style.TextAppearance_Material3_BodyMedium)
+                    } else {
+                        listItemAppBinding.tvTitle.setTextAppearance(context, R.style.TextAppearance_Material3_BodyMedium)
+                    }
+                    listItemAppBinding.tvSubtitle.text = getHostFrom(url = download?.link).replace("www.", "")
+                    listItemAppBinding.tvTime.text = download?.time?.toShortTime()
+                    listItemAppBinding.root.onSafeClick {
+                        loadWebPage(link = downloadsList.getOrNull(newIndex)?.link, favicon = null)
+                    }
+                    listItemAppBinding.root.onCustomLongClick {
+                        requireActivity().openFile(selectedItem = file)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun FragmentSearchBinding.setupHistoryFlowUpdates() {
         (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = historyViewModel.getAllHistoryFlow()) { historyList: List<History?> ->
             layoutHistory.root.isVisible = historyList.isNotEmpty()
             if (historyList.isEmpty()) return@collectLatestLifecycleFlow
@@ -565,77 +635,59 @@ class SearchFragment : Fragment() {
                 }
             }
         }
+    }
 
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = downloadsViewModel.getAllDownloadsFlow()) { downloadsList: List<Download?> ->
-            layoutDownloads.root.isVisible = downloadsList.isNotEmpty()
-            if (downloadsList.isEmpty()) return@collectLatestLifecycleFlow
-            withContext(Main) {
-                listOf(
-                    layoutDownloads.layoutItem1,
-                    layoutDownloads.layoutItem2,
-                    layoutDownloads.layoutItem3,
-                ).forEachIndexed { index, listItemAppBinding ->
-                    val newIndex = downloadsList.lastIndex - index
-                    if (downloadsList.getOrNull(newIndex)?.link.isNullOrBlank()) {
-                        listItemAppBinding.root.isVisible = false
-                        return@forEachIndexed
-                    }
-                    listItemAppBinding.root.isVisible = true
-                    listItemAppBinding.tvDate.isVisible = false
-//                    listItemAppBinding.ivWebappIcon.load(downloadsList.getOrNull(newIndex)?.favicon)
-                    listItemAppBinding.tvTitle.text = downloadsList.getOrNull(newIndex)?.title
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        listItemAppBinding.tvTitle.setTextAppearance(R.style.TextAppearance_Material3_BodyMedium)
-                    } else {
-                        listItemAppBinding.tvTitle.setTextAppearance(context, R.style.TextAppearance_Material3_BodyMedium)
-                    }
-                    listItemAppBinding.tvSubtitle.text = getHostFrom(url = downloadsList.getOrNull(newIndex)?.link).replace("www.", "")
-                    listItemAppBinding.tvTime.text = downloadsList.getOrNull(newIndex)?.time
-                    // TODO if source link is null then open the file else open website
-                    listItemAppBinding.root.onSafeClick {
-//                        loadWebPage(
-//                            link = downloadsList.getOrNull(newIndex)?.link,
-//                            favicon = downloadsList.getOrNull(newIndex)?.favicon
-//                        )
-                    }
-                }
-            }
-        }
+    private fun FragmentSearchBinding.setupInsightsFlowUpdates() {
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.insightSharedFlow) { it: ApiResult ->
+            if (it.apiState == ApiState.NONE) return@collectLatestLifecycleFlow
+            if (it.screen != this@SearchFragment.javaClass.simpleName) return@collectLatestLifecycleFlow
 
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = followingWebsiteViewModel.getAllFollowingWebsites()) { followingList: List<FollowingWebsite?> ->
-            withContext(Main) {
-                listOf(
-                    layoutFollowing.layoutFollowingApp1,
-                    layoutFollowing.layoutFollowingApp2,
-                    layoutFollowing.layoutFollowingApp3,
-                    layoutFollowing.layoutFollowingApp4,
-                ).forEachIndexed { index, listItemAppBinding ->
-                    listItemAppBinding.ivAppIcon.load(decodeBase64StringToBitmap(followingList.getOrNull(index)?.favicon))
-                    listItemAppBinding.tvAppName.text = followingList.getOrNull(index)?.title
-                    listItemAppBinding.root.onSafeClick {
-                        loadWebPage(
-                            link = followingList.getOrNull(index)?.link,
-                            favicon = followingList.getOrNull(index)?.favicon
+            when (it.apiState) {
+                ApiState.SUCCESS -> {
+                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    val promptsJson = "{" + it.insight?.insight?.substringAfter("{")?.substringBefore("}")?.trim() + "}"
+                    searchViewModel.addPrompt(
+                        Prompt(
+                            website = getHostFrom(url = selectedWebpage?.getWebView()?.url),
+                            promptsJson = promptsJson
                         )
-                    }
+                    )
                 }
+                else -> Unit
             }
-        }
 
-        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = collectionsViewModel.getAllCollections()) { it: List<CollectionWebPage?> ->
-            if (collectionsTitlesList.isEmpty()) {
-                collectionsTitlesList.addAll(collectionsViewModel.getAllUniqueCollectionTitles())
+            searchViewModel.resetInsight()
+        }
+    }
+
+    private fun FragmentSearchBinding.setupSearchSuggestionsFlowUpdates() {
+        (activity as? MainActivity)?.collectLatestLifecycleFlow(flow = searchViewModel.searchSuggestionResultsStateFlow) { searchSuggestionsList: List<String> ->
+            if (searchSuggestionsList.isEmpty() || searchQuery.isBlank()) {
+                cardSearchSuggestions.isVisible = false
+                return@collectLatestLifecycleFlow
             }
-            val top4CollectionItemsList = collectionsViewModel.getTop4CollectionsBy(collectionTitle = collectionsTitlesList.firstOrNull())
-            withContext(Main) {
-                layoutCollections.apply {
-                    tvTitle.setTextColor(requireContext().color(R.color.purple_500))
-                    ivDropdownArrow.isVisible = true
-                    viewDummyTitle.isVisible = true
-                    tvTitle.text = collectionsTitlesList.firstOrNull()
-                }
-                updateTop4WebPageViewsOfCollections(top4CollectionItemsList)
+            try {
+                cardSearchSuggestions.isVisible = etSearch.isKeyboardVisible()
+            } catch (_: Exception) {
             }
+            val rect = Rect() // rect will be populated with the coordinates of your view that area still visible.
+            root.getWindowVisibleDisplayFrame(rect)
+            val heightDiff: Int = root.rootView.height - (rect.bottom - rect.top)
+            if (searchSuggestionsList.size > 5) {
+                rvSearchSuggestions.layoutParams.height = heightDiff - 32.dpToPx().toInt()
+            } else {
+                rvSearchSuggestions.layoutParams.height = ActionBar.LayoutParams.WRAP_CONTENT
+            }
+            val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
+            val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
+            iconTextActionAdapter.setQuery(query = searchQuery)
+            iconTextActionAdapter.setList(searchSuggestionsList.map { searchSuggestion: String ->
+                IconTextAction(
+                    title = searchSuggestion,
+                    icon = searchEngine.icon,
+                    actionIcon = R.drawable.round_south_west_24
+                )
+            })
         }
     }
 
@@ -673,89 +725,75 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setupLinkEditingFeatures() {
-        listOf("L", "R", "   /   ", "   .   ", ".com", "  .in  ", "www.", "https://", "http://", "")
-            .forEach { action: String ->
-                val chip = Chip(requireContext()).apply {
-                    text = action
-                    isCheckable = false
-                    isClickable = false
-                    when (action) {
-                        "L" -> {
-                            setTextColor(requireContext().color(R.color.purple_500))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.round_first_page_24)
-                            chipIconSize = 16.dpToPx()
-                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                            iconStartPadding = 6.dpToPx()
-                        }
-                        "R" -> {
-                            setTextColor(requireContext().color(R.color.purple_500))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
-                            chipIcon = requireContext().drawable(R.drawable.round_last_page_24)
-                            chipIconSize = 16.dpToPx()
-                            chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
-                            iconStartPadding = 6.dpToPx()
-                        }
-                        "" -> {
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.transparent_white_50))
-                        }
-                        else -> {
-                            setTextColor(requireContext().color(R.color.title_color))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.black_50))
-                        }
+        val optionsList = UrlSearchActions.values().map { it.value }
+        optionsList.forEachIndexed { index, action ->
+            val chip = Chip(requireContext()).apply {
+                text = action
+                isCheckable = false
+                isClickable = false
+                when (index) {
+                    UrlSearchActions.LEFT_NAV.ordinal -> {
+                        setTextColor(requireContext().color(R.color.purple_500))
+                        chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
+                        chipIcon = requireContext().drawable(R.drawable.round_first_page_24)
+                        chipIconSize = 24.dpToPx()
+                        chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                        iconStartPadding = 10.dpToPx()
+                        iconEndPadding = (-4).dpToPx()
+                        text = null
                     }
-                    textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    elevation = 0f
-                }
-                chip.onSafeClick {
-                    when (action.trim()) {
-                        "L" -> {
-                            try {
-                                etSearch.setSelection(etSearch.selectionStart - 1)
-                            } catch (_: Exception) {
-                            }
-                        }
-                        "R" -> {
-                            try {
-                                etSearch.setSelection(etSearch.selectionStart + 1)
-                            } catch (_: Exception) {
-                            }
-                        }
-                        "/" -> {
-                            etSearch.text.insert(etSearch.selectionStart, "/")
-                        }
-                        "." -> {
-                            etSearch.text.insert(etSearch.selectionStart, ".")
-                        }
-                        ".com" -> {
-                            etSearch.text.insert(etSearch.selectionStart, ".com")
-                        }
-                        ".in" -> {
-                            etSearch.text.insert(etSearch.selectionStart, ".in")
-                        }
-                        "www." -> {
-                            etSearch.text.insert(etSearch.selectionStart, "www.")
-                        }
-                        "https://" -> {
-                            etSearch.text.insert(etSearch.selectionStart, "https://")
-                        }
-                        "http://" -> {
-                            etSearch.text.insert(etSearch.selectionStart, "http://")
-                        }
+                    UrlSearchActions.RIGHT_NAV.ordinal -> {
+                        setTextColor(requireContext().color(R.color.purple_500))
+                        chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
+                        chipIcon = requireContext().drawable(R.drawable.round_last_page_24)
+                        chipIconSize = 24.dpToPx()
+                        chipIconTint = ColorStateList.valueOf(requireContext().color(R.color.purple_500))
+                        iconStartPadding = 10.dpToPx()
+                        iconEndPadding = (-4).dpToPx()
+                        text = null
+                    }
+                    UrlSearchActions.EMPTY.ordinal -> {
+                        chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.transparent_white_50))
+                    }
+                    else -> {
+                        setTextColor(requireContext().color(R.color.title_color))
+                        chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.black_50))
                     }
                 }
-                chip.onCustomLongClick {
-                    when (action.trim()) {
-                        "L" -> {
-                            etSearch.setSelection(0)
-                        }
-                        "R" -> {
-                            etSearch.setSelection(etSearch.text.length)
-                        }
-                    }
-                }
-                chipGroupLinkTextActions.addView(chip)
+                textAlignment = View.TEXT_ALIGNMENT_CENTER
+                elevation = 0f
             }
+            chip.onSafeClick {
+                when (index) {
+                    UrlSearchActions.LEFT_NAV.ordinal -> {
+                        try {
+                            etSearch.setSelection(etSearch.selectionStart - 1)
+                        } catch (_: Exception) {
+                        }
+                    }
+                    UrlSearchActions.RIGHT_NAV.ordinal -> {
+                        try {
+                            etSearch.setSelection(etSearch.selectionStart + 1)
+                        } catch (_: Exception) {
+                        }
+                    }
+                    else -> {
+                        etSearch.text.insert(etSearch.selectionStart, UrlSearchActions.values().get(index).value.trim())
+                    }
+                }
+            }
+            chip.onCustomLongClick {
+                when (index) {
+                    UrlSearchActions.LEFT_NAV.ordinal -> {
+                        etSearch.setSelection(0)
+                    }
+                    UrlSearchActions.RIGHT_NAV.ordinal -> {
+                        etSearch.setSelection(etSearch.text.length)
+                    }
+                }
+            }
+            chipGroupLinkTextActions.addView(chip)
+        }
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsFocused() {
@@ -1089,7 +1127,7 @@ class SearchFragment : Fragment() {
             createChildView(R.drawable.other_houses_black_24dp, QuickActionTabMenu.HOME.value, R.color.purple_50),
             createChildView(R.drawable.round_close_24, QuickActionTabMenu.CLOSE_ALL_TABS.value, R.color.purple_50),
             createChildView(R.drawable.round_refresh_24, QuickActionTabMenu.REFRESH_WEBSITE.value, R.color.purple_50),
-            createChildView(R.drawable.outline_share_24, QuickActionTabMenu.GET_INSIGHT.value, R.color.purple_50),
+            createChildView(R.drawable.outline_share_24, QuickActionTabMenu.INSIGHTS.value, R.color.purple_50),
         )
         binding.pinterestView.setPinClickListener(object : PinterestView.PinMenuClickListener {
             override fun onMenuItemClick(checkedView: View?, clickItemPos: Int) {
@@ -1118,7 +1156,7 @@ class SearchFragment : Fragment() {
         val action2dot5 = Action(id = QuickActionTabMenu.REFRESH_WEBSITE.ordinal, icon = icon2dot5!!, title = QuickActionTabMenu.REFRESH_WEBSITE.value)
 
         val icon3 = requireContext().drawable(R.drawable.baseline_auto_fix_high_24)?.changeColor(requireContext(), R.color.purple_500)
-        val action3 = Action(id = QuickActionTabMenu.GET_INSIGHT.ordinal, icon = icon3!!, title = QuickActionTabMenu.GET_INSIGHT.value)
+        val action3 = Action(id = QuickActionTabMenu.INSIGHTS.ordinal, icon = icon3!!, title = QuickActionTabMenu.INSIGHTS.value)
 
         val icon4 = requireContext().drawable(R.drawable.round_close_24)?.changeColor(requireContext(), R.color.purple_500)
         val action4 = Action(id = QuickActionTabMenu.CLOSE_ALL_TABS.ordinal, icon = icon4!!, title = QuickActionTabMenu.CLOSE_ALL_TABS.value)
@@ -1188,7 +1226,7 @@ class SearchFragment : Fragment() {
                     val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     selectedWebpage?.getWebView()?.reload()
                 }
-                QuickActionTabMenu.GET_INSIGHT.ordinal -> {
+                QuickActionTabMenu.INSIGHTS.ordinal -> {
                     val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.url.isNullOrBlank() || selectedWebpage?.getWebView()?.url?.isValidURL()?.not() == true) {
                         binding.root.showSnackBar("Not a valid website!")
@@ -1196,7 +1234,7 @@ class SearchFragment : Fragment() {
                     }
                     val encryptedApiSecret = preferences.getString(Preferences.KEY_OPEN_AI_API_KEY, "")
                     if (encryptedApiSecret.isNullOrBlank().not()) {
-                        GetInsightsBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
+                        InsightsBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_GET_INSIGHTS)
                     } else {
                         AddApiKeyBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                     }
@@ -1216,15 +1254,23 @@ class SearchFragment : Fragment() {
             menuList = optionsList
         ) { it: MenuItem? ->
             when (it?.title?.toString()?.trim()) {
-                QuickActionTabMenuMoreOptions.FIND_IN_PAGE.title -> {}
                 QuickActionTabMenuMoreOptions.ADD_SHORTCUT.title -> {
                     val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
                 }
                 QuickActionTabMenuMoreOptions.PRINT.title -> {}
+                QuickActionTabMenuMoreOptions.FIND_IN_PAGE.title -> {}
                 QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
-                QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
-                QuickActionTabMenuMoreOptions.DOWNLOAD.title -> {}
+                QuickActionTabMenuMoreOptions.READING_MODE.title -> {}
+                QuickActionTabMenuMoreOptions.SCREENSHOT.title -> {}
+                QuickActionTabMenuMoreOptions.DETECT_MEDIA.title -> {}
+                QuickActionTabMenuMoreOptions.DARK_MODE.title -> {}
+                QuickActionTabMenuMoreOptions.SAVE_PDF.title -> {}
+                QuickActionTabMenuMoreOptions.SAVE_OFFLINE.title -> {}
+                QuickActionTabMenuMoreOptions.EDIT_PAGE.title -> {}
+                QuickActionTabMenuMoreOptions.FLOAT_PAGE.title -> {}
+                QuickActionTabMenuMoreOptions.CHANGE_TEXT_SIZE.title -> {}
+                QuickActionTabMenuMoreOptions.BLOCK_REDIRECT.title -> {}
             }
         }
     }

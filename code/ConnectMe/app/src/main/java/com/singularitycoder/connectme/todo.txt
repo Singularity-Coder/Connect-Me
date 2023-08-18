@@ -9,28 +9,14 @@ TODO Checklist
 8. Sensors
 9. Alarms
 10. How bookmarks work
-
-Auto play videos n gifs in downloads
-search tab - clear serarch query x button or swipe down to clear
-
-On download- add to db with link and path - problem is on renaming
-so files come from files dir only. use db for source nav alone n updating the name on rename
-add folder - refresh list
-
-
-Site Privacy Settings
-- VPN hides/jumbles IP address of device
-- Ad blocker - Ads, trackers and analytics will be blocked
-- URL sanitisation - remove tracking ids from links
-- Use HTTPS - encrypted data both send n receive
+11. Custom views
 
 
 TODO THIS WEEK
-Create downloads db - since this is not gen file man, everything can be recorded
-Downloads - add folder, sort, filter, - fix first item click bug, long press item options like move, zip, file info, etc,
-Explore - Add time topics n location
-Speed dial - downloads - need to maintain download db on donwloding file for getting the site the file was downloaded
-Website actions - downloads of partic website
+Downloads in speed dial
+finalise features for quick actions - url tab
+Explore - Add time topics n location - fetch data from alarm manager for precise timing, fill weather
+
 
 
 Export collection to sqlite db and csv file
@@ -40,7 +26,14 @@ Downloads
     Download filters - file type, file size, sort - ascending, descending
     handle gif, image, audio, video, file
     long press download item to see full file name with options to delete, show in chrome, share
-
+    On download- add to db with link and path - problem is on renaming
+    so files come from files dir only. use db for source nav alone n updating the name on rename
+    add folder - refresh list
+    Create downloads db - since this is not gen file man, everything can be recorded
+    Downloads - add folder, sort, filter, - fix first item click bug, long press item options like move, zip, file info, etc,
+    Speed dial - downloads - need to maintain download db on donwloding file for getting the site the file was downloaded
+    Website actions - downloads of partic website - showing download progress is a problem here
+    Give loader when navigating files in downloads - for long list of items
 Explore
     News and other useful/subscribed info summaries
     find fun info based on the topics at every hour/half hour
@@ -74,7 +67,7 @@ Reader Mode:
     Font size
     TTS
     Dark mode for reader alone
-    remove images option
+    remove/disable images/media option
 Webview notifications
 Private tab close option -> Close all private tabs
 Textsize adjustment in webpage - slider
@@ -83,6 +76,11 @@ Undo on closing tab
 Screenshot - rolling and visible
 Url editing when in focus show letter navigation using sliders, slider will show on another tap
 On focus show recent searches
+Site Privacy Settings
+- VPN hides/jumbles IP address of device
+- Ad blocker - Ads, trackers and analytics will be blocked
+- URL sanitisation - remove tracking ids from links
+- Use HTTPS - encrypted data both send n receive
 
 
 
@@ -152,6 +150,8 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 26. following websites today posts count - this requires proper date parsing - problem is every site has its own epoch format
 27. RSS feeds needs more work in identifying the right tags for every feed. Some tests - https://www.blog.google/rss/, https://www.theverge.com/rss/index.xml, https://mashable.com/feeds/rss/all, https://www.apple.com/newsroom/rss-feed.rss
 28. Favicons - either request safari ones or AI upscale them in background. tricky stuff
+29. Auto play videos in downloads
+30. Search tab - button or swipe down to clear
 
 
 TODO Interesting

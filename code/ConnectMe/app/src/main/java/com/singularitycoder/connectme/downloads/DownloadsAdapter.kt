@@ -66,7 +66,7 @@ class DownloadsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 ivItemImage.layoutParams.width = (deviceWidth() / 2) - 20.dpToPx().toInt()
                 ivItemIcon.layoutParams.height = ivItemImage.layoutParams.height / 3
                 ivItemIcon.layoutParams.width = ivItemImage.layoutParams.height / 3
-                tvSource.text = download?.time
+                tvSource.text = download?.size
                 tvTitle.text = download?.title
 
                 ivItemImage.visibility = View.INVISIBLE

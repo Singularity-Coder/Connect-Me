@@ -13,10 +13,15 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
+import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
+import com.singularitycoder.connectme.feed.Feed
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
+import com.singularitycoder.connectme.search.model.SearchTab
+import com.singularitycoder.connectme.search.view.SearchFragment
+import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.util.*
@@ -166,7 +171,7 @@ class DownloadsFragment : Fragment() {
             val optionsList = listOf(
                 Pair("Open source", R.drawable.ic_round_link_24),
                 Pair("Open with...", R.drawable.outline_open_in_new_24),
-                Pair("Get info", R.drawable.outline_info_24),
+                Pair("Info", R.drawable.outline_info_24),
                 Pair("Share", R.drawable.outline_share_24),
                 Pair("Copy link", R.drawable.baseline_content_copy_24),
                 Pair("Organize", R.drawable.outline_drive_file_move_24),
@@ -186,10 +191,14 @@ class DownloadsFragment : Fragment() {
                     optionsList[1].first -> {
                     }
                     optionsList[2].first -> {
+                        getFileInfo(view, download)
                     }
                     optionsList[3].first -> {
+                        requireContext().shareTextOrImage(text = download?.title, title = download?.link)
                     }
                     optionsList[4].first -> {
+                        requireContext().clipboard()?.text = download?.link
+                        requireContext().showToast("Copied link")
                     }
                     optionsList[5].first -> {
                         setupOrganizePopupMenu(view, download)
@@ -279,6 +288,34 @@ class DownloadsFragment : Fragment() {
     private fun observeForData() {
     }
 
+    private fun getFileInfo(
+        view: View?,
+        download: Download?
+    ) {
+        val file = File(download?.path ?: "")
+        val optionsList =  mutableListOf(
+            "Name: ${file.name}"
+        )
+        if (download?.link.isNullOrBlank().not()) {
+            optionsList.add("Link: ${download?.link}")
+        }
+        optionsList.add("Date: ${file.lastModified().toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)}")
+        requireContext().showPopupMenu(
+            view = view,
+            menuList = optionsList,
+            title = "Info"
+        ) { menuPosition: Int ->
+            when (optionsList[menuPosition]) {
+                optionsList[0] -> {
+                    requireContext().clipboard()?.text = file.name
+                }
+                optionsList[1] -> {
+                    requireContext().clipboard()?.text = file.lastModified().toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)
+                }
+            }
+        }
+    }
+
     private fun updateFileNavigation() {
         binding.layoutSearch.ivNavigateBack.isVisible = fileNavigationStack.size > 1
         binding.layoutSearch.etSearch.hint = "Search in ${fileNavigationStack.peek()?.name}"
@@ -321,12 +358,20 @@ class DownloadsFragment : Fragment() {
 
         downloadsList.clear() // TODO Give a refresh option instead of loading all the time
         filesList.forEach { file: File ->
+            val size = if (file.isDirectory) {
+                "${getFilesListFrom(file).size} items"
+            } else {
+                if (file.extension.isBlank()) {
+                    file.getAppropriateSize()
+                } else {
+                    "${file.extension.toUpCase()}  •  ${file.getAppropriateSize()}"
+                }
+            }
             val downloadItem = Download(
                 path = file.absolutePath,
                 title = file.nameWithoutExtension,
-                time = if (file.isDirectory) {
-                    "${getFilesListFrom(file).size} items"
-                } else "${file.extension.toUpCase()}  •  ${file.getAppropriateSize()}",
+                time = file.lastModified(),
+                size = size,
                 link = "",
                 extension = file.extension,
                 isDirectory = file.isDirectory
@@ -382,10 +427,15 @@ class DownloadsFragment : Fragment() {
         ) { it: MenuItem? ->
             when (it?.title?.toString()?.trim()) {
                 optionsList[0].first -> {
+                    PeekBottomSheetFragment.newInstance(
+                        peekUrl = download?.link
+                    ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
                 }
                 optionsList[1].first -> {
+                    openSearchScreen(isPrivate = false, download = download)
                 }
                 optionsList[2].first -> {
+                    openSearchScreen(isPrivate = true, download = download)
                 }
             }
         }
@@ -519,5 +569,21 @@ class DownloadsFragment : Fragment() {
             }
         }
         openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
+    }
+
+    private fun openSearchScreen(
+        isPrivate: Boolean,
+        download: Download?
+    ) {
+        (requireActivity() as? MainActivity)?.showScreen(
+            fragment = SearchFragment.newInstance(websiteList = listOf(download).mapIndexed { index, download ->
+                SearchTab(
+                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
+                    link = download?.link,
+                )
+            }.toArrayList()),
+            tag = FragmentsTag.SEARCH,
+            isAdd = true
+        )
     }
 }

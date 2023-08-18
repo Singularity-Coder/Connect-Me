@@ -242,11 +242,24 @@ enum class QuickActionTabMenu(val value: String) {
     NAVIGATE_BACK(value = "Navigate Back"),
     ADD_TO_COLLECTIONS(value = "Add to collections"),
     HOME(value = "Home"),
-    GET_INSIGHT(value = "Get Insight"),
+    INSIGHTS(value = "Insights"),
     MORE_OPTIONS(value = "More Options"),
     CLOSE_ALL_TABS(value = "Close All Tabs"),
     REFRESH_WEBSITE(value = "Refresh Website"),
     NAVIGATE_FORWARD(value = "Navigate Forward"),
+}
+
+enum class UrlSearchActions(val value: String) {
+    LEFT_NAV(value = ""),
+    RIGHT_NAV(value = ""),
+    FORWARD_SLASH(value = "   /   "),
+    PERIOD(value = "   .   "),
+    COM(value = ".com"),
+    IN(value = "  .in  "),
+    WWW(value = "www."),
+    HTTPS(value = "https://"),
+    HTTP(value = "http://"),
+    EMPTY(value = "")
 }
 
 enum class QuickActionTabMenuMoreOptions(
@@ -257,8 +270,16 @@ enum class QuickActionTabMenuMoreOptions(
     PRINT(title = "Print", icon = R.drawable.outline_print_24),
     FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
     TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
-    DOWNLOAD(title = "Download", icon = R.drawable.outline_file_download_24),
     READING_MODE(title = "Reading mode", icon = R.drawable.outline_chrome_reader_mode_24),
+    SCREENSHOT(title = "Screenshot", icon = R.drawable.outline_screenshot_24),
+    DETECT_MEDIA(title = "Detect Media", icon = R.drawable.outline_subscriptions_24),
+    DARK_MODE(title = "Dark mode", icon = R.drawable.outline_dark_mode_24),
+    SAVE_PDF(title = "Save as PDF", icon = R.drawable.outline_picture_as_pdf_24),
+    SAVE_OFFLINE(title = "Save for offline", icon = R.drawable.outline_airplanemode_active_24),
+    EDIT_PAGE(title = "Edit page", icon = R.drawable.round_edit_24),
+    FLOAT_PAGE(title = "Float page", icon = R.drawable.outline_open_in_new_24),
+    CHANGE_TEXT_SIZE(title = "Change text size", icon = R.drawable.outline_text_fields_24),
+    BLOCK_REDIRECT(title = "Block & Redirect", icon = R.drawable.outline_block_24),
 }
 
 enum class FeatureTab(val value: String) {
