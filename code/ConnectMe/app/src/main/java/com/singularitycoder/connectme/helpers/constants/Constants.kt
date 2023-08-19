@@ -280,6 +280,7 @@ enum class QuickActionTabMenuMoreOptions(
     FLOAT_PAGE(title = "Float page", icon = R.drawable.outline_open_in_new_24),
     CHANGE_TEXT_SIZE(title = "Change text size", icon = R.drawable.outline_text_fields_24),
     BLOCK_REDIRECT(title = "Block & Redirect", icon = R.drawable.outline_block_24),
+    USER_AGENT(title = "Select User Agent", icon = R.drawable.round_language_24),
 }
 
 enum class FeatureTab(val value: String) {

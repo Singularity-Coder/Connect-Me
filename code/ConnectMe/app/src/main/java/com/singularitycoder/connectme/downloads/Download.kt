@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.singularitycoder.connectme.helpers.constants.Table
 import kotlinx.parcelize.Parcelize
+import java.io.File
 
 @Entity(tableName = Table.DOWNLOAD)
 @Parcelize

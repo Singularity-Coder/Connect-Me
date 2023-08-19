@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
-import com.singularitycoder.connectme.feed.Feed
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.*
 import com.singularitycoder.connectme.search.model.SearchTab
@@ -24,6 +23,7 @@ import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 import javax.inject.Inject
 
@@ -204,7 +204,7 @@ class DownloadsFragment : Fragment() {
                         setupOrganizePopupMenu(view, download)
                     }
                     optionsList[6].first -> {
-                        setupQuickActionsPopupMenu(view, download)
+                        setupQuickActionsPopupMenu(view, download, position)
                     }
                     optionsList[7].first -> {
                         requireContext().showAlertDialog(
@@ -293,7 +293,7 @@ class DownloadsFragment : Fragment() {
         download: Download?
     ) {
         val file = File(download?.path ?: "")
-        val optionsList =  mutableListOf(
+        val optionsList = mutableListOf(
             "Name: ${file.name}"
         )
         if (download?.link.isNullOrBlank().not()) {
@@ -358,24 +358,7 @@ class DownloadsFragment : Fragment() {
 
         downloadsList.clear() // TODO Give a refresh option instead of loading all the time
         filesList.forEach { file: File ->
-            val size = if (file.isDirectory) {
-                "${getFilesListFrom(file).size} items"
-            } else {
-                if (file.extension.isBlank()) {
-                    file.getAppropriateSize()
-                } else {
-                    "${file.extension.toUpCase()}  •  ${file.getAppropriateSize()}"
-                }
-            }
-            val downloadItem = Download(
-                path = file.absolutePath,
-                title = file.nameWithoutExtension,
-                time = file.lastModified(),
-                size = size,
-                link = "",
-                extension = file.extension,
-                isDirectory = file.isDirectory
-            )
+            val downloadItem = file.getDownload() ?: return@forEach
 //            if (file.absolutePath == fileNavigationStack.peek()?.absolutePath) return@forEach
             downloadsList.add(downloadItem)
         }
@@ -443,7 +426,8 @@ class DownloadsFragment : Fragment() {
 
     private fun setupQuickActionsPopupMenu(
         view: View?,
-        download: Download?
+        download: Download?,
+        position: Int?
     ) {
         val optionsList = mutableListOf(
             Pair("Duplicate", R.drawable.outline_file_copy_24),
@@ -468,11 +452,44 @@ class DownloadsFragment : Fragment() {
                 optionsList[2].first -> {}
                 optionsList[3].first -> {}
                 optionsList[4].first -> {}
-                optionsList[5].first -> {}
-                optionsList[6].first -> {}
+                optionsList[5].first -> {
+                    rotateImage(rotation = 90f, download = download, position = position)
+                }
+                optionsList[6].first -> {
+                    rotateImage(rotation = -90f, download = download, position = position)
+                }
                 optionsList[7].first -> {}
             }
         }
+    }
+
+    private fun rotateImage(
+        rotation: Float,
+        download: Download?,
+        position: Int?
+    ) {
+        val fileToRotate = File(download?.path ?: "")
+        val rotatedBitmap = fileToRotate.toBitmap()?.rotate(rotation)
+        val folder = download?.path?.replace(fileToRotate.name, "") ?: ""
+        val rotatedFileName = if (rotation == 90f) {
+            "right_rotated_${fileToRotate.name}"
+        } else {
+            "left_rotated_${fileToRotate.name}"
+        }
+        val rotatedFile = File(
+            /* parent = */ folder,
+            /* child = */ rotatedFileName
+        ).also {
+            if (it.exists().not()) it.createNewFile()
+        }
+        FileOutputStream(rotatedFile).use {
+            it.write(rotatedBitmap.toByteArray())
+        }
+        filesList = getFilesListFrom(fileNavigationStack.peek() ?: return).toMutableList()
+        openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
+//        val file = getFilesListFrom(fileNavigationStack.peek() ?: return).find { it.name == rotatedFileName }
+//        downloadsList.set(position ?: 0, file?.getDownload() ?: return)
+//        downloadsAdapter.notifyItemChanged(position ?: 0)
     }
 
     private fun setupFilterFilesPopupMenu(view: View?) {

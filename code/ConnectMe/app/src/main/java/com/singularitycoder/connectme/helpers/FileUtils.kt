@@ -27,6 +27,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import com.singularitycoder.connectme.downloads.Download
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -531,4 +532,26 @@ fun Context.getPathFrom(fileUri: Uri): String? {
     }
     cursor.close()
     return text
+}
+
+fun File.getDownload(): Download? {
+    if (this.exists().not()) return null
+    val size = if (this.isDirectory) {
+        "${getFilesListFrom(this).size} items"
+    } else {
+        if (this.extension.isBlank()) {
+            this.getAppropriateSize()
+        } else {
+            "${this.extension.toUpCase()}  •  ${this.getAppropriateSize()}"
+        }
+    }
+    return Download(
+        path = this.absolutePath,
+        title = this.nameWithoutExtension,
+        time = this.lastModified(),
+        size = size,
+        link = "",
+        extension = this.extension,
+        isDirectory = this.isDirectory
+    )
 }

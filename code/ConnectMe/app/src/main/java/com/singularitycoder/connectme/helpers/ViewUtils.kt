@@ -1005,6 +1005,12 @@ fun View.onCustomLongClick(
     setOnLongClickListener(onCustomLongClickListener)
 }
 
+// https://stackoverflow.com/questions/9015372/how-to-rotate-a-bitmap-90-degrees
+fun Bitmap.rotate(degrees: Float): Bitmap {
+    val matrix = Matrix().apply { postRotate(degrees) }
+    return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+}
+
 class OnSafeClickListener(
     private val delayAfterClick: Long,
     private val onSafeClick: (Pair<View?, Boolean>) -> Unit

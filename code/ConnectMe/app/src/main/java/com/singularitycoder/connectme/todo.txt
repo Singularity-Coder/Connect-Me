@@ -76,11 +76,33 @@ Undo on closing tab
 Screenshot - rolling and visible
 Url editing when in focus show letter navigation using sliders, slider will show on another tap
 On focus show recent searches
-Site Privacy Settings
-- VPN hides/jumbles IP address of device
-- Ad blocker - Ads, trackers and analytics will be blocked
-- URL sanitisation - remove tracking ids from links
-- Use HTTPS - encrypted data both send n receive
+Site Privacy Settings - Snap Search App
+    VPN hides/jumbles IP address of device
+    Ad blocker - Ads, trackers and analytics will be blocked
+    URL sanitisation - remove tracking ids from links
+    Use HTTPS - encrypted data both send n receive
+URL Sanitization - Snap Search App
+    Google AMP
+    DoubleClick Tracking IDs
+    Facebook Click IDs
+    Google UTM Tags
+    Twitter AMP Redirects
+    Instagram Tracking IDs
+    Microsoft Tracking IDs
+    HubSpot Tracking IDs
+    Yandex Tracking IDs
+User Agent - Snap Search App
+    Chrome on Android
+    Firefox on Android
+    Chrome on iOS
+    Firefox on iOS
+    Chrome on Windows 10
+    Firefox on Windows 10
+    Edge on Windows 10
+    Chrome on MacOS
+    Firefox on MacOS
+    Safari on MacOS
+    Anonymous WebView
 
 
 
