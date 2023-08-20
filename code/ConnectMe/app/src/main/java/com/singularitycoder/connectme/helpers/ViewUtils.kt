@@ -28,20 +28,15 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.forEach
-import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.reflect.Method
 import java.util.*
 
@@ -1003,12 +998,6 @@ fun View.onCustomLongClick(
 ) {
     val onCustomLongClickListener = OnCustomLongClickListener(onCustomLongClick)
     setOnLongClickListener(onCustomLongClickListener)
-}
-
-// https://stackoverflow.com/questions/9015372/how-to-rotate-a-bitmap-90-degrees
-fun Bitmap.rotate(degrees: Float): Bitmap {
-    val matrix = Matrix().apply { postRotate(degrees) }
-    return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
 }
 
 class OnSafeClickListener(

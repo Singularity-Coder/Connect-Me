@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -371,13 +372,13 @@ fun getMimeType(url: String): String {
 }
 
 // https://github.com/android/storage-samples/tree/main/ActionOpenDocumentTree
-fun getFilesListFrom(currentDirectory: File): List<File> {
-    val rawFilesList = currentDirectory.listFiles()?.filter { !it.isHidden }
+fun getFilesListFrom(folder: File): List<File> {
+    val rawFilesList = folder.listFiles()?.filter { !it.isHidden }
 
-    return if (currentDirectory == Environment.getExternalStorageDirectory()) {
+    return if (folder == Environment.getExternalStorageDirectory()) {
         rawFilesList?.toList() ?: listOf()
     } else {
-        listOf(currentDirectory.parentFile) + (rawFilesList?.toList() ?: listOf())
+        listOf(folder.parentFile) + (rawFilesList?.toList() ?: listOf())
     }
 }
 
@@ -554,4 +555,30 @@ fun File.getDownload(): Download? {
         extension = this.extension,
         isDirectory = this.isDirectory
     )
+}
+
+// https://stackoverflow.com/questions/9015372/how-to-rotate-a-bitmap-90-degrees
+fun Bitmap.rotate(degrees: Float): Bitmap {
+    val matrix = Matrix().apply { postRotate(degrees) }
+    return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+}
+
+/** Problem: File size is increasing by atleast 3 to 10 times */
+fun createRotatedImage(
+    rotationInDegrees: Float,
+    imagePath: String?,
+    imageFolder: File?
+) {
+    val fileToRotate = File(imagePath ?: "")
+    val rotatedBitmap = fileToRotate.toBitmap()?.rotate(rotationInDegrees)
+    val rotatedFile = File(
+        /* parent = */ imageFolder,
+        /* child = */ "${fileToRotate.nameWithoutExtension}_${timeNow}.${fileToRotate.extension}"
+    ).also {
+        if (it.exists().not()) it.createNewFile()
+    }
+    rotatedFile.setLastModified(timeNow)
+    FileOutputStream(rotatedFile).use {
+        it.write(rotatedBitmap.toByteArray())
+    }
 }

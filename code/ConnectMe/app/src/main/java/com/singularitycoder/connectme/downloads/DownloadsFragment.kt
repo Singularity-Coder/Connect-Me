@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
@@ -22,8 +23,10 @@ import com.singularitycoder.connectme.search.model.SearchTab
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 import java.util.*
 import javax.inject.Inject
 
@@ -149,7 +152,7 @@ class DownloadsFragment : Fragment() {
                         ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                     }
                     optionsList[3].first -> {
-                        openIfFileElseShowFilesListIfDirectory(fileNavigationStack.peek() ?: return@showPopupMenuWithIcons)
+                        refreshFolder()
                     }
                 }
             }
@@ -162,7 +165,9 @@ class DownloadsFragment : Fragment() {
                 selectedFileSorting = sortByOptionsList.first().first
                 fileNavigationStack.push(selectedItem)
                 updateFileNavigation()
-                filesList = getFilesListFrom(selectedItem).toMutableList()
+                filesList = getFilesListFrom(folder = selectedItem).toMutableList()
+                selectedFileFilter = fileFilterOptionsList.first().first
+                applyFileSorting()
             }
             openIfFileElseShowFilesListIfDirectory(selectedItem)
         }
@@ -252,12 +257,12 @@ class DownloadsFragment : Fragment() {
         }
 
         layoutSearch.ivNavigateBack.onSafeClick {
-            selectedFileFilter = fileFilterOptionsList.first().first
-            selectedFileSorting = sortByOptionsList.first().first
             fileNavigationStack.pop()
             val previousFolder = fileNavigationStack.peek() ?: getDownloadDirectory()
             updateFileNavigation()
-            filesList = getFilesListFrom(previousFolder).toMutableList()
+            filesList = getFilesListFrom(folder = previousFolder).toMutableList()
+            selectedFileSorting = sortByOptionsList.first().first
+            applyFileSorting()
             openIfFileElseShowFilesListIfDirectory(previousFolder)
         }
 
@@ -336,11 +341,12 @@ class DownloadsFragment : Fragment() {
 
             // TODO: Use getStorageDirectory instead https://developer.android.com/reference/android/os/Environment.html#getStorageDirectory()
 
-            //            filesList = if (getFilesListFrom(getDownloadDirectory()).size > 1) {
-            //                getFilesListFrom(getDownloadDirectory()).subList(fromIndex = 1, toIndex = getFilesListFrom(getDownloadDirectory()).lastIndex).toMutableList()
-            //            } else mutableListOf()
-            filesList = getFilesListFrom(getDownloadDirectory()).toMutableList()
+//            filesList = if (getFilesListFrom(getDownloadDirectory()).size > 1) {
+//                getFilesListFrom(getDownloadDirectory()).subList(fromIndex = 1, toIndex = getFilesListFrom(getDownloadDirectory()).lastIndex).toMutableList()
+//            } else mutableListOf()
+            filesList = getFilesListFrom(folder = getDownloadDirectory()).toMutableList()
             openIfFileElseShowFilesListIfDirectory(getDownloadDirectory())
+            applyFileSorting()
         } else {
             binding.llStoragePermissionRationaleView.isVisible = true
             binding.rvDownloads.isVisible = false
@@ -356,15 +362,20 @@ class DownloadsFragment : Fragment() {
             return
         }
 
-        downloadsList.clear() // TODO Give a refresh option instead of loading all the time
-        filesList.forEach { file: File ->
-            val downloadItem = file.getDownload() ?: return@forEach
+        lifecycleScope.launch {
+            downloadsList.clear()
+            filesList.forEach { file: File ->
+                val downloadItem = file.getDownload() ?: return@forEach
 //            if (file.absolutePath == fileNavigationStack.peek()?.absolutePath) return@forEach
-            downloadsList.add(downloadItem)
+                downloadsList.add(downloadItem)
+            }
+            downloadsAdapter.downloadsList = downloadsList
+
+            withContext(Main) {
+                downloadsAdapter.notifyDataSetChanged()
+                binding.nestedScrollView.scrollTo(0, 0)
+            }
         }
-        downloadsAdapter.downloadsList = downloadsList
-        downloadsAdapter.notifyDataSetChanged()
-        binding.nestedScrollView.scrollTo(0, 0)
     }
 
     private fun setupOrganizePopupMenu(
@@ -453,43 +464,44 @@ class DownloadsFragment : Fragment() {
                 optionsList[3].first -> {}
                 optionsList[4].first -> {}
                 optionsList[5].first -> {
-                    rotateImage(rotation = 90f, download = download, position = position)
+                    lifecycleScope.launch {
+                        createRotatedImage(
+                            rotationInDegrees = 90f,
+                            imagePath = download?.path,
+                            imageFolder = fileNavigationStack.peek()
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+//                            val file = getFilesListFrom(fileNavigationStack.peek() ?: return).find { it.name == rotatedFileName }
+//                            downloadsList.set(position ?: 0, file?.getDownload() ?: return)
+//                            downloadsAdapter.notifyItemChanged(position ?: 0)
+                        }
+                    }
                 }
                 optionsList[6].first -> {
-                    rotateImage(rotation = -90f, download = download, position = position)
+                    lifecycleScope.launch {
+                        createRotatedImage(
+                            rotationInDegrees = -90f,
+                            imagePath = download?.path,
+                            imageFolder = fileNavigationStack.peek()
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+                        }
+                    }
                 }
                 optionsList[7].first -> {}
             }
         }
     }
 
-    private fun rotateImage(
-        rotation: Float,
-        download: Download?,
-        position: Int?
-    ) {
-        val fileToRotate = File(download?.path ?: "")
-        val rotatedBitmap = fileToRotate.toBitmap()?.rotate(rotation)
-        val folder = download?.path?.replace(fileToRotate.name, "") ?: ""
-        val rotatedFileName = if (rotation == 90f) {
-            "right_rotated_${fileToRotate.name}"
-        } else {
-            "left_rotated_${fileToRotate.name}"
-        }
-        val rotatedFile = File(
-            /* parent = */ folder,
-            /* child = */ rotatedFileName
-        ).also {
-            if (it.exists().not()) it.createNewFile()
-        }
-        FileOutputStream(rotatedFile).use {
-            it.write(rotatedBitmap.toByteArray())
-        }
-        filesList = getFilesListFrom(fileNavigationStack.peek() ?: return).toMutableList()
+    private fun refreshFolder() {
+        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return).toMutableList()
         openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
-//        val file = getFilesListFrom(fileNavigationStack.peek() ?: return).find { it.name == rotatedFileName }
-//        downloadsList.set(position ?: 0, file?.getDownload() ?: return)
-//        downloadsAdapter.notifyItemChanged(position ?: 0)
     }
 
     private fun setupFilterFilesPopupMenu(view: View?) {
@@ -506,12 +518,12 @@ class DownloadsFragment : Fragment() {
         }
     }
 
-    private fun applyFileFilters() {
+    private fun applyFileFilters() = lifecycleScope.launch {
         /** The first dir is the downloads dir itself. So avoiding that. */
 //        val allFilesList = if (getFilesListFrom(getDownloadDirectory()).size > 1) {
 //            getFilesListFrom(getDownloadDirectory()).subList(fromIndex = 1, toIndex = getFilesListFrom(getDownloadDirectory()).lastIndex).toMutableList()
 //        } else mutableListOf()
-        val allFilesList = getFilesListFrom(currentDirectory = fileNavigationStack.peek() ?: return).toMutableList()
+        val allFilesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
         when (selectedFileFilter) {
             fileFilterOptionsList[0].first -> {
                 filesList = allFilesList
@@ -549,7 +561,10 @@ class DownloadsFragment : Fragment() {
                 }.toMutableList()
             }
         }
-        openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
+
+        withContext(Main) {
+            openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return@withContext)
+        }
     }
 
     private fun setupSortFilesPopupMenu(view: View?) {
@@ -564,28 +579,31 @@ class DownloadsFragment : Fragment() {
         }
     }
 
-    private fun applyFileSorting() {
+    private fun applyFileSorting() = lifecycleScope.launch {
         when (selectedFileSorting) {
+            sortByOptionsList[0].first -> {
+                filesList = filesList.sortedByDescending { it.lastModified() }.toMutableList()
+            }
             sortByOptionsList[1].first -> {
                 filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
             }
             sortByOptionsList[2].first -> {
-                filesList = filesList.sortedByDescending { it.lastModified() }.toMutableList()
-            }
-            sortByOptionsList[3].first -> {
                 filesList = filesList.sortedByDescending { it.sizeInBytes() }.toMutableList()
             }
-            sortByOptionsList[4].first -> {
+            sortByOptionsList[3].first -> {
                 filesList = filesList.sortedBy { it.sizeInBytes() }.toMutableList()
             }
-            sortByOptionsList[5].first -> {
+            sortByOptionsList[4].first -> {
                 filesList = filesList.sortedBy { it.name.toLowCase() }.toMutableList()
             }
-            sortByOptionsList[6].first -> {
+            sortByOptionsList[5].first -> {
                 filesList = filesList.sortedByDescending { it.name.toLowCase() }.toMutableList()
             }
         }
-        openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return)
+
+        withContext(Main) {
+            openIfFileElseShowFilesListIfDirectory(currentDirectory = fileNavigationStack.peek() ?: return@withContext)
+        }
     }
 
     private fun openSearchScreen(
