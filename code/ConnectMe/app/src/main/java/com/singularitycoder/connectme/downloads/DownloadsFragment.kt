@@ -458,17 +458,45 @@ class DownloadsFragment : Fragment() {
             title = "Quick Actions"
         ) { it: MenuItem? ->
             when (it?.title?.toString()?.trim()) {
-                optionsList[0].first -> {}
+                optionsList[0].first -> {
+                    lifecycleScope.launch {
+                        duplicateFile(
+                            fileToDuplicate = File(download?.path ?: ""),
+                            outputFolder = fileNavigationStack.peek()
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+                        }
+                    }
+                }
                 optionsList[1].first -> {}
-                optionsList[2].first -> {}
+                optionsList[2].first -> {
+                    lifecycleScope.launch {
+                        createPdf(
+                            pathWithFileNameList = listOf(download?.path),
+                            outputFolder = fileNavigationStack.peek() ?: return@launch
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+                        }
+                    }
+                }
                 optionsList[3].first -> {}
-                optionsList[4].first -> {}
+                optionsList[4].first -> {
+                    setupConvertImagePopupMenu(view = view, download = download)
+                }
                 optionsList[5].first -> {
                     lifecycleScope.launch {
+                        // TODO do this in worker
+                        // TODO check file size n availability in storage
                         createRotatedImage(
                             rotationInDegrees = 90f,
-                            imagePath = download?.path,
-                            imageFolder = fileNavigationStack.peek()
+                            imageFileToRotate = File(download?.path ?: ""),
+                            outputFolder = fileNavigationStack.peek()
                         )
                         selectedFileSorting = sortByOptionsList.first().first
                         filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
@@ -484,8 +512,8 @@ class DownloadsFragment : Fragment() {
                     lifecycleScope.launch {
                         createRotatedImage(
                             rotationInDegrees = -90f,
-                            imagePath = download?.path,
-                            imageFolder = fileNavigationStack.peek()
+                            imageFileToRotate = File(download?.path ?: ""),
+                            outputFolder = fileNavigationStack.peek()
                         )
                         selectedFileSorting = sortByOptionsList.first().first
                         filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
@@ -495,6 +523,67 @@ class DownloadsFragment : Fragment() {
                     }
                 }
                 optionsList[7].first -> {}
+            }
+        }
+    }
+
+    private fun setupConvertImagePopupMenu(
+        view: View?,
+        download: Download?
+    ) {
+        val optionsList = listOf(
+            "PNG",
+            "JPEG",
+            "WebP"
+        )
+        requireContext().showPopupMenu(
+            view = view,
+            menuList = optionsList,
+            title = "Covert image to"
+        ) { menuPosition: Int? ->
+            when (optionsList[menuPosition ?: 0]) {
+                optionsList[0] -> {
+                    lifecycleScope.launch {
+                        convertImage(
+                            imageFile = File(download?.path ?: ""),
+                            outputFolder = fileNavigationStack.peek(),
+                            imageFormat = ImageFormat.PNG
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+                        }
+                    }
+                }
+                optionsList[1] -> {
+                    lifecycleScope.launch {
+                        convertImage(
+                            imageFile = File(download?.path ?: ""),
+                            outputFolder = fileNavigationStack.peek(),
+                            imageFormat = ImageFormat.JPEG
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+                        }
+                    }
+                }
+                optionsList[2] -> {
+                    lifecycleScope.launch {
+                        convertImage(
+                            imageFile = File(download?.path ?: ""),
+                            outputFolder = fileNavigationStack.peek(),
+                            imageFormat = ImageFormat.WebP
+                        )
+                        selectedFileSorting = sortByOptionsList.first().first
+                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+                        withContext(Main) {
+                            applyFileSorting()
+                        }
+                    }
+                }
             }
         }
     }

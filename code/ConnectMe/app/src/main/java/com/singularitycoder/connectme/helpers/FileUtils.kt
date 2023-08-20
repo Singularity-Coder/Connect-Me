@@ -11,9 +11,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
+import android.graphics.*
+import android.graphics.pdf.PdfDocument
+import android.graphics.pdf.PdfDocument.PageInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -30,6 +30,7 @@ import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import com.singularitycoder.connectme.downloads.Download
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
+import com.singularitycoder.connectme.helpers.constants.ImageFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -566,19 +567,120 @@ fun Bitmap.rotate(degrees: Float): Bitmap {
 /** Problem: File size is increasing by atleast 3 to 10 times */
 fun createRotatedImage(
     rotationInDegrees: Float,
-    imagePath: String?,
-    imageFolder: File?
+    imageFileToRotate: File,
+    outputFolder: File?
 ) {
-    val fileToRotate = File(imagePath ?: "")
-    val rotatedBitmap = fileToRotate.toBitmap()?.rotate(rotationInDegrees)
+    val rotatedBitmap = imageFileToRotate.toBitmap()?.rotate(rotationInDegrees)
     val rotatedFile = File(
-        /* parent = */ imageFolder,
-        /* child = */ "${fileToRotate.nameWithoutExtension}_${timeNow}.${fileToRotate.extension}"
+        /* parent = */ outputFolder,
+        /* child = */ "${imageFileToRotate.nameWithoutExtension}_${timeNow}.${imageFileToRotate.extension}"
     ).also {
         if (it.exists().not()) it.createNewFile()
     }
-    rotatedFile.setLastModified(timeNow)
     FileOutputStream(rotatedFile).use {
         it.write(rotatedBitmap.toByteArray())
+    }
+}
+
+// https://stackoverflow.com/questions/36305362/how-to-convert-image-to-pdf
+fun createPdf(
+    pathWithFileNameList: List<String?>,
+    outputFolder: File
+) {
+    val document = PdfDocument()
+    try {
+        pathWithFileNameList.forEachIndexed { index: Int, pathWithFileName: String? ->
+            val imageFile = File(pathWithFileName ?: return@forEachIndexed)
+            if (imageFile.extension !in ImageFormat.values().map { it.value }) return
+            val bitmap = imageFile.toBitmap() ?: return@forEachIndexed
+            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width, bitmap.height, true) ?: return@forEachIndexed
+            val pageInfo = PageInfo.Builder(
+                /* pageWidth = */ bitmap.width,
+                /* pageHeight = */ bitmap.height,
+                /* pageNumber = */ index
+            ).create()
+            val paint = Paint().apply { this.color = Color.WHITE }
+            val page = document.startPage(pageInfo).apply {
+                this.canvas.drawPaint(paint)
+                this.canvas.drawBitmap(
+                    /* bitmap = */ scaledBitmap,
+                    /* left = */ 0f,
+                    /* top = */ 0f,
+                    /* paint = */ null
+                )
+            }
+            document.finishPage(page)
+        }
+        // write the document content
+        val pdfFile = File("${outputFolder.absolutePath}/PDF_${timeNow}.pdf")
+        document.writeTo(FileOutputStream(pdfFile))
+    } catch (_: Exception) {
+    } finally {
+        document.close()
+    }
+}
+
+// https://stackoverflow.com/questions/22507635/convert-image-format-in-android-java
+fun convertImage(
+    imageFile: File,
+    outputFolder: File?,
+    imageFormat: ImageFormat
+) {
+    val convertedFile = File(
+        /* parent = */ outputFolder,
+        /* child = */ "${imageFile.nameWithoutExtension}_${timeNow}.${imageFormat.value}"
+    ).also {
+        if (it.exists().not()) it.createNewFile()
+    }
+    val out = FileOutputStream(convertedFile)
+    try {
+        val format = when (imageFormat) {
+            ImageFormat.JPEG -> Bitmap.CompressFormat.JPEG
+            ImageFormat.WebP -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Bitmap.CompressFormat.WEBP_LOSSLESS
+            } else {
+                Bitmap.CompressFormat.PNG
+            }
+            else -> Bitmap.CompressFormat.PNG
+        }
+        // 100 is best quality
+        val bitmap = imageFile.toBitmap()
+        bitmap?.compress(
+            /* format = */ format,
+            /* quality = */ 100,
+            /* stream = */ out
+        )
+        out.use {
+            it.write(bitmap.toByteArray())
+        }
+    } catch (_: Exception) {
+    } finally {
+        out.close()
+    }
+}
+
+fun duplicateFile(
+    fileToDuplicate: File?,
+    outputFolder: File?
+) {
+    val duplicatedFile = File(
+        /* parent = */ outputFolder,
+        /* child = */ "${fileToDuplicate?.nameWithoutExtension}_${timeNow}.${fileToDuplicate?.extension}"
+    ).also {
+        if (it.exists().not()) it.createNewFile()
+    }
+    FileOutputStream(duplicatedFile).use {
+        it.write(fileToDuplicate?.toByteArray())
+    }
+}
+
+// https://stackoverflow.com/questions/13352972/convert-file-to-byte-array-and-vice-versa
+fun File.toByteArray(): ByteArray? {
+    return try {
+        val fileBytes = ByteArray(this.length().toInt())
+        FileInputStream(this).use { inputStream -> inputStream.read(fileBytes) }
+        fileBytes
+    } catch (_: Exception) {
+        null
     }
 }
