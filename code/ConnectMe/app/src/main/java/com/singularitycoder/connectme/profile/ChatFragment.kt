@@ -7,8 +7,11 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentChatBinding
 import com.singularitycoder.connectme.helpers.constants.DUMMY_FACE_URLS_2
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
+import com.singularitycoder.connectme.helpers.layoutAnimationController
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -51,6 +54,7 @@ class ChatFragment : Fragment() {
     private fun FragmentChatBinding.setupUI() {
         layoutSearch.btnMore.isVisible = false
         rvChat.apply {
+            layoutAnimation = rvChat.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = followingAdapter
             followingAdapter.profileScreenType = profileScreenType

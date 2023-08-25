@@ -380,7 +380,7 @@ suspend fun getRssFeedFrom(
 
                     val feed = Feed(
                         image = image.trim().toMaxChar(count = 1000L),
-                        title = title.trim().trimCdata().trimEscapeChars().toMaxChar(count = 1000L),
+                        title = title.trim().trimCdata().trimEscapeChars().resolveAmpersand().toMaxChar(count = 1000L),
                         time = date.trim().toMaxChar(count = 1000L).trimCdata(),
                         website = url?.trim()?.replace("www.", ""),
                         link = link.trim().toMaxChar(count = 1000L)
@@ -406,6 +406,10 @@ suspend fun getRssFeedFrom(
 
 fun String?.trimCdata(): String {
     return this?.replace(oldValue = "<![CDATA[", newValue = "")?.replace(oldValue = "]]>", newValue = "") ?: ""
+}
+
+fun String?.resolveAmpersand(): String {
+    return this?.replace(oldValue = "&amp;", newValue = "&") ?: ""
 }
 
 fun String?.trimEscapeChars(): String {

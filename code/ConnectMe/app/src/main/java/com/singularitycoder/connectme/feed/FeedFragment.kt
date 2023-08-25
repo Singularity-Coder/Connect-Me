@@ -22,6 +22,7 @@ import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.helpers.constants.WorkerTag
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.search.model.SearchTab
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
@@ -95,6 +96,7 @@ class FeedFragment : Fragment() {
     private fun FragmentFeedBinding.setupUI() {
         layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.round_tune_24)
         rvFeed.apply {
+            layoutAnimation = rvFeed.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = feedAdapter
         }
@@ -149,6 +151,7 @@ class FeedFragment : Fragment() {
                             message = feed?.title ?: "",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
                             positiveAction = {
                                 websiteActionsViewModel.deleteItem(feed)
                             }
@@ -175,6 +178,7 @@ class FeedFragment : Fragment() {
                     }
                 }
                 feedAdapter.notifyDataSetChanged()
+                binding.rvFeed.runLayoutAnimation(globalLayoutAnimation)
             }
         }
 

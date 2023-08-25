@@ -13,31 +13,10 @@ TODO Checklist
 
 
 TODO THIS WEEK
-Downloads in speed dial
 finalise features for quick actions - url tab
 Explore - Add time topics n location - fetch data from alarm manager for precise timing, fill weather
 
 
-
-Export collection to sqlite db and csv file
-Downloads
-    Downloads - first when u download image, specify directory
-    download in internal directory first. Then search for public directory
-    Download filters - file type, file size, sort - ascending, descending
-    handle gif, image, audio, video, file
-    long press download item to see full file name with options to delete, show in chrome, share
-    On download- add to db with link and path - problem is on renaming
-    so files come from files dir only. use db for source nav alone n updating the name on rename
-    add folder - refresh list
-    Create downloads db - since this is not gen file man, everything can be recorded
-    Downloads - add folder, sort, filter, - fix first item click bug, long press item options like move, zip, file info, etc,
-    Speed dial - downloads - need to maintain download db on donwloding file for getting the site the file was downloaded
-    Website actions - downloads of partic website - showing download progress is a problem here
-    Give loader when navigating files in downloads - for long list of items
-Explore
-    News and other useful/subscribed info summaries
-    find fun info based on the topics at every hour/half hour
-    Explore - will be based on time of the day. If its 8 am then show posts of breakfast. If evening then show entertainment stuff. User can customise topics
 Website actions - start with - find in page, then all others - get from Lineage OS
 Configure home screen - set either website or show new tab screen
 Edit explore feed
@@ -103,7 +82,25 @@ User Agent - Snap Search App
     Firefox on MacOS
     Safari on MacOS
     Anonymous WebView
-
+Export collection to sqlite db and csv file
+Downloads
+    Downloads - first when u download image, specify directory
+    download in internal directory first. Then search for public directory
+    Download filters - file type, file size, sort - ascending, descending
+    handle gif, image, audio, video, file
+    long press download item to see full file name with options to delete, show in chrome, share
+    On download- add to db with link and path - problem is on renaming
+    so files come from files dir only. use db for source nav alone n updating the name on rename
+    add folder - refresh list
+    Create downloads db - since this is not gen file man, everything can be recorded
+    Downloads - add folder, sort, filter, - fix first item click bug, long press item options like move, zip, file info, etc,
+    Speed dial - downloads - need to maintain download db on donwloding file for getting the site the file was downloaded
+    Website actions - downloads of partic website - showing download progress is a problem here
+    Give loader when navigating files in downloads - for long list of items
+Explore
+    News and other useful/subscribed info summaries
+    find fun info based on the topics at every hour/half hour
+    Explore - will be based on time of the day. If its 8 am then show posts of breakfast. If evening then show entertainment stuff. User can customise topics
 
 
 TODO RSS Reader
@@ -178,6 +175,7 @@ https://hanru-yeh.medium.com/funny-solution-that-makes-bottomsheetdialog-support
 
 TODO Interesting
 1. https://medium.com/@joseph.pyram/9-parts-of-a-url-that-you-should-know-89fea8e11713
+2. https://developers.google.com/identity/fido/android/native-apps
 
 
 ADB

@@ -117,6 +117,8 @@
 <!--    https://medium.com/androiddevelopers/android-styling-themes-vs-styles-ebe05f917578-->
 <!--    https://medium.com/androiddevelopers/android-styling-common-theme-attributes-8f7c50c9eaba-->
 <!--    <item name="android:popupAnimationStyle"></item>-->
+<!--    <item name="android:popupEnterTransition" tools:targetApi="n">@transition/explode_transition</item>-->
+<!--    <item name="android:popupExitTransition" tools:targetApi="n">@transition/explode_transition</item>-->
     <style name="PopupMenuTheme" parent="Widget.AppCompat.PopupMenu">
         <item name="attributeName">?attr/popupMenuStyle</item>
         <item name="android:popupBackground">@drawable/bg_popup_menu_rounded</item>
@@ -142,5 +144,11 @@
     <!--https://www.howtodoandroid.com/shapeableimageview-material-components-android/-->
     <style name="ShapeAppearanceOverlay.App.CornerSize10Percent" parent="">
         <item name="cornerSize">10%</item>
+    </style>
+
+    <!--https://stackoverflow.com/questions/9247792/how-to-make-animation-for-popup-window-in-android/12436853-->
+    <style name="PopupWindowAnimation">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 </resources>

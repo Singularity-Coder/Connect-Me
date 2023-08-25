@@ -27,14 +27,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.singularitycoder.connectme.MainActivity
-import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.search.model.SearchTab
@@ -224,25 +222,6 @@ fun Context.isLocationToggleEnabled(): Boolean {
     } else {
         val locationProviders: String = Settings.Secure.getString(contentResolver, Settings.Secure.LOCATION_PROVIDERS_ALLOWED)
         locationProviders.isNotBlank()
-    }
-}
-
-fun MainActivity.showScreen(
-    fragment: Fragment,
-    tag: String,
-    isAdd: Boolean = false,
-    isAddToBackStack: Boolean = true
-) {
-    if (isAdd) {
-        val transaction = supportFragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.slide_to_left, R.anim.slide_to_right, R.anim.slide_to_left, R.anim.slide_to_right)
-            .add(R.id.fragment_container_view, fragment, tag)
-        if (isAddToBackStack) transaction.addToBackStack(null)
-        transaction.commit()
-    } else {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container_view, fragment, tag)
-            .commit()
     }
 }
 

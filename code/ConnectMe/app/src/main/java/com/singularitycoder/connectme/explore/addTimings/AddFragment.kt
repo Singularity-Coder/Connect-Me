@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentAddBinding
 import com.singularitycoder.connectme.helpers.*
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.flowlauncher.helper.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -71,7 +72,7 @@ class AddFragment : Fragment() {
     private fun FragmentAddBinding.setupUI() {
         requireActivity().setNavigationBarColor(R.color.black)
         rvRoutineSteps.apply {
-            layoutAnimation = rvRoutineSteps.context.layoutAnimationController(R.anim.layout_animation_fall_down)
+            layoutAnimation = rvRoutineSteps.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = addItemAdapter
             addItemAdapter.setListType(listType)
@@ -100,6 +101,7 @@ class AddFragment : Fragment() {
                 message = "This action cannot be undone. Are you sure?",
                 positiveBtnText = "Delete",
                 negativeBtnText = "Cancel",
+                positiveBtnColor = R.color.md_red_700,
                 positiveAction = {
                     lifecycleScope.launch {
                     }

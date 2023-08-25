@@ -19,6 +19,7 @@ import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvent
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -54,6 +55,7 @@ class CollectionsFragment : Fragment() {
     private fun FragmentCollectionsBinding.setupUI() {
         layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.ic_round_more_horiz_24)
         rvCollections.apply {
+            layoutAnimation = rvCollections.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = collectionsAdapter
         }

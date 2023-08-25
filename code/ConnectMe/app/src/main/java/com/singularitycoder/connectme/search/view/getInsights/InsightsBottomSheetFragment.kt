@@ -154,6 +154,7 @@ class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
         initVoiceSearch()
 
         rvInsights.apply {
+            layoutAnimation = rvInsights.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = insightsAdapter
         }
@@ -295,6 +296,7 @@ class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         ivSearch.onSafeClick {
+            clChatSearch.layoutAnimation = clChatSearch.context.layoutAnimationController(globalSlideToBottomAnimation)
             lifecycleScope.launch {
                 getInsightStringsList()
                 withContext(Main) {

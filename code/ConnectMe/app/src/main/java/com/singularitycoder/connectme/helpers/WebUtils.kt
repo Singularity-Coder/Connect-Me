@@ -439,7 +439,7 @@ fun Context.addShortcut(
     webView: WebView?,
     favicon: Bitmap?,
     themeColorWithFallback: Int = Color.TRANSPARENT
-) {
+) = try {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val intent = Intent(this, MainActivity::class.java)
         intent.data = Uri.parse(webView?.url)
@@ -458,7 +458,9 @@ fun Context.addShortcut(
             .setIntent(intent)
             .build()
         getSystemService(ShortcutManager::class.java).requestPinShortcut(shortcutInfo, null)
-    }
+    } else Unit
+} catch (_: Exception) {
+    showToast("Something went wrong! Try again.")
 }
 
 // https://github.com/LineageOS/android_packages_apps_Jelly
@@ -637,13 +639,23 @@ fun Activity.openWithChrome(url: String?) {
     }
     try {
 //        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
+        startActivity(intent)
 //        }
     } catch (ex: ActivityNotFoundException) {
         // If Chrome not installed
         intent.setPackage(null)
 //        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
+        startActivity(intent)
 //        }
     }
+}
+
+// https://github.com/plateaukao/einkbro
+fun Context.showBrowserChooser(
+    url: String?,
+    title: String = "Open with..."
+) {
+    url ?: return
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    startActivity(Intent.createChooser(intent, title))
 }

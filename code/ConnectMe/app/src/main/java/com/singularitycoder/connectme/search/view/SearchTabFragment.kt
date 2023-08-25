@@ -108,8 +108,9 @@ class SearchTabFragment : Fragment() {
     // https://guides.codepath.com/android/Working-with-the-WebView
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentSearchTabBinding.setupUI() {
-        ConnectMeUtils.webpageFragmentIdList.add(tag)
         searchFragment = getSearchFragment()
+        ConnectMeUtils.webpageFragmentIdList.add(tag)
+        searchFragment?.doOnTabClick()
         setupWebView()
     }
 

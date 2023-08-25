@@ -21,6 +21,7 @@ import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.search.model.SearchTab
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
@@ -75,6 +76,7 @@ class HistoryFragment : Fragment() {
             /* reverseLayout = */ true
         )
         rvHistory.apply {
+            layoutAnimation = rvHistory.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = linearLayoutManager
             adapter = historyAdapter
         }
@@ -137,6 +139,7 @@ class HistoryFragment : Fragment() {
                             message = "Careful! You cannot undo this.",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
                             positiveAction = {
                                 historyViewModel.deleteAllHistory()
                             }

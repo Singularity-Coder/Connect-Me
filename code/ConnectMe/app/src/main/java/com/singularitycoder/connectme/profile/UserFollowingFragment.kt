@@ -8,11 +8,14 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentFollowingWebsiteBinding
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.UserProfile
 import com.singularitycoder.connectme.helpers.constants.DUMMY_FACE_URLS_2
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.helpers.hideKeyboard
+import com.singularitycoder.connectme.helpers.layoutAnimationController
 import com.singularitycoder.connectme.helpers.onImeClick
 import com.singularitycoder.connectme.helpers.showScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -67,6 +70,7 @@ class UserFollowingFragment : Fragment() {
             }
         }
         rvFollowing.apply {
+            layoutAnimation = rvFollowing.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = followingAdapter
             followingAdapter.profileScreenType = profileScreenType

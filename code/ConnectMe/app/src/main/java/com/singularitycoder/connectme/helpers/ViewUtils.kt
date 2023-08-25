@@ -40,6 +40,7 @@ import com.singularitycoder.connectme.R
 import java.lang.reflect.Method
 import java.util.*
 
+
 fun Context.getThemeAttrColor(attributeColor: Int): Int {
     this.theme.resolveAttribute(attributeColor, ConnectMeUtils.typedValue, true)
     return ConnectMeUtils.typedValue.data
@@ -79,23 +80,51 @@ fun gradientDrawable(): GradientDrawable {
     }
 }
 
+//fun MainActivity.showScreen(
+//    fragment: Fragment,
+//    tag: String,
+//    isAdd: Boolean = false,
+//    @AnimRes enterAnim: Int = R.anim.slide_to_left,
+//    @AnimRes exitAnim: Int = R.anim.slide_to_right,
+//    @AnimRes popEnterAnim: Int = R.anim.slide_to_left,
+//    @AnimRes popExitAnim: Int = R.anim.slide_to_right,
+//) {
+//    if (isAdd) {
+//        supportFragmentManager.beginTransaction()
+//            .setCustomAnimations(enterAnim, exitAnim, popEnterAnim, popExitAnim)
+//            .add(R.id.cl_main_container, fragment, tag)
+//            .addToBackStack(null)
+//            .commit()
+//    } else {
+//        supportFragmentManager.beginTransaction()
+//            .replace(R.id.cl_main_container, fragment, tag)
+//            .commit()
+//    }
+//}
+
 fun MainActivity.showScreen(
     fragment: Fragment,
     tag: String,
-    isAdd: Boolean = false
+    isAdd: Boolean = false,
+    isAddToBackStack: Boolean = true,
+    @AnimRes enterAnim: Int = R.anim.slide_to_left,
+    @AnimRes exitAnim: Int = R.anim.slide_to_right,
+    @AnimRes popEnterAnim: Int = R.anim.slide_to_left,
+    @AnimRes popExitAnim: Int = R.anim.slide_to_right,
 ) {
     if (isAdd) {
-        supportFragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.slide_to_left, R.anim.slide_to_right, R.anim.slide_to_left, R.anim.slide_to_right)
-            .add(R.id.cl_main_container, fragment, tag)
-            .addToBackStack(null)
-            .commit()
+        val transaction = supportFragmentManager.beginTransaction()
+            .setCustomAnimations(enterAnim, exitAnim, popEnterAnim, popExitAnim)
+            .add(R.id.fragment_container_view, fragment, tag)
+        if (isAddToBackStack) transaction.addToBackStack(null)
+        transaction.commit()
     } else {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.cl_main_container, fragment, tag)
+            .replace(R.id.fragment_container_view, fragment, tag)
             .commit()
     }
 }
+
 
 fun AppCompatActivity.showScreen(
     fragment: Fragment,
@@ -448,6 +477,41 @@ fun Context.showListPopupMenu2(
         }
         show()
     }
+}
+
+// https://stackoverflow.com/questions/9247792/how-to-make-animation-for-popup-window-in-android/12436853
+private fun Context.showPopupWindow(
+    @LayoutRes layout: Int,
+    @AnimRes layoutAnimation: Int
+): PopupWindow? = try {
+    val inflater = this.getSystemService(Activity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    val contentView = inflater.inflate(layout, null).apply {
+        animation = AnimationUtils.loadAnimation(this@showPopupWindow, layoutAnimation)
+    }
+    PopupWindow(
+        /* contentView = */ contentView,
+        /* width = */ LinearLayout.LayoutParams.WRAP_CONTENT,
+        /* height = */ LinearLayout.LayoutParams.WRAP_CONTENT
+    ).apply {
+        isFocusable = true
+        showAtLocation(
+            /* parent = */ contentView,
+            /* gravity = */ Gravity.TOP,
+            /* x = */ 0,
+            /* y = */ 0
+        )
+        update(
+            /* x = */ 0,
+            /* y = */ 0,
+            /* width = */ LinearLayout.LayoutParams.WRAP_CONTENT,
+            /* height = */ deviceHeight() / 3
+        )
+        animationStyle = R.style.PopupWindowAnimation
+        isOutsideTouchable = true
+        isFocusable = true
+    }
+} catch (_: Exception) {
+    null
 }
 
 // https://stackoverflow.com/questions/32969172/how-to-display-menu-item-with-icon-and-text-in-appcompatactivity

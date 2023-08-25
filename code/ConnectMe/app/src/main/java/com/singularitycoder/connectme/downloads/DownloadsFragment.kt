@@ -30,6 +30,7 @@ import java.io.File
 import java.util.*
 import javax.inject.Inject
 
+
 private const val ARG_PARAM_SCREEN_TYPE = "ARG_PARAM_TOPIC"
 private const val ARG_PARAM_IS_SELF_PROFILE = "ARG_PARAM_IS_SELF_PROFILE"
 
@@ -115,6 +116,7 @@ class DownloadsFragment : Fragment() {
         layoutSearch.cardSearch.isVisible = isSelfProfile
         layoutSearch.btnMore.isVisible = isSelfProfile
         rvDownloads.apply {
+            layoutAnimation = rvDownloads.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = GridLayoutManager(/* context = */ context, /* spanCount = */ 2)
             adapter = downloadsAdapter
         }
@@ -143,14 +145,17 @@ class DownloadsFragment : Fragment() {
                         // Filter by image, video, audio, file - dynamic filter based on the file types provided
                         setupFilterFilesPopupMenu(view = pair.first)
                     }
+
                     optionsList[1].first -> {
                         setupSortFilesPopupMenu(view = pair.first)
                     }
+
                     optionsList[2].first -> {
                         EditBottomSheetFragment.newInstance(
                             eventType = EditEvent.CREATE_NEW_DOWNLOAD_FOLDER
                         ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                     }
+
                     optionsList[3].first -> {
                         refreshFolder()
                     }
@@ -160,6 +165,15 @@ class DownloadsFragment : Fragment() {
 
         downloadsAdapter.setOnItemClickListener { download: Download?, position: Int ->
             val selectedItem = filesList.getOrNull(position) ?: return@setOnItemClickListener
+            if (selectedItem.extension.contains(other = ArchiveFormat.ZIP.value, ignoreCase = true)) {
+                operateOnFileAndSort {
+                    unzip(
+                        zippedFile = selectedItem.absolutePath,
+                        outputLocation = selectedItem.parentFile.absolutePath
+                    )
+                }
+                return@setOnItemClickListener
+            }
             if (selectedItem.isDirectory) {
                 selectedFileFilter = fileFilterOptionsList.first().first
                 selectedFileSorting = sortByOptionsList.first().first
@@ -193,30 +207,42 @@ class DownloadsFragment : Fragment() {
                     optionsList[0].first -> {
                         setupOpenSourcePopupMenu(view, download)
                     }
+
                     optionsList[1].first -> {
+                        val file = File(download?.path ?: "")
+                        requireContext().getUsableUri(file) { path: String?, uri: Uri ->
+                            context?.showFileExecChooser(uri = uri)
+                        }
                     }
+
                     optionsList[2].first -> {
                         getFileInfo(view, download)
                     }
+
                     optionsList[3].first -> {
                         requireContext().shareTextOrImage(text = download?.title, title = download?.link)
                     }
+
                     optionsList[4].first -> {
                         requireContext().clipboard()?.text = download?.link
                         requireContext().showToast("Copied link")
                     }
+
                     optionsList[5].first -> {
                         setupOrganizePopupMenu(view, download)
                     }
+
                     optionsList[6].first -> {
                         setupQuickActionsPopupMenu(view, download, position)
                     }
+
                     optionsList[7].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete file",
                             message = download?.title ?: "",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
                             positiveAction = {
                                 val file = File("${download?.path}")
                                 if (file.exists()) {
@@ -283,9 +309,11 @@ class DownloadsFragment : Fragment() {
             /* requestKey = */ FragmentResultKey.CREATE_NEW_DOWNLOAD_FOLDER,
             /* lifecycleOwner = */ viewLifecycleOwner
         ) { _, bundle: Bundle ->
-            val newFolderNameText = bundle.getString(FragmentResultBundleKey.CREATE_NEW_DOWNLOAD_FOLDER)?.trim()
-            File("${fileNavigationStack.peek()?.absolutePath}/$newFolderNameText").also {
-                if (it.exists().not()) it.mkdirs()
+            operateOnFileAndSort {
+                val newFolderNameText = bundle.getString(FragmentResultBundleKey.CREATE_NEW_DOWNLOAD_FOLDER)?.trim()
+                File("${fileNavigationStack.peek()?.absolutePath}/$newFolderNameText").also {
+                    if (it.exists().not()) it.mkdirs()
+                }
             }
         }
     }
@@ -314,6 +342,7 @@ class DownloadsFragment : Fragment() {
                 optionsList[0] -> {
                     requireContext().clipboard()?.text = file.name
                 }
+
                 optionsList[1] -> {
                     requireContext().clipboard()?.text = file.lastModified().toTimeOfType(DateType.dd_MMM_yyyy_hh_mm_a)
                 }
@@ -362,10 +391,11 @@ class DownloadsFragment : Fragment() {
             return
         }
 
+        binding.progressLinear.isVisible = true
         lifecycleScope.launch {
             downloadsList.clear()
             filesList.forEach { file: File ->
-                val downloadItem = file.getDownload() ?: return@forEach
+                val downloadItem = file.toDownload() ?: return@forEach
 //            if (file.absolutePath == fileNavigationStack.peek()?.absolutePath) return@forEach
                 downloadsList.add(downloadItem)
             }
@@ -374,6 +404,8 @@ class DownloadsFragment : Fragment() {
             withContext(Main) {
                 downloadsAdapter.notifyDataSetChanged()
                 binding.nestedScrollView.scrollTo(0, 0)
+                binding.rvDownloads.runLayoutAnimation(globalLayoutAnimation)
+                binding.progressLinear.isVisible = false
             }
         }
     }
@@ -399,6 +431,7 @@ class DownloadsFragment : Fragment() {
                         eventType = EditEvent.RENAME_DOWNLOAD_FILE
                     ).show(parentFragmentManager, BottomSheetTag.TAG_EDIT)
                 }
+
                 optionsList[1].first -> {}
                 optionsList[2].first -> {}
             }
@@ -425,9 +458,11 @@ class DownloadsFragment : Fragment() {
                         peekUrl = download?.link
                     ).show(parentFragmentManager, BottomSheetTag.TAG_PEEK)
                 }
+
                 optionsList[1].first -> {
                     openSearchScreen(isPrivate = false, download = download)
                 }
+
                 optionsList[2].first -> {
                     openSearchScreen(isPrivate = true, download = download)
                 }
@@ -459,38 +494,43 @@ class DownloadsFragment : Fragment() {
         ) { it: MenuItem? ->
             when (it?.title?.toString()?.trim()) {
                 optionsList[0].first -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         duplicateFile(
                             fileToDuplicate = File(download?.path ?: ""),
                             outputFolder = fileNavigationStack.peek()
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-                        }
                     }
                 }
-                optionsList[1].first -> {}
+
+                optionsList[1].first -> {
+                    operateOnFileAndSort {
+                        val file = File(download?.path ?: "")
+                        val zippedFile = File("${file.parentFile.absolutePath}/archive_${timeNow}.zip").also {
+                            if (it.exists().not()) it.createNewFile()
+                        }
+                        zip(
+                            filesListToZip = arrayOf(download?.path ?: ""),
+                            zippedFile = zippedFile.absolutePath
+                        )
+                    }
+                }
+
                 optionsList[2].first -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         createPdf(
                             pathWithFileNameList = listOf(download?.path),
-                            outputFolder = fileNavigationStack.peek() ?: return@launch
+                            outputFolder = fileNavigationStack.peek() ?: return@operateOnFileAndSort
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-                        }
                     }
                 }
+
                 optionsList[3].first -> {}
                 optionsList[4].first -> {
                     setupConvertImagePopupMenu(view = view, download = download)
                 }
+
                 optionsList[5].first -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         // TODO do this in worker
                         // TODO check file size n availability in storage
                         createRotatedImage(
@@ -498,30 +538,19 @@ class DownloadsFragment : Fragment() {
                             imageFileToRotate = File(download?.path ?: ""),
                             outputFolder = fileNavigationStack.peek()
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-//                            val file = getFilesListFrom(fileNavigationStack.peek() ?: return).find { it.name == rotatedFileName }
-//                            downloadsList.set(position ?: 0, file?.getDownload() ?: return)
-//                            downloadsAdapter.notifyItemChanged(position ?: 0)
-                        }
                     }
                 }
+
                 optionsList[6].first -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         createRotatedImage(
                             rotationInDegrees = -90f,
                             imageFileToRotate = File(download?.path ?: ""),
                             outputFolder = fileNavigationStack.peek()
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-                        }
                     }
                 }
+
                 optionsList[7].first -> {}
             }
         }
@@ -543,45 +572,32 @@ class DownloadsFragment : Fragment() {
         ) { menuPosition: Int? ->
             when (optionsList[menuPosition ?: 0]) {
                 optionsList[0] -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         convertImage(
                             imageFile = File(download?.path ?: ""),
                             outputFolder = fileNavigationStack.peek(),
                             imageFormat = ImageFormat.PNG
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-                        }
                     }
                 }
+
                 optionsList[1] -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         convertImage(
                             imageFile = File(download?.path ?: ""),
                             outputFolder = fileNavigationStack.peek(),
                             imageFormat = ImageFormat.JPEG
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-                        }
                     }
                 }
+
                 optionsList[2] -> {
-                    lifecycleScope.launch {
+                    operateOnFileAndSort {
                         convertImage(
                             imageFile = File(download?.path ?: ""),
                             outputFolder = fileNavigationStack.peek(),
                             imageFormat = ImageFormat.WebP
                         )
-                        selectedFileSorting = sortByOptionsList.first().first
-                        filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
-                        withContext(Main) {
-                            applyFileSorting()
-                        }
                     }
                 }
             }
@@ -617,27 +633,35 @@ class DownloadsFragment : Fragment() {
             fileFilterOptionsList[0].first -> {
                 filesList = allFilesList
             }
+
             fileFilterOptionsList[1].first -> {
                 filesList = allFilesList.filter { file: File -> ImageFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
             }
+
             fileFilterOptionsList[2].first -> {
                 filesList = allFilesList.filter { file: File -> VideoFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
             }
+
             fileFilterOptionsList[3].first -> {
                 filesList = allFilesList.filter { file: File -> AudioFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
             }
+
             fileFilterOptionsList[4].first -> {
                 filesList = allFilesList.filter { file: File -> DocumentFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
             }
+
             fileFilterOptionsList[5].first -> {
                 filesList = allFilesList.filter { file: File -> ArchiveFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
             }
+
             fileFilterOptionsList[6].first -> {
                 filesList = allFilesList.filter { file: File -> AndroidFormat.values().map { it.value }.contains(file.extension) }.toMutableList()
             }
+
             fileFilterOptionsList[7].first -> {
                 filesList = allFilesList.filter { file: File -> file.isDirectory }.toMutableList()
             }
+
             fileFilterOptionsList[8].first -> {
                 filesList = allFilesList.filter { file: File ->
                     ImageFormat.values().map { it.value }.contains(file.extension).not() &&
@@ -673,18 +697,23 @@ class DownloadsFragment : Fragment() {
             sortByOptionsList[0].first -> {
                 filesList = filesList.sortedByDescending { it.lastModified() }.toMutableList()
             }
+
             sortByOptionsList[1].first -> {
                 filesList = filesList.sortedBy { it.lastModified() }.toMutableList()
             }
+
             sortByOptionsList[2].first -> {
                 filesList = filesList.sortedByDescending { it.sizeInBytes() }.toMutableList()
             }
+
             sortByOptionsList[3].first -> {
                 filesList = filesList.sortedBy { it.sizeInBytes() }.toMutableList()
             }
+
             sortByOptionsList[4].first -> {
                 filesList = filesList.sortedBy { it.name.toLowCase() }.toMutableList()
             }
+
             sortByOptionsList[5].first -> {
                 filesList = filesList.sortedByDescending { it.name.toLowCase() }.toMutableList()
             }
@@ -709,5 +738,19 @@ class DownloadsFragment : Fragment() {
             tag = FragmentsTag.SEARCH,
             isAdd = true
         )
+    }
+
+    private fun operateOnFileAndSort(task: () -> Unit) {
+        lifecycleScope.launch {
+            task.invoke()
+            selectedFileSorting = sortByOptionsList.first().first
+            filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
+            withContext(Main) {
+                applyFileSorting()
+//                val file = getFilesListFrom(fileNavigationStack.peek() ?: return).find { it.name == rotatedFileName }
+//                downloadsList.set(position ?: 0, file?.getDownload() ?: return)
+//                downloadsAdapter.notifyItemChanged(position ?: 0)
+            }
+        }
     }
 }

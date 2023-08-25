@@ -19,6 +19,7 @@ import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.search.model.SearchTab
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
@@ -66,6 +67,7 @@ class FollowingWebsiteFragment : Fragment() {
     private fun FragmentFollowingWebsiteBinding.setupUI() {
         layoutSearch.btnMore.isVisible = false
         rvFollowing.apply {
+            layoutAnimation = rvFollowing.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = followingWebsiteAdapter
         }

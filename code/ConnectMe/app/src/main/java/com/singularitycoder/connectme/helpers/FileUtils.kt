@@ -12,8 +12,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfDocument.PageInfo
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -31,12 +33,16 @@ import androidx.core.content.getSystemService
 import com.singularitycoder.connectme.downloads.Download
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
 import com.singularitycoder.connectme.helpers.constants.ImageFormat
+import com.singularitycoder.connectme.helpers.constants.MimeType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.*
 import java.util.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 
 const val KB = 1024.0
@@ -406,9 +412,11 @@ fun File.getAppropriateSize(): String {
         this.showSizeIn(MB) < 1 -> {
             "${String.format("%1.2f", this.showSizeIn(KB))} KB"
         }
+
         this.showSizeIn(MB) >= GB -> {
             "${String.format("%1.2f", this.showSizeIn(GB))} GB"
         }
+
         else -> {
             "${String.format("%1.2f", this.showSizeIn(MB))} MB"
         }
@@ -536,7 +544,7 @@ fun Context.getPathFrom(fileUri: Uri): String? {
     return text
 }
 
-fun File.getDownload(): Download? {
+fun File.toDownload(): Download? {
     if (this.exists().not()) return null
     val size = if (this.isDirectory) {
         "${getFilesListFrom(this).size} items"
@@ -561,7 +569,15 @@ fun File.getDownload(): Download? {
 // https://stackoverflow.com/questions/9015372/how-to-rotate-a-bitmap-90-degrees
 fun Bitmap.rotate(degrees: Float): Bitmap {
     val matrix = Matrix().apply { postRotate(degrees) }
-    return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+    return Bitmap.createBitmap(
+        /* source = */ this,
+        /* x = */ 0,
+        /* y = */ 0,
+        /* width = */ width,
+        /* height = */ height,
+        /* m = */ matrix,
+        /* filter = */ true
+    )
 }
 
 /** Problem: File size is increasing by atleast 3 to 10 times */
@@ -577,6 +593,7 @@ fun createRotatedImage(
     ).also {
         if (it.exists().not()) it.createNewFile()
     }
+    if (isExternalStorageWritable().not()) return
     FileOutputStream(rotatedFile).use {
         it.write(rotatedBitmap.toByteArray())
     }
@@ -613,6 +630,7 @@ fun createPdf(
         }
         // write the document content
         val pdfFile = File("${outputFolder.absolutePath}/PDF_${timeNow}.pdf")
+        if (isExternalStorageWritable().not()) return
         document.writeTo(FileOutputStream(pdfFile))
     } catch (_: Exception) {
     } finally {
@@ -641,6 +659,7 @@ fun convertImage(
             } else {
                 Bitmap.CompressFormat.PNG
             }
+
             else -> Bitmap.CompressFormat.PNG
         }
         // 100 is best quality
@@ -650,6 +669,7 @@ fun convertImage(
             /* quality = */ 100,
             /* stream = */ out
         )
+        if (isExternalStorageWritable().not()) return
         out.use {
             it.write(bitmap.toByteArray())
         }
@@ -669,6 +689,7 @@ fun duplicateFile(
     ).also {
         if (it.exists().not()) it.createNewFile()
     }
+    if (isExternalStorageWritable().not()) return
     FileOutputStream(duplicatedFile).use {
         it.write(fileToDuplicate?.toByteArray())
     }
@@ -682,5 +703,124 @@ fun File.toByteArray(): ByteArray? {
         fileBytes
     } catch (_: Exception) {
         null
+    }
+}
+
+// https://stackoverflow.com/questions/15313807/android-maximum-allowed-width-height-of-bitmap
+fun Drawable.isTooLargeImage(): Boolean {
+    val sumPixels = this.intrinsicWidth * this.intrinsicHeight
+    val maxPixels = 2048 * 2048
+    return sumPixels > maxPixels
+}
+
+fun Bitmap.isTooLargeImage(): Boolean {
+    val sumPixels = this.width * this.height
+    val maxPixels = 2048 * 2048
+    return sumPixels > maxPixels
+}
+
+// https://github.com/plateaukao/einkbro
+fun Context.showFileExecChooser(
+    uri: Uri,
+    resultLauncher: ActivityResultLauncher<Intent>? = null
+) {
+    val intent = Intent().apply {
+        action = Intent.ACTION_VIEW
+        data = uri
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+    }
+
+    try {
+        startActivity(Intent.createChooser(intent, "Open file with"))
+    } catch (exception: SecurityException) {
+        showToast("open file failed, re-select the file again.")
+        val openDocIntent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = MimeType.ANY.value
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            putExtra("android.provider.extra.INITIAL_URI", uri)
+        }
+        resultLauncher?.launch(openDocIntent)
+    }
+}
+
+// https://stackoverflow.com/questions/3004713/get-content-uri-from-file-path-in-android
+// https://stackoverflow.com/questions/27602986/convert-a-file-path-to-uri-in-android/53349110#53349110
+fun Context.getUsableUri(file: File, callback: ((path: String?, uri: Uri) -> Unit)? = null) {
+    MediaScannerConnection.scanFile(
+        /* context = */ this,
+        /* paths = */ arrayOf<String>(file.absolutePath),
+        /* mimeTypes = */ null,
+        /* callback = */ MediaScannerConnection.OnScanCompletedListener { path: String?, uri: Uri ->
+            callback?.invoke(path, uri)
+        }
+    )
+}
+
+// https://mobikul.com/zip-unzip-file-folder-android-programmatically/
+fun zip(
+    filesListToZip: Array<String>,
+    zippedFile: String?
+) {
+    val BUFFER_SIZE = 6 * 1024
+    var origin: BufferedInputStream? = null
+    val out = ZipOutputStream(BufferedOutputStream(FileOutputStream(zippedFile)))
+    try {
+        val data = ByteArray(BUFFER_SIZE)
+        for (i in filesListToZip.indices) {
+            val fi = FileInputStream(filesListToZip[i])
+            origin = BufferedInputStream(fi, BUFFER_SIZE)
+            try {
+                val entry = ZipEntry(filesListToZip[i].substring(filesListToZip[i].lastIndexOf("/") + 1))
+                out.putNextEntry(entry)
+                var count: Int
+                while (origin.read(data, 0, BUFFER_SIZE).also { count = it } != -1) {
+                    out.write(data, 0, count)
+                }
+            } finally {
+                origin.close()
+            }
+        }
+    } finally {
+        out.close()
+    }
+}
+
+// https://mobikul.com/zip-unzip-file-folder-android-programmatically/
+fun unzip(
+    zippedFile: String?,
+    outputLocation: String
+) {
+    try {
+        val file = File(outputLocation)
+        if (file.isDirectory.not()) file.mkdirs()
+        val zin = ZipInputStream(FileInputStream(zippedFile))
+        try {
+            var ze: ZipEntry? = null
+            while (zin.nextEntry.also { ze = it } != null) {
+                val path = outputLocation + File.separator + ze?.name
+                if (ze?.isDirectory == true) {
+                    val unzipFile = File(path)
+                    if (!unzipFile.isDirectory) {
+                        unzipFile.mkdirs()
+                    }
+                } else {
+                    val fout = FileOutputStream(path, false)
+                    try {
+                        var c = zin.read()
+                        while (c != -1) {
+                            fout.write(c)
+                            c = zin.read()
+                        }
+                        zin.closeEntry()
+                    } finally {
+                        fout.close()
+                    }
+                }
+            }
+        } finally {
+            zin.close()
+        }
+    } catch (_: Exception) {
     }
 }

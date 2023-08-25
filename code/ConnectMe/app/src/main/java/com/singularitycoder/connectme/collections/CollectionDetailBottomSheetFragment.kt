@@ -23,6 +23,8 @@ import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvent
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
+import com.singularitycoder.connectme.helpers.constants.globalSlideToBottomAnimation
 import com.singularitycoder.connectme.search.model.SearchTab
 import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
@@ -75,6 +77,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
         tvHeader.text = collectionTitle
 
         rvCollections.apply {
+            layoutAnimation = rvCollections.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = collectionDetailsAdapter
         }
@@ -124,6 +127,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                             message = collectionWebPage?.title ?: "",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
                             positiveAction = {
                                 collectionsViewModel.deleteItem(collectionWebPage)
                                 if (webPageList.size == 1) {
@@ -189,6 +193,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                             message = "Careful! You cannot undo this.",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
                             positiveAction = {
                                 collectionsViewModel.deleteAllItemsBy(collectionTitle)
                                 dismiss()
@@ -200,6 +205,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         ivSearch.onSafeClick {
+            clSearch.layoutAnimation = clSearch.context.layoutAnimationController(globalSlideToBottomAnimation)
             etSearch.setText("")
             clSearch.isVisible = clSearch.isVisible.not()
             if (clSearch.isVisible) {

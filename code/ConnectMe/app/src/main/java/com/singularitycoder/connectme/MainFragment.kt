@@ -110,11 +110,23 @@ class MainFragment : Fragment() {
 //        }
 
         fabSearch.onSafeClick {
-            (requireActivity() as MainActivity).showScreen(SearchFragment.newInstance(""), FragmentsTag.SEARCH, isAdd = true)
+            (requireActivity() as MainActivity).showScreen(
+                fragment = SearchFragment.newInstance(""),
+                tag = FragmentsTag.SEARCH,
+                isAdd = true,
+                enterAnim = R.anim.slide_to_top,
+                exitAnim = R.anim.slide_to_bottom,
+                popEnterAnim = R.anim.slide_to_top,
+                popExitAnim = R.anim.slide_to_bottom,
+            )
         }
 
         cardProfileImage.onSafeClick {
-            (requireActivity() as MainActivity).showScreen(UserProfileFragment.newInstance(isSelfProfile = true), FragmentsTag.USER_PROFILE, isAdd = true)
+            (requireActivity() as MainActivity).showScreen(
+                fragment = UserProfileFragment.newInstance(isSelfProfile = true),
+                tag = FragmentsTag.USER_PROFILE,
+                isAdd = true
+            )
         }
     }
 

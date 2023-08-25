@@ -109,6 +109,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
             LinearLayoutManager(context)
         }
         rvSpeedDial.apply {
+            layoutAnimation = rvSpeedDial.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = linearLayoutManager
             adapter = speedDialAdapter
         }
@@ -134,6 +135,7 @@ class SpeedDialBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         ivSearch.onSafeClick {
+            clSearch.layoutAnimation = clSearch.context.layoutAnimationController(globalSlideToBottomAnimation)
             etSearch.setText("")
             clSearch.isVisible = clSearch.isVisible.not()
             if (clSearch.isVisible) {

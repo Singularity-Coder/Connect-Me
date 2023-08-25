@@ -14,6 +14,10 @@ import kotlinx.parcelize.Parcelize
 
 const val FILE_PROVIDER = "${BuildConfig.APPLICATION_ID}.fileprovider"
 
+val globalLayoutAnimation = R.anim.layout_animation_fall_down
+val globalSlideToBottomAnimation = R.anim.layout_animation_fall_down
+val globalSlideToTopAnimation = R.anim.layout_animation_slide_from_bottom
+
 val DUMMY_IMAGE_URLS = listOf(
     "https://images.pexels.com/photos/2850287/pexels-photo-2850287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/167587/pexels-photo-167587.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -266,21 +270,35 @@ enum class QuickActionTabMenuMoreOptions(
     val title: String,
     @DrawableRes val icon: Int
 ) {
-    ADD_SHORTCUT(title = "Add shortcut", icon = R.drawable.outline_add_home_24),
-    PRINT(title = "Print", icon = R.drawable.outline_print_24),
-    FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
-    TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
-    READING_MODE(title = "Reading mode", icon = R.drawable.outline_chrome_reader_mode_24),
-    SCREENSHOT(title = "Screenshot", icon = R.drawable.outline_screenshot_24),
-    DETECT_MEDIA(title = "Detect Media", icon = R.drawable.outline_subscriptions_24),
     DARK_MODE(title = "Dark mode", icon = R.drawable.outline_dark_mode_24),
     SAVE_PDF(title = "Save as PDF", icon = R.drawable.outline_picture_as_pdf_24),
     SAVE_OFFLINE(title = "Save for offline", icon = R.drawable.outline_airplanemode_active_24),
-    EDIT_PAGE(title = "Edit page", icon = R.drawable.round_edit_24),
-    FLOAT_PAGE(title = "Float page", icon = R.drawable.outline_open_in_new_24),
-    CHANGE_TEXT_SIZE(title = "Change text size", icon = R.drawable.outline_text_fields_24),
-    BLOCK_REDIRECT(title = "Block & Redirect", icon = R.drawable.outline_block_24),
+    SCREENSHOT(title = "Screenshot", icon = R.drawable.outline_screenshot_24),
+    READING_MODE(title = "Reading mode", icon = R.drawable.outline_chrome_reader_mode_24),
+    TRANSLATE(title = "Translate", icon = R.drawable.outline_translate_24),
+    FIND_IN_PAGE(title = "Find in page", icon = R.drawable.outline_find_in_page_24),
+    ADVANCED_TOOLS(title = "Advanced Tools", icon = R.drawable.baseline_biotech_24),
+}
+
+enum class QuickActionTabMenuAdvancedOptions(
+    val title: String,
+    @DrawableRes val icon: Int
+) {
+    OPEN_WITH(title = "Open with...", icon = R.drawable.outline_open_in_new_24),
+    ADD_SHORTCUT(title = "Add Shortcut", icon = R.drawable.outline_add_home_24),
+    TOGGLE_JS(title = "Toggle JS", icon = R.drawable.javascript_black_24dp),
+    TOGGLE_IMAGES(title = "Toggle Images", icon = R.drawable.outline_hide_image_24),
+    DEEP_CLEAN(title = "Deep Clean", icon = R.drawable.outline_cleaning_services_24), // clear cache, cookies...
+    SHOW_PAGE_SOURCE(title = "Show Page Source", icon = R.drawable.outline_code_24),
+    MARK_AS_AD(title = "Mark as Ad", icon = R.drawable.outline_ads_click_24),
+    PRINT(title = "Print", icon = R.drawable.outline_print_24),
+    SET_THEME(title = "Set Theme", icon = R.drawable.outline_color_lens_24),
+    FLOAT_PAGE(title = "Float page", icon = R.drawable.outline_bubble_chart_24),
     USER_AGENT(title = "Select User Agent", icon = R.drawable.round_language_24),
+    ROTATE(title = "Rotate", icon = R.drawable.outline_screen_rotation_alt_24),
+    BLOCK_REDIRECT(title = "Block & Redirect", icon = R.drawable.outline_directions_24),
+    CHANGE_TEXT_SIZE(title = "Change text size", icon = R.drawable.outline_text_fields_24),
+    DETECT_MEDIA(title = "Detect Media", icon = R.drawable.outline_subscriptions_24),
 }
 
 enum class FeatureTab(val value: String) {
@@ -352,3 +370,64 @@ enum class SearchEngine(
         }
     }
 }
+
+enum class MimeType(val value: String) {
+    EPUB(value = "application/epub+zip"),
+    PDF(value = "application/pdf"),
+    TEXT(value = "text/plain"),
+    ANY(value = "*/*"),
+    FONT(value = "application/x-font-ttf")
+}
+
+// https://github.com/Smile4ever/Neat-URL
+// https://github.com/plateaukao/einkbro
+const val NEAT_URL_DATA = """
+{
+    "categories": [
+        { "name": "Action Map", "params": ["action_object_map", "action_ref_map", "action_type_map"]},
+        { "name": "AliExpress.com", "params": ["aff_platform", "aff_trace_key", "algo_expid@*.aliexpress.*", "algo_pvid@*.aliexpress.com", "btsid@*.aliexpress.com", "expid@*.aliexpress.com", "initiative_id@*.aliexpress.com", "scm_id@*.aliexpress.com", "spm@*.aliexpress.com", "ws_ab_test*.aliexpress.com"]},
+        { "name": "Amazon", "params": ["_encoding@amazon.*", "ascsubtag@amazon.*", "pd_rd_*@amazon.*", "pf@amazon.*", "pf_rd_*@amazon.*", "psc@amazon.*", "ref_@amazon.*", "tag@amazon.*"]},
+        { "name": "Bilibili.com", "params": ["callback@bilibili.com"]},
+        { "name": "Bing", "params": ["cvid@bing.com", "form@bing.com", "pq@bing.com", "qs@bing.com", "sc@bing.com", "sk@bing.com", "sp@bing.com"]},
+        { "name": "Campaign tracking (Adobe Analytics)", "params": ["sc_cid"]},
+        { "name": "Campaign tracking (Adobe Marketo)", "params": ["mkt_tok"]},
+        { "name": "Campaign tracking (Amazon Kendra)", "params": ["trk", "trkCampaign"]},
+        { "name": "Campaign tracking (at)", "params": ["at_campaign", "at_custom*", "at_medium"]},
+        { "name": "Campaign tracking (Change.org)", "params": ["guest@change.org", "recruited_by_id@change.org", "recruiter@change.org", "short_display_name@change.org", "source_location@change.org"]},
+        { "name": "Campaign tracking (DPG Media)", "params": ["dpg_*"]},
+        { "name": "Campaign tracking (Google Analytics, ga)", "params": ["ga_*", "gclid", "gclsrc"]},
+        { "name": "Campaign tracking (Humble Bundle)", "params": ["hmb_campaign", "hmb_medium", "hmb_source"]},
+        { "name": "Campaign tracking (IBM Acoustic Campaign)", "params": ["spJobID", "spMailingID", "spReportId", "spUserID"]},
+        { "name": "Campaign tracking (itm)", "params": ["itm_*"], "docs": "https://www.parse.ly/help/post/4843/campaign-data-tracking/"},
+        { "name": "Campaign tracking (Omniture)", "params": ["s_cid"], "docs": "https://moz.com/community/q/omniture-tracking-code-urls-creating-duplicate-content"},
+        { "name": "Campaign tracking (Oracle Eloqua)", "params": ["assetId", "assetType", "campaignId", "elqTrack", "elqTrackId", "recipientId", "siteId"]},
+        { "name": "Campaign tracking (MailChimp)", "params": ["mc_cid", "mc_eid"], "docs": "https://www.learndigitaladvertising.com/solved-why-how-to-remove-mc_cid-and-mc_eid-from-google-analytics/"},
+        { "name": "Campaign tracking (Matomo/Piwik)", "params": ["mtm_*", "pk_*"]},
+        { "name": "Campaign tracking (ns)", "params": ["ns_*"]},
+        { "name": "Campaign tracking (sc)", "params": ["sc_campaign", "sc_channel", "sc_content", "sc_country", "sc_geo", "sc_medium", "sc_outcome"]},
+        { "name": "Campaign tracking (stm)", "params": ["stm_*"]},
+        { "name": "Campaign tracking (utm)", "params": ["nr_email_referer", "utm_*"]},
+        { "name": "Campaign tracking (Vero)", "params": ["vero_conv", "vero_id"], "docs": "https://help.getvero.com/articles/conversion-tracking.html"},
+        { "name": "Campaign tracking (Yandex)", "params": ["_openstat", "yclid"], "docs": "https://yandex.com/support/direct/statistics/url-tags.html"},
+        { "name": "Campaign tracking (others)", "params": ["c_id", "campaign_id", "Campaign", "cmpid", "mbid", "ncid"], "docs": "https://www.parse.ly/help/post/4843/campaign-data-tracking/"},
+        { "name": "Caseking.de", "params": ["campaign@caseking.de", "sPartner@caseking.de"]},
+        { "name": "Ebay", "params": ["hash@ebay.*", "_trkparms@ebay.*", "_trksid@ebay.*", "amdata@ebay.*", "epid@ebay.*", "hash@ebay.*", "var@ebay.*"]},
+        { "name": "Etsy", "params": ["click_key@etsy.com", "click_sum@etsy.com", "organic_search_click@etsy.com", "ref@etsy.com"]},
+        { "name": "Facebook", "params": ["fb_action_ids", "fb_action_types", "fb_ref", "fb_source", "fbclid", "hrc@facebook.com", "refsrc@facebook.com"]},
+        { "name": "Google", "params": ["ei@google.*", "gs_gbg@google.*", "gs_l", "gs_lcp@google.*", "gs_mss@google.*", "gs_rn@google.*", "gws_rd@google.*", "sei@google.*", "ved@google.*"]},
+        { "name": "Hubspot", "params": ["_hsenc", "_hsmi", "__hssc", "__hstc", "hsCtaTracking"]},
+        { "name": "IMDb", "params": ["pf_rd_*@imdb.com", "ref_@imdb.com"]},
+        { "name": "LinkedIn", "params": ["eBP@linkedin.com", "lgCta@linkedin.com", "lgTemp@linkedin.com", "lipi@linkedin.com", "midSig@linkedin.com", "midToken@linkedin.com", "recommendedFlavor@linkedin.com", "refId@linkedin.com", "trackingId@linkedin.com", "trk@linkedin.com", "trkEmail@linkedin.com"]},
+        { "name": "Medium", "params": ["_branch_match_id@medium.com", "source@medium.com"]},
+        { "name": "SourceForge.net", "params": ["position@sourceforge.net", "source@sourceforge.net"]},
+        { "name": "Spotify", "params": ["context@open.spotify.com", "si@open.spotify.com"]},
+        { "name": "TikTok", "params": ["_d@tiktok.com", "checksum@tiktok.com", "is_copy_url@tiktok.com", "is_from_webapp@tiktok.com", "language@tiktok.com", "preview_pb@tiktok.com", "sec_user_id@tiktok.com", "sender_device@tiktok.com", "sender_web_id@tiktok.com", "share_app_id@tiktok.com", "share_link_id@tiktok.com", "share_item_id@tiktok.com", "source@tiktok.com", "timestamp@tiktok.com", "tt_from@tiktok.com", "u_code@tiktok.com", "user_id@tiktok.com"]},
+        { "name": "Twitch.tv", "params": ["tt_content", "tt_medium"]},
+        { "name": "Twitter", "params": ["cxt@*.twitter.com", "ref_*@*.twitter.com", "s@*.twitter.com", "t@*.twitter.com", "twclid"]},
+        { "name": "Yahoo", "params": ["guccounter@*.yahoo.com", "soc_src", "soc_trk"]},
+        { "name": "Yandex", "params": ["lr@yandex.*", "redircnt@yandex.*"]},
+        { "name": "YouTube.com", "params": ["feature@youtube.com", "kw@youtube.com"]},
+        { "name": "Zeit.de", "params": ["wt_mc", "wt_zmc"]}
+    ]
+}
+        """

@@ -111,7 +111,7 @@ class SearchFragment : Fragment() {
 
     private val tabSelectedListener = object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab?) {
-            binding.doOnTabClick()
+            doOnTabClick()
         }
 
         override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
@@ -155,6 +155,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setupUI() {
+        scrollViewNewTabOptions.layoutAnimation = clSearch.context.layoutAnimationController(globalSlideToTopAnimation)
         val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
         ivSearchEngine.setImageResource(SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name).icon)
         layoutVpn.apply {
@@ -327,7 +328,7 @@ class SearchFragment : Fragment() {
 
         ibAddTab.onSafeClick {
             etSearch.showKeyboard()
-            addTab(SearchTab(type = NewTabType.NEW_TAB))
+            addTab(SearchTab(type = NewTabType.NEW_TAB, link = NewTabType.NEW_TAB.value))
             etSearch.setSelection(0, etSearch.text.length)
             etSearch.setSelectAllOnFocus(true)
         }
@@ -343,13 +344,14 @@ class SearchFragment : Fragment() {
         /** The webpage loads in [SearchTabFragment] */
         etSearch.onImeClick(imeAction = EditorInfo.IME_ACTION_SEARCH) {
             if (etSearch.text.isNullOrBlank()) return@onImeClick
-            val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+            val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
             selectedWebpage?.loadUrl(url = etSearch.text.toString().trim())
             etSearch.hideKeyboard()
         }
 
         etSearch.setOnFocusChangeListener { view, isFocused ->
-            scrollViewNewTabOptions.isVisible = isFocused
+            ivWebappProfile.isVisible = isFocused.not()
+            ivSearchEngine.isVisible = isFocused
             if (isFocused) {
                 doWhenSearchIsFocused()
             } else {
@@ -383,7 +385,7 @@ class SearchFragment : Fragment() {
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                 if (selectedWebpage?.getWebView()?.canGoBack() == true) {
                     selectedWebpage.getWebView().goBack()
                 } else {
@@ -405,7 +407,7 @@ class SearchFragment : Fragment() {
             isSearchSuggestionSelected = true
             etSearch.setText(iconTextAction.title)
             etSearch.clearFocus()
-            val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+            val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
             selectedWebpage?.loadUrl(url = iconTextAction.title)
         }
 
@@ -424,57 +426,6 @@ class SearchFragment : Fragment() {
                 etSearch.showKeyboard()
             }
         })
-    }
-
-    private fun showSearchTabUrlActions(view: View?) {
-        val optionsList = listOf(
-            Pair("Share", R.drawable.outline_share_24),
-            Pair("Copy", R.drawable.baseline_content_copy_24),
-            Pair("QR code", R.drawable.outline_qr_code_24),
-            Pair("Scan", R.drawable.round_qr_code_scanner_24),
-            Pair("Select", R.drawable.outline_select_all_24),
-            Pair("Home", R.drawable.outline_home_24),
-            Pair("Clear", R.drawable.round_close_24),
-        )
-        requireContext().showPopupMenuWithIcons(
-            view = view,
-            menuList = optionsList
-        ) { it: MenuItem? ->
-            when (it?.title?.toString()?.trim()) {
-                optionsList[0].first -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
-                    // Delay a bit to allow popup menu hide animation to play
-                    doAfter(300) {
-                        requireContext().shareUrl(
-                            url = binding.etSearch.text.toString(),
-                            webView = selectedWebpage?.getWebView()
-                        )
-                    }
-                }
-                optionsList[1].first -> {
-                    if (binding.etSearch.text.isNullOrBlank().not()) {
-                        requireContext().clipboard()?.text = binding.etSearch.text
-                        binding.root.showSnackBar("Copied link: ${requireContext().clipboard()?.text}")
-                    }
-                }
-                optionsList[2].first -> {}
-                optionsList[3].first -> {}
-                optionsList[4].first -> {
-                    binding.etSearch.setSelection(0, binding.etSearch.text.length)
-                    binding.etSearch.setSelectAllOnFocus(true)
-                }
-                optionsList[5].first -> {
-                    if (binding.etSearch.text.isNullOrBlank()) return@showPopupMenuWithIcons
-                    if (binding.etSearch.text.toString().toLowCase().isValidURL().not()) return@showPopupMenuWithIcons
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
-                    selectedWebpage?.loadUrl(url = getHostFrom(url = binding.etSearch.text.toString().trim()))
-                    binding.etSearch.hideKeyboard()
-                }
-                optionsList[6].first -> {
-                    binding.etSearch.setText("")
-                }
-            }
-        }
     }
 
     private fun FragmentSearchBinding.observeForData() {
@@ -546,6 +497,7 @@ class SearchFragment : Fragment() {
                             ?.changeColor(requireContext(), R.color.purple_500)
                             ?.toBitmapOrNull(width = 32.dpToPx().toInt(), height = 32.dpToPx().toInt())
                     }
+
                     val newIndex = downloadsList.lastIndex - index
                     val download = downloadsList.getOrNull(newIndex)
                     if (download?.link.isNullOrBlank()) {
@@ -644,7 +596,7 @@ class SearchFragment : Fragment() {
 
             when (it.apiState) {
                 ApiState.SUCCESS -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                     val promptsJson = "{" + it.insight?.insight?.substringAfter("{")?.substringBefore("}")?.trim() + "}"
                     searchViewModel.addPrompt(
                         Prompt(
@@ -691,6 +643,57 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private fun showSearchTabUrlActions(view: View?) {
+        val optionsList = listOf(
+            Pair("Share", R.drawable.outline_share_24),
+            Pair("Copy", R.drawable.baseline_content_copy_24),
+            Pair("QR code", R.drawable.outline_qr_code_24),
+            Pair("Scan", R.drawable.round_qr_code_scanner_24),
+            Pair("Select", R.drawable.outline_select_all_24),
+            Pair("Home", R.drawable.outline_home_24),
+            Pair("Clear", R.drawable.round_close_24),
+        )
+        requireContext().showPopupMenuWithIcons(
+            view = view,
+            menuList = optionsList
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                optionsList[0].first -> {
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    // Delay a bit to allow popup menu hide animation to play
+                    doAfter(300) {
+                        requireContext().shareUrl(
+                            url = binding.etSearch.text.toString(),
+                            webView = selectedWebpage?.getWebView()
+                        )
+                    }
+                }
+                optionsList[1].first -> {
+                    if (binding.etSearch.text.isNullOrBlank().not()) {
+                        requireContext().clipboard()?.text = binding.etSearch.text
+                        binding.root.showSnackBar("Copied link: ${requireContext().clipboard()?.text}")
+                    }
+                }
+                optionsList[2].first -> {}
+                optionsList[3].first -> {}
+                optionsList[4].first -> {
+                    binding.etSearch.setSelection(0, binding.etSearch.text.length)
+                    binding.etSearch.setSelectAllOnFocus(true)
+                }
+                optionsList[5].first -> {
+                    if (binding.etSearch.text.isNullOrBlank()) return@showPopupMenuWithIcons
+                    if (binding.etSearch.text.toString().toLowCase().isValidURL().not()) return@showPopupMenuWithIcons
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                    selectedWebpage?.loadUrl(url = getHostFrom(url = binding.etSearch.text.toString().trim()))
+                    binding.etSearch.hideKeyboard()
+                }
+                optionsList[6].first -> {
+                    binding.etSearch.setText("")
+                }
+            }
+        }
+    }
+
     private fun FragmentSearchBinding.setupSearchSuggestionsRecyclerView() {
         rvSearchSuggestions.apply {
             layoutManager = LinearLayoutManager(context)
@@ -708,7 +711,11 @@ class SearchFragment : Fragment() {
             registerOnPageChangeCallback(viewPager2PageChangeListener)
         }
         TabLayoutMediator(tabLayoutTabs, viewpagerTabs) { tab, position ->
-            tab.text = getDomainFrom(host = getHostFrom(url = searchTabsList[position]?.link)) // FIXME update webSearchTabsList when webpage loads for the previous tabs
+            tab.text = getDomainFrom(
+                host = if (searchTabsList[position]?.link?.isValidURL() == true) {
+                    getHostFrom(url = searchTabsList[position]?.link)
+                } else searchTabsList[position]?.link
+            )
             tab.icon = when (searchTabsList[position]?.type) {
                 NewTabType.NEW_PRIVATE_DISAPPEARING_TAB -> requireContext().drawable(R.drawable.outline_policy_24)
                 NewTabType.NEW_PRIVATE_TAB -> requireContext().drawable(R.drawable.outline_policy_24)
@@ -797,22 +804,22 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsFocused() {
-        clWebsiteProfile.isVisible = true
+//        clWebsiteProfile.isVisible = true
         clTabs.isVisible = false
         isSearchSuggestionSelected = false
         chipGroupLinkTextActions.isVisible = true
         btnWebsiteQuickActions.isVisible = false
         btnMoreUrlActions.isVisible = true
         btnVoiceSearch.isVisible = true
-        ivWebappProfile.isVisible = false
-        ivSearchEngine.isVisible = true
+        clWebsiteProfile.setMargins(start = 12.dpToPx().toInt(), top = 16.dpToPx().toInt(), bottom = 16.dpToPx().toInt())
         try {
-            val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+            val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
             etSearch.setText(selectedWebpage?.getWebView()?.url)
         } catch (_: Exception) {
         }
         etSearch.setSelection(0, etSearch.text.length)
         etSearch.setSelectAllOnFocus(true)
+        scrollViewNewTabOptions.isVisible = true
     }
 
     private fun FragmentSearchBinding.doWhenSearchIsNotFocused() {
@@ -822,25 +829,28 @@ class SearchFragment : Fragment() {
         btnWebsiteQuickActions.isVisible = true
         btnMoreUrlActions.isVisible = false
         btnVoiceSearch.isVisible = false
-        ivWebappProfile.isVisible = true
-        ivSearchEngine.isVisible = false
         llTabActionButtons.isVisible = true
         try {
-            val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
-            clWebsiteProfile.isVisible = selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
+            val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+            if (selectedWebpage?.getWebView()?.url.isNullOrBlank()) {
+                ivWebappProfile.isVisible = false
+                clWebsiteProfile.setMargins(all = 0)
+            } else {
+                clWebsiteProfile.setMargins(start = 12.dpToPx().toInt(), top = 16.dpToPx().toInt(), bottom = 16.dpToPx().toInt())
+            }
             if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
                 etSearch.setText(selectedWebpage?.getWebView()?.title)
                 etSearch.setSelection(0) // Adjusts the url back to the start if it is a long url
             }
             isWebsiteTitleSet = true
-            scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
+            scrollViewNewTabOptions.isVisible = (selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() ?: true) == true
         } catch (_: Exception) {
         }
         cardSearchSuggestions.isVisible = false
     }
 
     fun doOnWebPageLoaded() {
-        val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+        val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
         binding.scrollViewNewTabOptions.isVisible = false
         websiteStuffToLoad(selectedWebpage)
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
@@ -856,7 +866,7 @@ class SearchFragment : Fragment() {
             link = selectedWebpage?.getWebView()?.url,
         )
         binding.etSearch.setSelection(binding.etSearch.selectionStart)
-        binding.scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
+//        binding.scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
         binding.viewSearchSuggestionsScrim.isVisible = false
         binding.cardSearchSuggestions.isVisible = false
 
@@ -888,7 +898,8 @@ class SearchFragment : Fragment() {
     private fun websiteStuffToLoad(selectedWebpage: SearchTabFragment?) {
 //        val simplifiedUrl = selectedWebpage?.getWebView()?.url?.simplifyUrl() ?: ""
         binding.etSearch.setText(selectedWebpage?.getWebView()?.title)
-        binding.clWebsiteProfile.isVisible = selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
+        binding.ivWebappProfile.isVisible = true
+        binding.clWebsiteProfile.setMargins(start = 12.dpToPx().toInt(), top = 16.dpToPx().toInt(), bottom = 16.dpToPx().toInt())
 //        val query = "/${simplifiedUrl.substringAfter("/")}"
 //        val styleSpan = TextAppearanceSpan(requireContext(), R.style.url_highlight)
 //        binding.etSearch.highlightQueriedText(query = query, result = simplifiedUrl, styleSpan = styleSpan)
@@ -898,13 +909,13 @@ class SearchFragment : Fragment() {
         requireContext().showAlertDialog(
             title = "Close all tabs?",
             message = """
-                Press "CLOSE" to permanently close all tabs.
+                Press "Close" to permanently close all tabs.
                 
-                Press "SAVE" to retain them in collections.
+                Press "Save" to retain them in collections.
                  
             """.trimIndent(),
-            positiveBtnText = "CLOSE",
-            negativeBtnText = "SAVE",
+            positiveBtnText = "Close",
+            negativeBtnText = "Save",
             neutralBtnText = "Cancel",
             positiveBtnColor = R.color.md_red_700,
             positiveAction = {
@@ -947,7 +958,7 @@ class SearchFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentSearchBinding.addTab(searchTab: SearchTab) {
         /** Actual customization happens in TabLayoutMediator */
-        etSearch.setText("")
+        etSearch.setText(searchTab.link)
         searchTabsList.add(searchTab)
         val currentTabPosition = if (searchTabsList.isNotEmpty()) searchTabsList.lastIndex else 0
         tabLayoutTabs.addTab(
@@ -966,31 +977,27 @@ class SearchFragment : Fragment() {
         }
 
         viewpagerTabs.adapter?.notifyDataSetChanged()
+//        viewpagerTabs.adapter?.notifyItemInserted(currentTabPosition)
     }
 
-    private fun FragmentSearchBinding.doOnTabClick() {
-        val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
-        ivWebappProfile.setImageBitmap(selectedWebpage?.getFavicon())
-        setWebViewData()
-        websiteStuffToLoad(selectedWebpage)
+    fun doOnTabClick() {
+        val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+        if (selectedWebpage?.getWebView()?.url.isNullOrBlank().not()) {
+            binding.ivWebappProfile.setImageBitmap(selectedWebpage?.getFavicon())
+            setWebViewData()
+            websiteStuffToLoad(selectedWebpage)
+        } else {
+            binding.etSearch.setText("")
+        }
+        binding.ivSearchEngine.isVisible = binding.etSearch.isFocused
+        binding.ivWebappProfile.isVisible = binding.etSearch.isFocused.not() && selectedWebpage?.getWebView()?.url.isNullOrBlank().not()
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
             selectedWebpage?.getWebView()?.title
         } else searchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
-        tabLayoutTabs.getTabAt(tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
+        binding.tabLayoutTabs.getTabAt(binding.tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
             tabText?.substring(0, 10) + "..."
         } else tabText
-        scrollViewNewTabOptions.isVisible = selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() == true
-        //            if (
-        //                tabText?.contains(NewTabType.NEW_TAB.value, ignoreCase = true)?.not() == true &&
-        //                tabText.contains(NewTabType.NEW_PRIVATE_TAB.value, ignoreCase = true).not() &&
-        //                tabText.contains(NewTabType.NEW_DISAPPEARING_TAB.value, ignoreCase = true).not()
-        //            ) {
-        //                root.showSnackBar(
-        //                    message = tabText,
-        //                    anchorView = tabLayoutTabs,
-        //                    isAnimated = false
-        //                )
-        //            }
+        binding.scrollViewNewTabOptions.isVisible = (selectedWebpage?.isWebpageLoadedAtLeastOnce?.not() ?: true) == true
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -1047,7 +1054,7 @@ class SearchFragment : Fragment() {
         }
 
         fun duplicateTab() {
-            addTab(SearchTab(type = NewTabType.NEW_TAB))
+            addTab(searchTab = searchTabsList.getOrNull(currentTabPosition) ?: return)
         }
 
         val tabOptionsList = if (tabLayoutTabs.tabCount == 1) {
@@ -1196,13 +1203,13 @@ class SearchFragment : Fragment() {
         addFabQuickActionView.setOnActionSelectedListener { action: Action?, quickActionView: QuickActionView? ->
             when (action?.id) {
                 QuickActionTabMenu.NAVIGATE_BACK.ordinal -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.canGoBack() == true) {
                         selectedWebpage.getWebView().goBack()
                     }
                 }
                 QuickActionTabMenu.NAVIGATE_FORWARD.ordinal -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.canGoForward() == true) {
                         selectedWebpage.getWebView().goForward()
                     } else {
@@ -1212,7 +1219,7 @@ class SearchFragment : Fragment() {
                 QuickActionTabMenu.HOME.ordinal -> {
                     val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
                     val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     selectedWebpage?.loadUrl(url = "https://" + searchEngine.url.substringAfter("https://").substringBefore("/"))
                 }
                 QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
@@ -1223,11 +1230,11 @@ class SearchFragment : Fragment() {
                     }
                 }
                 QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     selectedWebpage?.getWebView()?.reload()
                 }
                 QuickActionTabMenu.INSIGHTS.ordinal -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.url.isNullOrBlank() || selectedWebpage?.getWebView()?.url?.isValidURL()?.not() == true) {
                         binding.root.showSnackBar("Not a valid website!")
                         return@setOnActionSelectedListener
@@ -1254,23 +1261,47 @@ class SearchFragment : Fragment() {
             menuList = optionsList
         ) { it: MenuItem? ->
             when (it?.title?.toString()?.trim()) {
-                QuickActionTabMenuMoreOptions.ADD_SHORTCUT.title -> {
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
-                    requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
-                }
-                QuickActionTabMenuMoreOptions.PRINT.title -> {}
                 QuickActionTabMenuMoreOptions.FIND_IN_PAGE.title -> {}
                 QuickActionTabMenuMoreOptions.TRANSLATE.title -> {}
                 QuickActionTabMenuMoreOptions.READING_MODE.title -> {}
                 QuickActionTabMenuMoreOptions.SCREENSHOT.title -> {}
-                QuickActionTabMenuMoreOptions.DETECT_MEDIA.title -> {}
                 QuickActionTabMenuMoreOptions.DARK_MODE.title -> {}
                 QuickActionTabMenuMoreOptions.SAVE_PDF.title -> {}
                 QuickActionTabMenuMoreOptions.SAVE_OFFLINE.title -> {}
-                QuickActionTabMenuMoreOptions.EDIT_PAGE.title -> {}
-                QuickActionTabMenuMoreOptions.FLOAT_PAGE.title -> {}
-                QuickActionTabMenuMoreOptions.CHANGE_TEXT_SIZE.title -> {}
-                QuickActionTabMenuMoreOptions.BLOCK_REDIRECT.title -> {}
+                QuickActionTabMenuMoreOptions.ADVANCED_TOOLS.title -> {
+                    showAdvancedQuickActionsPopupMenu()
+                }
+            }
+        }
+    }
+
+    private fun showAdvancedQuickActionsPopupMenu() {
+        val optionsList = QuickActionTabMenuAdvancedOptions.values().map { Pair(it.title, it.icon) }
+        requireContext().showPopupMenuWithIcons(
+            view = binding.btnWebsiteQuickActions,
+            menuList = optionsList,
+            title = "Advanced Tools"
+        ) { it: MenuItem? ->
+            when (it?.title?.toString()?.trim()) {
+                QuickActionTabMenuAdvancedOptions.ADD_SHORTCUT.title -> {
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
+                }
+                QuickActionTabMenuAdvancedOptions.PRINT.title -> {}
+                QuickActionTabMenuAdvancedOptions.DETECT_MEDIA.title -> {}
+                QuickActionTabMenuAdvancedOptions.SET_THEME.title -> {}
+                QuickActionTabMenuAdvancedOptions.FLOAT_PAGE.title -> {}
+                QuickActionTabMenuAdvancedOptions.CHANGE_TEXT_SIZE.title -> {}
+                QuickActionTabMenuAdvancedOptions.BLOCK_REDIRECT.title -> {}
+                QuickActionTabMenuAdvancedOptions.OPEN_WITH.title -> {
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val url = selectedWebpage?.getWebView()?.url
+                    if (url.isNullOrBlank()) {
+                        binding.root.showSnackBar("Not a valid website!")
+                        return@showPopupMenuWithIcons
+                    }
+                    requireContext().showBrowserChooser(url = url)
+                }
             }
         }
     }
@@ -1286,7 +1317,7 @@ class SearchFragment : Fragment() {
                     title = "Add to Collections",
                     menuList = collectionTitlesList
                 ) { menuPosition: Int ->
-                    val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+                    val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     val collectionWebPage = CollectionWebPage(
                         collectionTitle = collectionTitlesList[menuPosition] ?: "",
                         favicon = encodeBitmapToBase64String(bitmap = selectedWebpage?.getFavicon()),
@@ -1334,19 +1365,19 @@ class SearchFragment : Fragment() {
             when (it?.title?.toString()?.trim()) {
                 optionsList[0].first -> {
                     etSearch.showKeyboard()
-                    addTab(SearchTab(type = NewTabType.NEW_PRIVATE_DISAPPEARING_TAB))
+                    addTab(SearchTab(type = NewTabType.NEW_PRIVATE_DISAPPEARING_TAB, link = NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                 }
                 optionsList[1].first -> {
                     etSearch.showKeyboard()
-                    addTab(SearchTab(type = NewTabType.NEW_PRIVATE_TAB))
+                    addTab(SearchTab(type = NewTabType.NEW_PRIVATE_TAB, link = NewTabType.NEW_PRIVATE_TAB.value))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                 }
                 optionsList[2].first -> {
                     etSearch.showKeyboard()
-                    addTab(SearchTab(type = NewTabType.NEW_DISAPPEARING_TAB))
+                    addTab(SearchTab(type = NewTabType.NEW_DISAPPEARING_TAB, link = NewTabType.NEW_DISAPPEARING_TAB.value))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                 }
@@ -1359,11 +1390,11 @@ class SearchFragment : Fragment() {
     fun getTabsTabLayout(): TabLayout = binding.tabLayoutTabs
 
     fun setWebsiteProfileLayoutVisibility(isVisible: Boolean) {
-        binding.clWebsiteProfile.isVisible = isVisible
+//        binding.clWebsiteProfile.isVisible = isVisible
     }
 
     fun setWebViewData() {
-        val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
+        val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
         val webViewData = WebViewData(
             url = selectedWebpage?.getWebView()?.url,
             title = selectedWebpage?.getWebView()?.title,
@@ -1436,9 +1467,9 @@ class SearchFragment : Fragment() {
             listItemAppBinding.tvAppName.text = collectionWebPageList.getOrNull(index)?.title
             listItemAppBinding.root.onSafeClick {
                 etSearch.hideKeyboard()
-                val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+                val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
                 selectedWebpage?.loadUrl(url = collectionWebPageList.getOrNull(index)?.link ?: "")
-                clWebsiteProfile.isVisible = true
+//                clWebsiteProfile.isVisible = true
                 ivWebappProfile.load(decodeBase64StringToBitmap(collectionWebPageList.getOrNull(index)?.favicon))
                 etSearch.setText(collectionWebPageList.getOrNull(index)?.link)
             }
@@ -1450,9 +1481,9 @@ class SearchFragment : Fragment() {
         favicon: String?,
     ) {
         binding.etSearch.hideKeyboard()
-        val selectedWebpage = activity?.supportFragmentManager?.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
+        val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList[binding.tabLayoutTabs.selectedTabPosition]) as? SearchTabFragment
         selectedWebpage?.loadUrl(url = link ?: "")
-        binding.clWebsiteProfile.isVisible = true
+//        binding.clWebsiteProfile.isVisible = true
         binding.ivWebappProfile.load(decodeBase64StringToBitmap(favicon))
         binding.etSearch.setText(link)
     }

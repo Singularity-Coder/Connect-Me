@@ -74,6 +74,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:visibility="gone"
+                android:animateLayoutChanges="true"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <com.google.android.material.textfield.TextInputEditText

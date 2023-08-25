@@ -16,6 +16,7 @@ import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
+import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.helpers.constants.typefaceList
 import com.singularitycoder.connectme.search.model.SearchTab
 import com.singularitycoder.connectme.search.view.SearchFragment
@@ -66,7 +67,8 @@ class ExploreFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentExploreBinding.setupUI() {
-        rvFeed.apply {
+        rvExplore.apply {
+            layoutAnimation = rvExplore.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)
             adapter = exploreAdapter
         }
@@ -132,6 +134,7 @@ class ExploreFragment : Fragment() {
                             message = explore?.title ?: "",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
                             positiveAction = {
                             }
                         )
