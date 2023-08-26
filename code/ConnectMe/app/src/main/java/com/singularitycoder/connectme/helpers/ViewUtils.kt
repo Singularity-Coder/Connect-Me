@@ -80,28 +80,6 @@ fun gradientDrawable(): GradientDrawable {
     }
 }
 
-//fun MainActivity.showScreen(
-//    fragment: Fragment,
-//    tag: String,
-//    isAdd: Boolean = false,
-//    @AnimRes enterAnim: Int = R.anim.slide_to_left,
-//    @AnimRes exitAnim: Int = R.anim.slide_to_right,
-//    @AnimRes popEnterAnim: Int = R.anim.slide_to_left,
-//    @AnimRes popExitAnim: Int = R.anim.slide_to_right,
-//) {
-//    if (isAdd) {
-//        supportFragmentManager.beginTransaction()
-//            .setCustomAnimations(enterAnim, exitAnim, popEnterAnim, popExitAnim)
-//            .add(R.id.cl_main_container, fragment, tag)
-//            .addToBackStack(null)
-//            .commit()
-//    } else {
-//        supportFragmentManager.beginTransaction()
-//            .replace(R.id.cl_main_container, fragment, tag)
-//            .commit()
-//    }
-//}
-
 fun MainActivity.showScreen(
     fragment: Fragment,
     tag: String,
@@ -938,18 +916,21 @@ fun View.slideAnimation(direction: SlideDirection, type: SlideType, duration: Lo
             fromY = if (type == SlideType.HIDE) 0f else (array[1] + height).toFloat()
             toY = if (type == SlideType.HIDE) -1f * (array[1] + height) else 0f
         }
+
         SlideDirection.DOWN -> {
             fromX = 0f
             toX = 0f
             fromY = if (type == SlideType.HIDE) 0f else -1f * (array[1] + height)
             toY = if (type == SlideType.HIDE) 1f * (array[1] + height) else 0f
         }
+
         SlideDirection.LEFT -> {
             fromX = if (type == SlideType.HIDE) 0f else 1f * (array[0] + width)
             toX = if (type == SlideType.HIDE) -1f * (array[0] + width) else 0f
             fromY = 0f
             toY = 0f
         }
+
         SlideDirection.RIGHT -> {
             fromX = if (type == SlideType.HIDE) 0f else -1f * (array[0] + width)
             toX = if (type == SlideType.HIDE) 1f * (array[0] + width) else 0f

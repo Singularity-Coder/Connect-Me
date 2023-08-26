@@ -11,7 +11,7 @@
     <!--https://stackoverflow.com/questions/51178933/cardview-with-different-corner-radius/57837141#57837141-->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_toolbar"
-        style="@style/CustomCardViewStyle"
+        style="@style/CustomCardViewBottomRoundedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardElevation="4dp"

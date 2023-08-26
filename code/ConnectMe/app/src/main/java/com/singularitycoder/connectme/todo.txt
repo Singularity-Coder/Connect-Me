@@ -13,8 +13,9 @@ TODO Checklist
 
 
 TODO THIS WEEK
-finalise features for quick actions - url tab
+Downloads - markup, move to, copy to, rename,
 Explore - Add time topics n location - fetch data from alarm manager for precise timing, fill weather
+finalise features for quick actions - url tab
 
 
 Website actions - start with - find in page, then all others - get from Lineage OS

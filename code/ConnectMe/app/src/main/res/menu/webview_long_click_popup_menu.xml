@@ -66,7 +66,7 @@
         <item
             android:id="@+id/menu_item_save_offline"
             android:icon="@drawable/outline_airplanemode_active_24"
-            android:title="Safe for offline"
+            android:title="Save for offline"
             app:showAsAction="withText" />
 
         <item

@@ -2,6 +2,7 @@ package com.singularitycoder.connectme.downloads
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -11,10 +12,12 @@ import android.view.*
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
 import com.singularitycoder.connectme.helpers.*
@@ -52,7 +55,7 @@ class DownloadsFragment : Fragment() {
 
     private lateinit var binding: FragmentDownloadsBinding
 
-    private val downloadsViewModel by viewModels<DownloadsViewModel>()
+    private val downloadsViewModel by activityViewModels<DownloadsViewModel>()
 
     private val downloadsAdapter = DownloadsAdapter()
     private val downloadsList = mutableListOf<Download>()
@@ -319,6 +322,17 @@ class DownloadsFragment : Fragment() {
     }
 
     private fun observeForData() {
+        (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = downloadsViewModel.markedUpBitmapStateFlow) { markedUpBitmap: Bitmap? ->
+            markedUpBitmap ?: return@collectLatestLifecycleFlow
+            operateOnFileAndSort {
+                val markedUpFile = File("${fileNavigationStack.peek()}/markedup_${timeNow}.${ImageFormat.JPEG.value}")
+                markedUpBitmap.createFile(
+                    inputFile = markedUpFile,
+                    outputFolder = fileNavigationStack.peek() ?: return@operateOnFileAndSort
+                )
+                downloadsViewModel.resetMarkedUpBitmap()
+            }
+        }
     }
 
     private fun getFileInfo(
@@ -551,7 +565,17 @@ class DownloadsFragment : Fragment() {
                     }
                 }
 
-                optionsList[7].first -> {}
+                optionsList[7].first -> {
+                    (activity as? MainActivity)?.showScreen(
+                        fragment = MarkupFragment.newInstance(imagePath = download?.path),
+                        tag = FragmentsTag.MARKUP,
+                        isAdd = true,
+                        enterAnim = R.anim.slide_to_top,
+                        exitAnim = R.anim.slide_to_bottom,
+                        popEnterAnim = R.anim.slide_to_top,
+                        popExitAnim = R.anim.slide_to_bottom,
+                    )
+                }
             }
         }
     }

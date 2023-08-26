@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <style name="Theme.ConnectMe" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
@@ -11,7 +11,7 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-<!--        <item name="android:navigationBarColor">@color/white</item>-->
+        <!--        <item name="android:navigationBarColor">@color/white</item>-->
         <!-- Customize your theme here. -->
     </style>
 
@@ -68,19 +68,6 @@
         <item name="cornerSizeBottomRight">10dp</item>
     </style>
 
-    <style name="CustomCardViewTopRoundedStyle" parent="@style/Widget.MaterialComponents.CardView">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay_card_custom_corners</item>
-    </style>
-
-    <style name="ShapeAppearanceOverlay_card_custom_corners" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSizeTopRight">16dp</item>
-        <item name="cornerSizeTopLeft">16dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="android:padding">0dp</item>
-    </style>
-
     <!--https://stackoverflow.com/questions/53768913/how-to-apply-styles-from-styles-xml-to-span-->
     <style name="url_highlight">
         <item name="android:textColor">@color/light_gray</item>
@@ -107,18 +94,18 @@
         <item name="boxStrokeColor">@color/input_box_stroke_color</item>
     </style>
 
-<!--    https://stackoverflow.com/questions/42214592/androidlinespacingmultiplier-doesnt-work-in-androidtextappearance-->
+    <!--    https://stackoverflow.com/questions/42214592/androidlinespacingmultiplier-doesnt-work-in-androidtextappearance-->
     <style name="LineSpacing" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:lineSpacingMultiplier">1.8</item>
     </style>
 
-<!--    https://stackoverflow.com/questions/12636101/how-to-style-popupmenu-->
-<!--    https://stackoverflow.com/questions/38667170/meaning-of-format-reference-in-android-attribute-->
-<!--    https://medium.com/androiddevelopers/android-styling-themes-vs-styles-ebe05f917578-->
-<!--    https://medium.com/androiddevelopers/android-styling-common-theme-attributes-8f7c50c9eaba-->
-<!--    <item name="android:popupAnimationStyle"></item>-->
-<!--    <item name="android:popupEnterTransition" tools:targetApi="n">@transition/explode_transition</item>-->
-<!--    <item name="android:popupExitTransition" tools:targetApi="n">@transition/explode_transition</item>-->
+    <!--    https://stackoverflow.com/questions/12636101/how-to-style-popupmenu-->
+    <!--    https://stackoverflow.com/questions/38667170/meaning-of-format-reference-in-android-attribute-->
+    <!--    https://medium.com/androiddevelopers/android-styling-themes-vs-styles-ebe05f917578-->
+    <!--    https://medium.com/androiddevelopers/android-styling-common-theme-attributes-8f7c50c9eaba-->
+    <!--    <item name="android:popupAnimationStyle"></item>-->
+    <!--    <item name="android:popupEnterTransition" tools:targetApi="n">@transition/explode_transition</item>-->
+    <!--    <item name="android:popupExitTransition" tools:targetApi="n">@transition/explode_transition</item>-->
     <style name="PopupMenuTheme" parent="Widget.AppCompat.PopupMenu">
         <item name="attributeName">?attr/popupMenuStyle</item>
         <item name="android:popupBackground">@drawable/bg_popup_menu_rounded</item>
@@ -129,7 +116,7 @@
         <item name="android:popupBackground">@drawable/bg_popup_menu_rounded</item>
     </style>
 
-    <style name="CustomCardViewStyle" parent="@style/Widget.MaterialComponents.CardView">
+    <style name="CustomCardViewBottomRoundedStyle" parent="@style/Widget.MaterialComponents.CardView">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay_card_custom_corners_bottom</item>
     </style>
 
@@ -139,11 +126,25 @@
         <item name="cornerSizeTopLeft">0dp</item>
         <item name="cornerSizeBottomRight">16dp</item>
         <item name="cornerSizeBottomLeft">16dp</item>
+        <item name="android:padding">0dp</item>
     </style>
 
     <!--https://www.howtodoandroid.com/shapeableimageview-material-components-android/-->
     <style name="ShapeAppearanceOverlay.App.CornerSize10Percent" parent="">
         <item name="cornerSize">10%</item>
+    </style>
+
+    <style name="CustomCardViewTopRoundedStyle" parent="@style/Widget.MaterialComponents.CardView">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay_card_custom_corners_top</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay_card_custom_corners_top" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">16dp</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="android:padding">0dp</item>
     </style>
 
     <!--https://stackoverflow.com/questions/9247792/how-to-make-animation-for-popup-window-in-android/12436853-->

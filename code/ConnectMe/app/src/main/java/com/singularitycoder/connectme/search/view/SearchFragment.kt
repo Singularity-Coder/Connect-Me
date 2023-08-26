@@ -155,7 +155,6 @@ class SearchFragment : Fragment() {
     }
 
     private fun FragmentSearchBinding.setupUI() {
-        scrollViewNewTabOptions.layoutAnimation = clSearch.context.layoutAnimationController(globalSlideToTopAnimation)
         val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
         ivSearchEngine.setImageResource(SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name).icon)
         layoutVpn.apply {

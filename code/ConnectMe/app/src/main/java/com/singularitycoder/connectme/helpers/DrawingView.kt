@@ -45,7 +45,7 @@ class DrawingView(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+//        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         canvas = Canvas(canvasBitmap!!)
     }
 
@@ -85,6 +85,7 @@ class DrawingView(
                     }
                 }
             }
+
             MotionEvent.ACTION_MOVE -> {
                 if (touchX != null) {
                     if (touchY != null) {
@@ -92,14 +93,22 @@ class DrawingView(
                     }
                 }
             }
+
             MotionEvent.ACTION_UP -> {
                 pathsList.add(drawPath!!)
                 drawPath = CustomPath(currentColor, brushSize, drawAlpha)
             }
+
             else -> return false
         }
         invalidate()
         return true
+    }
+
+    fun setBitmap(bitmap: Bitmap?) {
+        canvasBitmap = bitmap
+        this.onSizeChanged(bitmap?.width ?: 0, bitmap?.height ?: 0, 0, 0)
+        invalidate()
     }
 
     /**

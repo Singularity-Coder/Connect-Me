@@ -514,26 +514,6 @@ fun Context.renameFile(
 }
 
 // https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
-fun Context.duplicateFile(fileUri: Uri): Uri? {
-    val contentResolver = this.contentResolver
-    val output = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
-    val input = getPathFrom(fileUri)
-    try {
-        FileInputStream(input).use { inputStream ->  //input stream
-            val out = contentResolver.openOutputStream(output!!) //output stream
-            val buf = ByteArray(1024)
-            var len: Int
-            while (inputStream.read(buf).also { len = it } > 0) {
-                out!!.write(buf, 0, len) //write input file data to output file
-            }
-        }
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-    return output
-}
-
-// https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
 fun Context.getPathFrom(fileUri: Uri): String? {
     val cursor = this.contentResolver.query(fileUri, null, null, null, null) ?: return null
     var text: String? = null
@@ -586,16 +566,33 @@ fun createRotatedImage(
     imageFileToRotate: File,
     outputFolder: File?
 ) {
+    if (isExternalStorageWritable().not()) return
     val rotatedBitmap = imageFileToRotate.toBitmap()?.rotate(rotationInDegrees)
-    val rotatedFile = File(
+    rotatedBitmap.createFile(inputFile = imageFileToRotate, outputFolder = outputFolder)
+//    val rotatedFile = File(
+//        /* parent = */ outputFolder,
+//        /* child = */ "${imageFileToRotate.nameWithoutExtension}_${timeNow}.${imageFileToRotate.extension}"
+//    ).also {
+//        if (it.exists().not()) it.createNewFile()
+//    }
+//    FileOutputStream(rotatedFile).use {
+//        it.write(rotatedBitmap.toByteArray())
+//    }
+}
+
+fun Bitmap?.createFile(
+    inputFile: File,
+    outputFolder: File?
+) {
+    if (isExternalStorageWritable().not()) return
+    val outputFile = File(
         /* parent = */ outputFolder,
-        /* child = */ "${imageFileToRotate.nameWithoutExtension}_${timeNow}.${imageFileToRotate.extension}"
+        /* child = */ "${inputFile.nameWithoutExtension}_${timeNow}.${inputFile.extension}"
     ).also {
         if (it.exists().not()) it.createNewFile()
     }
-    if (isExternalStorageWritable().not()) return
-    FileOutputStream(rotatedFile).use {
-        it.write(rotatedBitmap.toByteArray())
+    FileOutputStream(outputFile).use {
+        it.write(this.toByteArray())
     }
 }
 
@@ -604,6 +601,7 @@ fun createPdf(
     pathWithFileNameList: List<String?>,
     outputFolder: File
 ) {
+    if (isExternalStorageWritable().not()) return
     val document = PdfDocument()
     try {
         pathWithFileNameList.forEachIndexed { index: Int, pathWithFileName: String? ->
@@ -630,7 +628,6 @@ fun createPdf(
         }
         // write the document content
         val pdfFile = File("${outputFolder.absolutePath}/PDF_${timeNow}.pdf")
-        if (isExternalStorageWritable().not()) return
         document.writeTo(FileOutputStream(pdfFile))
     } catch (_: Exception) {
     } finally {
@@ -644,6 +641,7 @@ fun convertImage(
     outputFolder: File?,
     imageFormat: ImageFormat
 ) {
+    if (isExternalStorageWritable().not()) return
     val convertedFile = File(
         /* parent = */ outputFolder,
         /* child = */ "${imageFile.nameWithoutExtension}_${timeNow}.${imageFormat.value}"
@@ -669,7 +667,6 @@ fun convertImage(
             /* quality = */ 100,
             /* stream = */ out
         )
-        if (isExternalStorageWritable().not()) return
         out.use {
             it.write(bitmap.toByteArray())
         }
@@ -683,17 +680,37 @@ fun duplicateFile(
     fileToDuplicate: File?,
     outputFolder: File?
 ) {
+    if (isExternalStorageWritable().not()) return
     val duplicatedFile = File(
         /* parent = */ outputFolder,
         /* child = */ "${fileToDuplicate?.nameWithoutExtension}_${timeNow}.${fileToDuplicate?.extension}"
     ).also {
         if (it.exists().not()) it.createNewFile()
     }
-    if (isExternalStorageWritable().not()) return
     FileOutputStream(duplicatedFile).use {
         it.write(fileToDuplicate?.toByteArray())
     }
 }
+
+// https://gist.github.com/fiftyonemoon/433b563f652039e32c07d1d629f913fb
+//fun Context.duplicateFile(fileUri: Uri): Uri? {
+//    val contentResolver = this.contentResolver
+//    val output = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
+//    val input = getPathFrom(fileUri)
+//    try {
+//        FileInputStream(input).use { inputStream ->  //input stream
+//            val out = contentResolver.openOutputStream(output!!) //output stream
+//            val buf = ByteArray(1024)
+//            var len: Int
+//            while (inputStream.read(buf).also { len = it } > 0) {
+//                out!!.write(buf, 0, len) //write input file data to output file
+//            }
+//        }
+//    } catch (e: IOException) {
+//        e.printStackTrace()
+//    }
+//    return output
+//}
 
 // https://stackoverflow.com/questions/13352972/convert-file-to-byte-array-and-vice-versa
 fun File.toByteArray(): ByteArray? {
@@ -762,6 +779,7 @@ fun zip(
     filesListToZip: Array<String>,
     zippedFile: String?
 ) {
+    if (isExternalStorageWritable().not()) return
     val BUFFER_SIZE = 6 * 1024
     var origin: BufferedInputStream? = null
     val out = ZipOutputStream(BufferedOutputStream(FileOutputStream(zippedFile)))
@@ -792,6 +810,7 @@ fun unzip(
     outputLocation: String
 ) {
     try {
+        if (isExternalStorageWritable().not()) return
         val file = File(outputLocation)
         if (file.isDirectory.not()) file.mkdirs()
         val zin = ZipInputStream(FileInputStream(zippedFile))
@@ -823,4 +842,9 @@ fun unzip(
         }
     } catch (_: Exception) {
     }
+}
+
+// https://stackoverflow.com/questions/13119582/immutable-bitmap-crash-error
+fun Bitmap.toMutableBitmap(): Bitmap {
+    return this.copy(Bitmap.Config.ARGB_8888, true)
 }

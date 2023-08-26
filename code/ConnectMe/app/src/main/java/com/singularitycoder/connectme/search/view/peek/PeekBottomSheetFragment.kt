@@ -31,11 +31,11 @@ class PeekBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-
     private lateinit var binding: FragmentPeekBottomSheetBinding
 
     private var peekUrl: String? = null
     private var searchTabFragment: SearchTabFragment? = null
+    private var progressPercent = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +78,8 @@ class PeekBottomSheetFragment : BottomSheetDialogFragment() {
             linearProgressDummy.progress = progress
             linearProgress.isVisible = progress != 100
             linearProgressDummy.isVisible = progress != 100
+            if (progressPercent == 100 && progress == 100) return@getWebViewProgressListener
+            progressPercent = progress
             if (progress == 100) {
                 ivNavigateBack.isVisible = searchTabFragment?.getWebView()?.canGoBack() == true
                 ivNavigateForward.isVisible = searchTabFragment?.getWebView()?.canGoForward() == true

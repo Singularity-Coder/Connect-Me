@@ -5,6 +5,7 @@ import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.BuildConfig
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.downloads.MarkupFragment
 import com.singularitycoder.connectme.helpers.toLowCase
 import com.singularitycoder.connectme.helpers.trimIndentsAndNewLines
 import com.singularitycoder.connectme.profile.UserProfileFragment
@@ -215,6 +216,7 @@ object FragmentsTag {
     val SEARCH: String = SearchFragment::class.java.simpleName
     val USER_PROFILE: String = UserProfileFragment::class.java.simpleName
     val SEARCH_TAB: String = SearchTabFragment::class.java.simpleName
+    val MARKUP: String = MarkupFragment::class.java.simpleName
 }
 
 object BottomSheetTag {
@@ -286,8 +288,8 @@ enum class QuickActionTabMenuAdvancedOptions(
 ) {
     OPEN_WITH(title = "Open with...", icon = R.drawable.outline_open_in_new_24),
     ADD_SHORTCUT(title = "Add Shortcut", icon = R.drawable.outline_add_home_24),
-    TOGGLE_JS(title = "Toggle JS", icon = R.drawable.javascript_black_24dp),
-    TOGGLE_IMAGES(title = "Toggle Images", icon = R.drawable.outline_hide_image_24),
+    DISABLE_JS(title = "Disable JS", icon = R.drawable.javascript_black_24dp),
+    DISABLE_IMAGES(title = "Disable Images", icon = R.drawable.outline_hide_image_24),
     DEEP_CLEAN(title = "Deep Clean", icon = R.drawable.outline_cleaning_services_24), // clear cache, cookies...
     SHOW_PAGE_SOURCE(title = "Show Page Source", icon = R.drawable.outline_code_24),
     MARK_AS_AD(title = "Mark as Ad", icon = R.drawable.outline_ads_click_24),
