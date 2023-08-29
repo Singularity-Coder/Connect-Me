@@ -172,10 +172,36 @@
     <color name="light_gray_2">#CACACA</color>
     <color name="default_color">#757575</color>
     <color name="screen_background">#F0F3F4</color>
+    <color name="screen_background_2">#FBFBFB</color>
 
     <color name="transparent_white_50">#8CFFFFFF</color>
     <color name="transparent_black_30">#4D000000</color>
     <color name="transparent_purple_50">#8CBB86FC</color>
+
+    <color name="markup_red">#D10300</color>
+    <color name="markup_green">#008400</color>
+    <color name="markup_blue">#0000F7</color>
+    <color name="markup_yellow">#F7F700</color>
+    <color name="markup_orange">#F69704</color>
+    <color name="markup_brown">#7F3F05</color>
+    <color name="markup_purple">#904F9F</color>
+    <color name="markup_black">#000000</color>
+    <color name="markup_gray">#424549</color>
+    <color name="markup_pink">#F82C93</color>
+    <color name="markup_white">#F7F7F7</color>
+    <color name="markup_cyan_aqua">#00F6F7</color>
+    <color name="markup_magenta">#CF4BC8</color>
+    <color name="markup_lime">#ACF503</color>
+    <color name="markup_azure">#0995EC</color>
+    <color name="markup_coral">#F87B4D</color>
+    <color name="markup_indigo">#320194</color>
+    <color name="markup_beige">#E5C4A8</color>
+    <color name="markup_maroon">#7C0002</color>
+    <color name="markup_lavender">#D8BFF6</color>
+    <color name="markup_crimson">#D5133A</color>
+    <color name="markup_olive">#7C7C02</color>
+    <color name="markup_navy_blue">#00007C</color>
+
 
     <!-- reds -->
     <color name="md_red_50">#FFEBEE</color>

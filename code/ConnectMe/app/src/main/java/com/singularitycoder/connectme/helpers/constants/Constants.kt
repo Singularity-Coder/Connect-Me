@@ -1,6 +1,7 @@
 package com.singularitycoder.connectme.helpers.constants
 
 import android.os.Parcelable
+import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.BuildConfig
 import com.singularitycoder.connectme.MainFragment
@@ -433,3 +434,33 @@ const val NEAT_URL_DATA = """
     ]
 }
         """
+
+enum class MarkupColor(
+    val colorValue: String,
+    val colorName: String,
+    @ColorRes val colorInt: Int
+) {
+    WHITE(colorValue = "#F7F7F7", colorName = "White", colorInt = R.color.markup_white),
+    GRAY(colorValue = "#424549", colorName = "Gray", colorInt = R.color.markup_gray),
+    BLACK(colorValue = "#000000", colorName = "Black", colorInt = R.color.markup_black),
+    YELLOW(colorValue = "#F7F700", colorName = "Yellow", colorInt = R.color.markup_yellow),
+    ORANGE(colorValue = "#F69704", colorName = "Orange", colorInt = R.color.markup_orange),
+    CORAL(colorValue = "#F87B4D", colorName = "Coral", colorInt = R.color.markup_coral),
+    BEIGE(colorValue = "#E5C4A8", colorName = "Beige", colorInt = R.color.markup_beige),
+    BROWN(colorValue = "#7F3F05", colorName = "Brown", colorInt = R.color.markup_brown),
+    LIME(colorValue = "#ACF503", colorName = "Lime", colorInt = R.color.markup_lime),
+    OLIVE(colorValue = "#7C7C02", colorName = "Olive", colorInt = R.color.markup_olive),
+    GREEN(colorValue = "#008400", colorName = "Green", colorInt = R.color.markup_green),
+    CYAN(colorValue = "#00F6F7", colorName = "Cyan / Aqua", colorInt = R.color.markup_cyan_aqua),
+    AZURE(colorValue = "#0995EC", colorName = "Azure", colorInt = R.color.markup_azure),
+    BLUE(colorValue = "#0000F7", colorName = "Blue", colorInt = R.color.markup_blue),
+    INDIGO(colorValue = "#320194", colorName = "Indigo", colorInt = R.color.markup_indigo),
+    NAVY_BLUE(colorValue = "#00007C", colorName = "Navy Blue", colorInt = R.color.markup_navy_blue),
+    LAVENDER(colorValue = "#D8BFF6", colorName = "Lavender", colorInt = R.color.markup_lavender),
+    PURPLE(colorValue = "#904F9F", colorName = "Purple", colorInt = R.color.markup_purple),
+    MAGENTA(colorValue = "#CF4BC8", colorName = "Magenta", colorInt = R.color.markup_magenta),
+    PINK(colorValue = "#F82C93", colorName = "Pink", colorInt = R.color.markup_pink),
+    CRIMSON(colorValue = "#D5133A", colorName = "Crimson", colorInt = R.color.markup_crimson),
+    RED(colorValue = "#D10300", colorName = "Red", colorInt = R.color.markup_red),
+    MAROON(colorValue = "#7C0002", colorName = "Maroon", colorInt = R.color.markup_maroon),
+}

@@ -51,7 +51,12 @@ class DrawingView(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.drawBitmap(canvasBitmap!!, 0f, 0f, canvasPaint)
+        canvas.drawBitmap(
+            /* bitmap = */ canvasBitmap!!,
+            /* left = */ 0f,
+            /* top = */ 0f,
+            /* paint = */ canvasPaint
+        )
 
         for (path in pathsList) {
             drawPaint?.strokeWidth = path.brushThickness.toFloat()
@@ -107,7 +112,12 @@ class DrawingView(
 
     fun setBitmap(bitmap: Bitmap?) {
         canvasBitmap = bitmap
-        this.onSizeChanged(bitmap?.width ?: 0, bitmap?.height ?: 0, 0, 0)
+        this.onSizeChanged(
+            w = bitmap?.width ?: 0,
+            h = bitmap?.height ?: 0,
+            oldw = 0,
+            oldh = 0
+        )
         invalidate()
     }
 
@@ -195,7 +205,6 @@ class DrawingView(
     fun clearDrawingBoard() {
         pathsList.clear()
         invalidate()
-
     }
 
     fun getDrawing(): ArrayList<CustomPath> = pathsList

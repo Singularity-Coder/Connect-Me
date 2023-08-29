@@ -569,15 +569,6 @@ fun createRotatedImage(
     if (isExternalStorageWritable().not()) return
     val rotatedBitmap = imageFileToRotate.toBitmap()?.rotate(rotationInDegrees)
     rotatedBitmap.createFile(inputFile = imageFileToRotate, outputFolder = outputFolder)
-//    val rotatedFile = File(
-//        /* parent = */ outputFolder,
-//        /* child = */ "${imageFileToRotate.nameWithoutExtension}_${timeNow}.${imageFileToRotate.extension}"
-//    ).also {
-//        if (it.exists().not()) it.createNewFile()
-//    }
-//    FileOutputStream(rotatedFile).use {
-//        it.write(rotatedBitmap.toByteArray())
-//    }
 }
 
 fun Bitmap?.createFile(

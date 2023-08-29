@@ -291,6 +291,7 @@ fun Context.showPopupMenuWithIcons(
     iconHeight: Int = -1,
     defaultSpaceBtwIconTitle: String = "    ",
     isColoredIcon: Boolean = true,
+    colorsList: List<Int> = emptyList(),
     onItemClick: (menuItem: MenuItem?) -> Unit
 ) {
     val popupMenu = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -319,11 +320,15 @@ fun Context.showPopupMenuWithIcons(
         menuList.lastIndex
     } else 0
     menuList.forEachIndexed { index, pair ->
-        val icon = if (pair.first == customColorItemText) {
-            drawable(pair.second)?.changeColor(this, customColor)
+        val icon = if (colorsList.isNotEmpty()) {
+            drawable(pair.second)?.changeColor(this, colorsList[index])
         } else {
-            drawable(pair.second)?.apply {
-                if (isColoredIcon) changeColor(this@showPopupMenuWithIcons, R.color.purple_500)
+            if (pair.first == customColorItemText) {
+                drawable(pair.second)?.changeColor(this, customColor)
+            } else {
+                drawable(pair.second)?.apply {
+                    if (isColoredIcon) changeColor(this@showPopupMenuWithIcons, R.color.purple_500)
+                }
             }
         }
         val insetDrawable = InsetDrawable(
