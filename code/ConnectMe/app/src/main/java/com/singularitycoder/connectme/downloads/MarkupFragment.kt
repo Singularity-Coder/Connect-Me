@@ -17,8 +17,12 @@ import com.singularitycoder.connectme.databinding.FragmentMarkupBinding
 import com.singularitycoder.connectme.helpers.changeColor
 import com.singularitycoder.connectme.helpers.color
 import com.singularitycoder.connectme.helpers.constants.MarkupColor
+import com.singularitycoder.connectme.helpers.deviceHeight
+import com.singularitycoder.connectme.helpers.deviceWidth
+import com.singularitycoder.connectme.helpers.dpToPx
 import com.singularitycoder.connectme.helpers.drawable
 import com.singularitycoder.connectme.helpers.onSafeClick
+import com.singularitycoder.connectme.helpers.scale
 import com.singularitycoder.connectme.helpers.setNavigationBarColor
 import com.singularitycoder.connectme.helpers.showAlertDialog
 import com.singularitycoder.connectme.helpers.showPopupMenuWithIcons
@@ -73,8 +77,13 @@ class MarkupFragment : Fragment() {
         requireActivity().setNavigationBarColor(R.color.white)
 
         val file = File(imagePath ?: "")
-        val bitmap = file.toBitmap()?.toMutableBitmap()
         tvTitle.text = file.name
+        val bitmap = file.toBitmap()
+            ?.scale(
+                maxWidth = (deviceWidth() - 32.dpToPx()).toInt(),
+                maxHeight = (deviceHeight() - 32.dpToPx() - cardToolbar.layoutParams.height - cardMarkupTools.layoutParams.height).toInt()
+            )
+            ?.toMutableBitmap()
         drawingView.setBitmap(bitmap)
 
         ibColor.setColorFilter(requireContext().color(MarkupColor.RED.colorInt))

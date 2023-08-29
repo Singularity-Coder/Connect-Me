@@ -839,3 +839,43 @@ fun unzip(
 fun Bitmap.toMutableBitmap(): Bitmap {
     return this.copy(Bitmap.Config.ARGB_8888, true)
 }
+
+// https://gist.github.com/samsonjs/3693545 - Scale a bitmap preserving the aspect ratio.
+fun Bitmap.scale(maxWidth: Int, maxHeight: Int): Bitmap? {
+    // Determine the constrained dimension, which determines both dimensions.
+    val width: Int
+    val height: Int
+    val widthRatio = this.width.toFloat() / maxWidth
+    val heightRatio = this.height.toFloat() / maxHeight
+    // Width constrained.
+    if (widthRatio >= heightRatio) {
+        width = maxWidth
+        height = (width.toFloat() / this.width * this.height).toInt()
+    } else {
+        height = maxHeight
+        width = (height.toFloat() / this.height * this.width).toInt()
+    }
+    val scaledBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val ratioX = width.toFloat() / this.width
+    val ratioY = height.toFloat() / this.height
+    val middleX = width / 2.0f
+    val middleY = height / 2.0f
+    val scaleMatrix = Matrix().apply {
+        setScale(ratioX, ratioY, middleX, middleY)
+    }
+    Canvas(scaledBitmap).apply {
+        setMatrix(scaleMatrix)
+        drawBitmap(
+            /* bitmap = */ this@scale,
+            /* left = */ middleX - this@scale.width / 2,
+            /* top = */ middleY - this@scale.height / 2,
+            /* paint = */ Paint(Paint.FILTER_BITMAP_FLAG)
+        )
+    }
+    return scaledBitmap
+}
+
+// https://stackoverflow.com/questions/10630373/android-image-view-pinch-zooming
+fun pinchToZoom() {
+
+}
