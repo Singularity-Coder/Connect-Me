@@ -177,13 +177,15 @@ class DownloadsFragment : Fragment() {
                 }
                 return@setOnItemClickListener
             }
+            progressLinear.isVisible = true
             if (selectedItem.isDirectory) {
-                selectedFileFilter = fileFilterOptionsList.first().first
-                selectedFileSorting = sortByOptionsList.first().first
-                fileNavigationStack.push(selectedItem)
-                updateFileNavigation()
-                filesList = getFilesListFrom(folder = selectedItem).toMutableList()
-                selectedFileFilter = fileFilterOptionsList.first().first
+                lifecycleScope.launch {
+                    selectedFileFilter = fileFilterOptionsList.first().first
+                    selectedFileSorting = sortByOptionsList.first().first
+                    fileNavigationStack.push(selectedItem)
+                    updateFileNavigation()
+                    filesList = getFilesListFrom(folder = selectedItem).toMutableList()
+                }
                 applyFileSorting()
             }
             openIfFileElseShowFilesListIfDirectory(selectedItem)
@@ -402,10 +404,10 @@ class DownloadsFragment : Fragment() {
 
         if (currentDirectory.isFile) {
             requireActivity().openFile(currentDirectory)
+            binding.progressLinear.isVisible = false
             return
         }
 
-        binding.progressLinear.isVisible = true
         lifecycleScope.launch {
             downloadsList.clear()
             filesList.forEach { file: File ->
@@ -519,7 +521,7 @@ class DownloadsFragment : Fragment() {
                 optionsList[1].first -> {
                     operateOnFileAndSort {
                         val file = File(download?.path ?: "")
-                        val zippedFile = File("${file.parentFile.absolutePath}/archive_${timeNow}.zip").also {
+                        val zippedFile = File("${file.parentFile.absolutePath}/${file.nameWithoutExtension}_${timeNow}.zip").also {
                             if (it.exists().not()) it.createNewFile()
                         }
                         zip(
@@ -768,6 +770,7 @@ class DownloadsFragment : Fragment() {
         lifecycleScope.launch {
             task.invoke()
             selectedFileSorting = sortByOptionsList.first().first
+            selectedFileFilter = fileFilterOptionsList.first().first
             filesList = getFilesListFrom(folder = fileNavigationStack.peek() ?: return@launch).toMutableList()
             withContext(Main) {
                 applyFileSorting()

@@ -593,13 +593,14 @@ fun createPdf(
     outputFolder: File
 ) {
     if (isExternalStorageWritable().not()) return
+    if (pathWithFileNameList.isEmpty()) return
     val document = PdfDocument()
     try {
         pathWithFileNameList.forEachIndexed { index: Int, pathWithFileName: String? ->
             val imageFile = File(pathWithFileName ?: return@forEachIndexed)
             if (imageFile.extension !in ImageFormat.values().map { it.value }) return
             val bitmap = imageFile.toBitmap() ?: return@forEachIndexed
-            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width, bitmap.height, true) ?: return@forEachIndexed
+            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width, bitmap.height, true)
             val pageInfo = PageInfo.Builder(
                 /* pageWidth = */ bitmap.width,
                 /* pageHeight = */ bitmap.height,
@@ -617,8 +618,13 @@ fun createPdf(
             }
             document.finishPage(page)
         }
+        val pdfFileName = if (pathWithFileNameList.size == 1) {
+            "${File(pathWithFileNameList.first() ?: "").nameWithoutExtension}_${timeNow}"
+        } else {
+            "PDF_${timeNow}"
+        }
         // write the document content
-        val pdfFile = File("${outputFolder.absolutePath}/PDF_${timeNow}.pdf")
+        val pdfFile = File("${outputFolder.absolutePath}/${pdfFileName}.pdf")
         document.writeTo(FileOutputStream(pdfFile))
     } catch (_: Exception) {
     } finally {

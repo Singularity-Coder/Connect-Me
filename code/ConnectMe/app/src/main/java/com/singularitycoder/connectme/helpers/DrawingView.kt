@@ -9,23 +9,28 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.IntRange
 
+
 // https://github.com/Miihir79/DrawingCanvas-Library
 class DrawingView(
     context: Context,
     attrs: AttributeSet
 ) : View(context, attrs) {
 
+    var canvasBitmap: Bitmap? = null
+
     private var drawPath: CustomPath? = null
-    private var canvasBitmap: Bitmap? = null
     private var drawPaint: Paint? = null
     private var canvasPaint: Paint? = null
     private var brushSize: Int = 0
     private var currentColor = Color.BLACK
     private var canvas: Canvas? = null
     private var drawAlpha: Int = 255
+    private var actualCanvasHeight: Int = 0
 
     private var pathsList = ArrayList<CustomPath>()
     private var undoPathsList = ArrayList<CustomPath>()
+
+    private var onTouchListener: (isDown: Boolean) -> Unit = {}
 
     init {
         setUpDrawing()
@@ -49,12 +54,28 @@ class DrawingView(
         canvas = Canvas(canvasBitmap!!)
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+//        val bitmapHeight = if (canvasBitmap!!.height >= actualCanvasHeight) {
+//            canvasBitmap!!.height
+//        } else {
+//            val unnecessaryHeight = actualCanvasHeight - canvasBitmap!!.height
+//            actualCanvasHeight - unnecessaryHeight
+//        }
+//        val croppedBitmap = Bitmap.createBitmap(
+//            /* source = */ canvasBitmap!!,
+//            /* x = */ 0,
+//            /* y = */ 0,
+//            /* width = */ canvasBitmap!!.width,
+//            /* height = */ bitmapHeight
+//        )
+
         canvas.drawBitmap(
             /* bitmap = */ canvasBitmap!!,
             /* left = */ 0f,
-            /* top = */ 0f,
+            /* top = */ 0f, // TODO put image in center vertically
             /* paint = */ canvasPaint
         )
 
@@ -87,6 +108,7 @@ class DrawingView(
                 if (touchX != null) {
                     if (touchY != null) {
                         drawPath!!.moveTo(touchX, touchY)
+                        onTouchListener.invoke(true)
                     }
                 }
             }
@@ -102,6 +124,7 @@ class DrawingView(
             MotionEvent.ACTION_UP -> {
                 pathsList.add(drawPath!!)
                 drawPath = CustomPath(currentColor, brushSize, drawAlpha)
+                onTouchListener.invoke(false)
             }
 
             else -> return false
@@ -110,8 +133,12 @@ class DrawingView(
         return true
     }
 
-    fun setBitmap(bitmap: Bitmap?) {
+    fun setBitmap(
+        bitmap: Bitmap?,
+        actualCanvasHeight: Int
+    ) {
         canvasBitmap = bitmap
+        this.actualCanvasHeight = actualCanvasHeight
         this.onSizeChanged(
             w = bitmap?.width ?: 0,
             h = bitmap?.height ?: 0,
@@ -208,6 +235,10 @@ class DrawingView(
     }
 
     fun getDrawing(): ArrayList<CustomPath> = pathsList
+
+    fun getOnTouchListener(onTouchListener: (isDown: Boolean) -> Unit) {
+        this.onTouchListener = onTouchListener
+    }
 
     inner class CustomPath(
         var color: Int,

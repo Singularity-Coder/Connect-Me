@@ -12,6 +12,7 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentMarkupBinding
 import com.singularitycoder.connectme.helpers.changeColor
@@ -30,6 +31,9 @@ import com.singularitycoder.connectme.helpers.toBitmap
 import com.singularitycoder.connectme.helpers.toBitmapOf
 import com.singularitycoder.connectme.helpers.toMutableBitmap
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 private const val ARG_PARAM_IMAGE_PATH = "ARG_PARAM_IMAGE_PATH"
@@ -78,13 +82,16 @@ class MarkupFragment : Fragment() {
 
         val file = File(imagePath ?: "")
         tvTitle.text = file.name
+        val canvasHeight = (deviceHeight() - 32.dpToPx() - cardToolbar.layoutParams.height - cardMarkupTools.layoutParams.height).toInt()
         val bitmap = file.toBitmap()
             ?.scale(
                 maxWidth = (deviceWidth() - 32.dpToPx()).toInt(),
-                maxHeight = (deviceHeight() - 32.dpToPx() - cardToolbar.layoutParams.height - cardMarkupTools.layoutParams.height).toInt()
+                maxHeight = canvasHeight
             )
             ?.toMutableBitmap()
-        drawingView.setBitmap(bitmap)
+        drawingView.canvasBitmap = bitmap
+        drawingView.layoutParams.height = bitmap?.height ?: 0
+        drawingView.layoutParams.width = bitmap?.width ?: 0
 
         ibColor.setColorFilter(requireContext().color(MarkupColor.RED.colorInt))
         drawingView.setBrushColor(requireContext().color(MarkupColor.RED.colorInt))
@@ -134,12 +141,18 @@ class MarkupFragment : Fragment() {
         }
 
         btnDone.onSafeClick {
-            val bitmapDrawableOfLayout = drawingView.toBitmapOf(
-                width = drawingView.width,
-                height = drawingView.height
-            )?.toDrawable(requireContext().resources)
-            downloadsViewModel.setMarkedUpBitmap(bitmapDrawableOfLayout?.bitmap)
-            activity?.supportFragmentManager?.popBackStackImmediate()
+            btnDone.visibility = View.INVISIBLE
+            progressCircular.isVisible = true
+            lifecycleScope.launch {
+                val bitmapDrawableOfLayout = drawingView.toBitmapOf(
+                    width = drawingView.width,
+                    height = drawingView.height
+                )?.toDrawable(requireContext().resources)
+                downloadsViewModel.setMarkedUpBitmap(bitmapDrawableOfLayout?.bitmap)
+                withContext(Main) {
+                    activity?.supportFragmentManager?.popBackStackImmediate()
+                }
+            }
         }
 
         ibColor.onSafeClick {
@@ -170,6 +183,7 @@ class MarkupFragment : Fragment() {
                 1 -> {
                     clBrushSettings.isVisible = false
                 }
+
                 2 -> {
                     clBrushSettings.isVisible = true
                     brushSelectedCount = 0
@@ -191,11 +205,41 @@ class MarkupFragment : Fragment() {
                 1 -> {
                     clEraserSettings.isVisible = false
                 }
+
                 2 -> {
                     clEraserSettings.isVisible = true
                     eraserSelectedCount = 0
                 }
             }
+        }
+
+        drawingView.getOnTouchListener { isDown: Boolean ->
+            cardToolbar.isVisible = isDown.not()
+            cardMarkupTools.isVisible = isDown.not()
+        }
+
+        ibReduceBrushTransparency.onSafeClick {
+            sliderBrushTransparency.progress = sliderBrushTransparency.progress - 1
+        }
+
+        ibIncreaseBrushTransparency.onSafeClick {
+            sliderBrushTransparency.progress = sliderBrushTransparency.progress + 1
+        }
+
+        ibReduceBrushThickness.onSafeClick {
+            sliderBrushThickness.progress = sliderBrushThickness.progress - 1
+        }
+
+        ibIncreaseBrushThickness.onSafeClick {
+            sliderBrushThickness.progress = sliderBrushThickness.progress + 1
+        }
+
+        ibReduceEraserThickness.onSafeClick {
+            sliderEraserThickness.progress = sliderEraserThickness.progress - 1
+        }
+
+        ibIncreaseEraserThickness.onSafeClick {
+            sliderEraserThickness.progress = sliderEraserThickness.progress + 1
         }
 
         sliderBrushThickness.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
