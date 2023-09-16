@@ -43,6 +43,8 @@ class CollectionsViewModel @Inject constructor(
         collectionsDao.deleteBy(collectionTitle)
     }
 
+    suspend fun getCollectionsCount(): Int = collectionsDao.getAllItemsCount()
+
     // https://developer.android.com/kotlin/coroutines/coroutines-best-practices#create-coroutines-data-layer
 //    suspend fun isItemPresent(website: String?): Boolean = collectionsDao.isItemPresent(website)
 }

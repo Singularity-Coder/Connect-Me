@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.ThisApp
 import com.singularitycoder.connectme.databinding.FragmentExploreBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
@@ -47,6 +48,7 @@ class ExploreFragment : Fragment() {
     private val exploreList = mutableListOf<Explore>()
 
     private var topicParam: String? = null
+    private var isInitComplete = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,11 +60,15 @@ class ExploreFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.setupUI()
-        binding.setupUserActionListeners()
-        binding.observeForData()
+    override fun onResume() {
+        super.onResume()
+        /** Will not init until collections are loaded. Done for speed */
+        if ((activity?.application as? ThisApp)?.isCollectionsScreenLoaded == true && isInitComplete.not()) {
+            binding.setupUI()
+            binding.setupUserActionListeners()
+            binding.observeForData()
+            isInitComplete = true
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

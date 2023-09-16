@@ -9,15 +9,14 @@ import android.os.Bundle
 import android.os.Environment
 import android.text.Editable
 import android.view.*
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.singularitycoder.connectme.MainActivity
-import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentDownloadsBinding
 import com.singularitycoder.connectme.helpers.*
@@ -287,7 +286,7 @@ class DownloadsFragment : Fragment() {
             requireActivity().requestStoragePermission()
         }
 
-        layoutSearch.ivNavigateBack.onSafeClick {
+        layoutSearch.btnNavigateBack.onSafeClick {
             fileNavigationStack.pop()
             val previousFolder = fileNavigationStack.peek() ?: getDownloadDirectory()
             updateFileNavigation()
@@ -296,6 +295,19 @@ class DownloadsFragment : Fragment() {
             applyFileSorting()
             openIfFileElseShowFilesListIfDirectory(previousFolder)
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (fileNavigationStack.size > 1) {
+                    layoutSearch.btnNavigateBack.performClick()
+                } else {
+                    // FIXME crashing weirdly on backpress
+//                    activity?.onBackPressedDispatcher?.onBackPressed()
+//                    this.handleOnBackPressed()
+                    activity?.finish()
+                }
+            }
+        })
 
         parentFragmentManager.setFragmentResultListener(
             /* requestKey = */ FragmentResultKey.RENAME_DOWNLOAD_FILE,
@@ -367,7 +379,7 @@ class DownloadsFragment : Fragment() {
     }
 
     private fun updateFileNavigation() {
-        binding.layoutSearch.ivNavigateBack.isVisible = fileNavigationStack.size > 1
+        binding.layoutSearch.btnNavigateBack.isVisible = fileNavigationStack.size > 1
         binding.layoutSearch.etSearch.hint = "Search in ${fileNavigationStack.peek()?.name}"
     }
 

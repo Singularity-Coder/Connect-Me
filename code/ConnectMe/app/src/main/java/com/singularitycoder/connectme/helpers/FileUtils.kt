@@ -885,3 +885,31 @@ fun Bitmap.scale(maxWidth: Int, maxHeight: Int): Bitmap? {
 fun pinchToZoom() {
 
 }
+
+// https://www.youtube.com/watch?v=tFdTNANwgcw&ab_channel=edureka%21
+fun writeToTextFile(
+    outputPath: String,
+    text: String
+) = try {
+    FileWriter(outputPath).apply {
+        write(text)
+        close()
+    }
+} catch (_: Exception) {
+}
+
+//
+fun readFromTextFile(
+    inputFile: File,
+): String {
+    var text = ""
+    try {
+        val scanner = Scanner(inputFile)
+        while (scanner.hasNextLine()) {
+            text += scanner.nextLine()
+        }
+        scanner.close()
+    } catch (_: Exception) {
+    }
+    return text
+}

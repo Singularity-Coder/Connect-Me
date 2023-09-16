@@ -214,6 +214,7 @@ class MarkupFragment : Fragment() {
         }
 
         drawingView.getOnTouchListener { isDown: Boolean ->
+            if (clBrushSettings.isVisible || clEraserSettings.isVisible) return@getOnTouchListener
             cardToolbar.isVisible = isDown.not()
             cardMarkupTools.isVisible = isDown.not()
         }
@@ -302,6 +303,8 @@ class MarkupFragment : Fragment() {
             binding.ibColor.setColorFilter(requireContext().color(colorIntsList[position]))
             binding.drawingView.setBrushColor(requireContext().color(colorIntsList[position]))
             selectedColor = colorIntsList[position]
+            if (brushSelectedCount >= 1) return@showPopupMenuWithIcons
+            binding.ibBrush.performClick()
         }
     }
 }

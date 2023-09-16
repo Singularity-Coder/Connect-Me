@@ -13,8 +13,6 @@ TODO Checklist
 
 
 TODO THIS WEEK
-add fine increse decrese btns next to sliders in markup
-
 Downloads - markup, move to, copy to, rename,
 Explore - Add time topics n location - fetch data from alarm manager for precise timing, fill weather
 finalise features for quick actions - url tab

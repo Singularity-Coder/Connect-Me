@@ -115,7 +115,7 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             ivArrow.isVisible = true
         }
         itemPermissions.apply {
-            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.round_tune_24))
+            ivPicture.setImageDrawable(requireContext().drawable(R.drawable.ic_tune))
             tvTitle.text = "Permissions"
             tvSubtitle.text = "Notifications blocked"
             ivArrow.isVisible = true

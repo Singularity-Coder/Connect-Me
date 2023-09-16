@@ -12,16 +12,23 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.ThisApp
 import com.singularitycoder.connectme.databinding.FragmentCollectionsBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
 import com.singularitycoder.connectme.helpers.constants.CollectionScreenEvent
+import com.singularitycoder.connectme.helpers.constants.DEFAULT_WEB_APPS
 import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @AndroidEntryPoint
@@ -48,7 +55,21 @@ class CollectionsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.setupUI()
         binding.setupUserActionListeners()
-        observeForData()
+        lifecycleScope.launch {
+            /** To load the default webapps when db starts I am forcing a dummy insert and adding some delay for all to load */
+            if (collectionsViewModel.getCollectionsCount() == 0) {
+                collectionsViewModel.addToCollections(DEFAULT_WEB_APPS.first())
+                delay(1.seconds())
+            }
+            withContext(Main) {
+                observeForData()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity?.application as? ThisApp)?.isCollectionsScreenLoaded = true
     }
 
     @SuppressLint("NotifyDataSetChanged")

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.ThisApp
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
@@ -53,6 +54,7 @@ class FeedFragment : Fragment() {
     private var feedList = listOf<Feed?>()
     private var feedSavedList = listOf<Feed?>()
     private var topicParam: String? = null
+    private var isInitComplete = false
 
     private val feedAdapter = FeedAdapter()
 
@@ -74,16 +76,16 @@ class FeedFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.setupUI()
-        binding.setupUserActionListeners()
-        observeForData()
-    }
-
     override fun onResume() {
         super.onResume()
-        if (feedList.isEmpty()) {
+        /** Will not init until collections are loaded. Done for speed */
+        if ((activity?.application as? ThisApp)?.isCollectionsScreenLoaded == true && isInitComplete.not()) {
+            binding.setupUI()
+            binding.setupUserActionListeners()
+            observeForData()
+            isInitComplete = true
+        }
+        if (feedList.isEmpty() && isInitComplete) {
             binding.layoutShimmerLoader.root.isVisible = true
         }
 //        CodeExecutor.executeCode(
@@ -94,7 +96,7 @@ class FeedFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun FragmentFeedBinding.setupUI() {
-        layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.round_tune_24)
+        layoutSearch.btnMore.icon = requireContext().drawable(R.drawable.ic_tune)
         rvFeed.apply {
             layoutAnimation = rvFeed.context.layoutAnimationController(globalLayoutAnimation)
             layoutManager = LinearLayoutManager(context)

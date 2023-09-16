@@ -17,7 +17,7 @@ interface CollectionsDao {
     suspend fun insertAll(list: List<CollectionWebPage?>)
 
     @Query("SELECT Count(*) FROM ${Table.COLLECTION}") // Add WHERE if necessary
-    fun getAllItemsCount(): Int
+    suspend fun getAllItemsCount(): Int
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
