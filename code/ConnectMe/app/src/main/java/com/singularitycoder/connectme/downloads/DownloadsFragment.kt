@@ -243,7 +243,7 @@ class DownloadsFragment : Fragment() {
                     optionsList[7].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete file",
-                            message = download?.title ?: "",
+                            message = "${download?.title}.${download?.extension}",
                             positiveBtnText = "Delete",
                             negativeBtnText = "Cancel",
                             positiveBtnColor = R.color.md_red_700,
@@ -302,9 +302,9 @@ class DownloadsFragment : Fragment() {
                     layoutSearch.btnNavigateBack.performClick()
                 } else {
                     // FIXME crashing weirdly on backpress
-//                    activity?.onBackPressedDispatcher?.onBackPressed()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
 //                    this.handleOnBackPressed()
-                    activity?.finish()
+//                    activity?.finish()
                 }
             }
         })
@@ -503,10 +503,15 @@ class DownloadsFragment : Fragment() {
         download: Download?,
         position: Int?
     ) {
+        var isDocument = false
         val optionsList = mutableListOf(
             Pair("Duplicate", R.drawable.outline_file_copy_24),
             Pair("Zip", R.drawable.outline_folder_zip_24)
         )
+        if (download?.extension?.toLowCase()?.trim() in DocumentFormat.values().map { it.value.toLowCase().trim() }) {
+            isDocument = true
+            optionsList.add(Pair("Read", R.drawable.outline_record_voice_over_24))
+        }
         if (download?.extension?.toLowCase()?.trim() in ImageFormat.values().map { it.value.toLowCase().trim() }) {
             optionsList.add(Pair("Create PDF", R.drawable.outline_picture_as_pdf_24))
             optionsList.add(Pair("Remove background", R.drawable.outline_border_clear_24))
@@ -544,11 +549,23 @@ class DownloadsFragment : Fragment() {
                 }
 
                 optionsList[2].first -> {
-                    operateOnFileAndSort {
-                        createPdf(
-                            pathWithFileNameList = listOf(download?.path),
-                            outputFolder = fileNavigationStack.peek() ?: return@operateOnFileAndSort
+                    if (isDocument) {
+                        (activity as? MainActivity)?.showScreen(
+                            fragment = BookReaderFragment.newInstance(imagePath = download?.path),
+                            tag = FragmentsTag.BOOK_READER,
+                            isAdd = true,
+                            enterAnim = R.anim.slide_to_top,
+                            exitAnim = R.anim.slide_to_bottom,
+                            popEnterAnim = R.anim.slide_to_top,
+                            popExitAnim = R.anim.slide_to_bottom,
                         )
+                    } else {
+                        operateOnFileAndSort {
+                            createPdf(
+                                pathWithFileNameList = listOf(download?.path),
+                                outputFolder = fileNavigationStack.peek() ?: return@operateOnFileAndSort
+                            )
+                        }
                     }
                 }
 

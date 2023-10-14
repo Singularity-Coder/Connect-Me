@@ -139,12 +139,18 @@ class SearchFragment : Fragment() {
         binding.setupUI()
         binding.setUpUserActionListeners()
         binding.observeForData()
-        if (websiteList.isEmpty()) binding.ibAddTab.performClick()
+        if (websiteList.isEmpty()) {
+            binding.ibAddTab.performClick()
+        } else {
+            if (binding.etSearch.hasFocus()) {
+                binding.etSearch.clearFocus()
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        if (searchTabsList.size == 1 && binding.etSearch.text.isBlank()) {
+        if (searchTabsList.size == 1 && binding.etSearch.text.isBlank() && websiteList.isEmpty()) {
             binding.etSearch.showKeyboard()
         }
     }
@@ -388,7 +394,11 @@ class SearchFragment : Fragment() {
                 if (selectedWebpage?.getWebView()?.canGoBack() == true) {
                     selectedWebpage.getWebView().goBack()
                 } else {
-                    showCloseAllTabsPopup()
+                    if (tabLayoutTabs.tabCount > 1) {
+                        showCloseAllTabsPopup()
+                    } else {
+                        closeSearch()
+                    }
                 }
             }
         })
@@ -509,21 +519,27 @@ class SearchFragment : Fragment() {
                         in ImageFormat.values().map { it.value.toLowCase().trim() } -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_image_24))
                         }
+
                         in VideoFormat.values().map { it.value.toLowCase().trim() } -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_movie_24))
                         }
+
                         in AudioFormat.values().map { it.value.toLowCase().trim() } -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_audiotrack_24))
                         }
+
                         in DocumentFormat.values().map { it.value.toLowCase().trim() } -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_article_24))
                         }
+
                         in ArchiveFormat.values().map { it.value.toLowCase().trim() } -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_folder_zip_24))
                         }
+
                         in AndroidFormat.values().map { it.value.toLowCase().trim() } -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_android_24))
                         }
+
                         else -> {
                             listItemAppBinding.ivWebappIcon.load(getBitmap(drawableRes = R.drawable.outline_insert_drive_file_24))
                         }
@@ -604,6 +620,7 @@ class SearchFragment : Fragment() {
                         )
                     )
                 }
+
                 else -> Unit
             }
 
@@ -667,18 +684,21 @@ class SearchFragment : Fragment() {
                         )
                     }
                 }
+
                 optionsList[1].first -> {
                     if (binding.etSearch.text.isNullOrBlank().not()) {
                         requireContext().clipboard()?.text = binding.etSearch.text
                         binding.root.showSnackBar("Copied link: ${requireContext().clipboard()?.text}")
                     }
                 }
+
                 optionsList[2].first -> {}
                 optionsList[3].first -> {}
                 optionsList[4].first -> {
                     binding.etSearch.setSelection(0, binding.etSearch.text.length)
                     binding.etSearch.setSelectAllOnFocus(true)
                 }
+
                 optionsList[5].first -> {
                     if (binding.etSearch.text.isNullOrBlank()) return@showPopupMenuWithIcons
                     if (binding.etSearch.text.toString().toLowCase().isValidURL().not()) return@showPopupMenuWithIcons
@@ -686,6 +706,7 @@ class SearchFragment : Fragment() {
                     selectedWebpage?.loadUrl(url = getHostFrom(url = binding.etSearch.text.toString().trim()))
                     binding.etSearch.hideKeyboard()
                 }
+
                 optionsList[6].first -> {
                     binding.etSearch.setText("")
                 }
@@ -748,6 +769,7 @@ class SearchFragment : Fragment() {
                         iconEndPadding = (-4).dpToPx()
                         text = null
                     }
+
                     UrlSearchActions.RIGHT_NAV.ordinal -> {
                         setTextColor(requireContext().color(R.color.purple_500))
                         chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.purple_50))
@@ -758,9 +780,11 @@ class SearchFragment : Fragment() {
                         iconEndPadding = (-4).dpToPx()
                         text = null
                     }
+
                     UrlSearchActions.EMPTY.ordinal -> {
                         chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.transparent_white_50))
                     }
+
                     else -> {
                         setTextColor(requireContext().color(R.color.title_color))
                         chipBackgroundColor = ColorStateList.valueOf(requireContext().color(R.color.black_50))
@@ -777,12 +801,14 @@ class SearchFragment : Fragment() {
                         } catch (_: Exception) {
                         }
                     }
+
                     UrlSearchActions.RIGHT_NAV.ordinal -> {
                         try {
                             etSearch.setSelection(etSearch.selectionStart + 1)
                         } catch (_: Exception) {
                         }
                     }
+
                     else -> {
                         etSearch.text.insert(etSearch.selectionStart, UrlSearchActions.values().get(index).value.trim())
                     }
@@ -793,6 +819,7 @@ class SearchFragment : Fragment() {
                     UrlSearchActions.LEFT_NAV.ordinal -> {
                         etSearch.setSelection(0)
                     }
+
                     UrlSearchActions.RIGHT_NAV.ordinal -> {
                         etSearch.setSelection(etSearch.text.length)
                     }
@@ -848,7 +875,7 @@ class SearchFragment : Fragment() {
         cardSearchSuggestions.isVisible = false
     }
 
-    fun doOnWebPageLoaded() {
+    fun doOnWebPageLoaded() = try {
         val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
         binding.scrollViewNewTabOptions.isVisible = false
         websiteStuffToLoad(selectedWebpage)
@@ -860,7 +887,7 @@ class SearchFragment : Fragment() {
         } else {
             if ((tabText?.length ?: 0) < 5) "$tabText     " else tabText
         }
-        searchTabsList[binding.tabLayoutTabs.selectedTabPosition] = searchTabsList[binding.tabLayoutTabs.selectedTabPosition]?.copy(
+        searchTabsList[binding.tabLayoutTabs.selectedTabPosition] = searchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.copy(
             title = selectedWebpage?.getWebView()?.title,
             link = selectedWebpage?.getWebView()?.url,
         )
@@ -892,6 +919,7 @@ class SearchFragment : Fragment() {
 //            isSendResponse = false,
 //            screen = this@SearchFragment.javaClass.simpleName
 //        )
+    } catch (_: Exception) {
     }
 
     private fun websiteStuffToLoad(selectedWebpage: SearchTabFragment?) {
@@ -1207,6 +1235,7 @@ class SearchFragment : Fragment() {
                         selectedWebpage.getWebView().goBack()
                     }
                 }
+
                 QuickActionTabMenu.NAVIGATE_FORWARD.ordinal -> {
                     val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.canGoForward() == true) {
@@ -1215,12 +1244,14 @@ class SearchFragment : Fragment() {
                         closeTab()
                     }
                 }
+
                 QuickActionTabMenu.HOME.ordinal -> {
                     val selectedSearchEngine = preferences.getString(Preferences.KEY_SEARCH_SUGGESTION_PROVIDER, SearchEngine.GOOGLE.name)
                     val searchEngine = SearchEngine.valueOf(selectedSearchEngine ?: SearchEngine.GOOGLE.name)
                     val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     selectedWebpage?.loadUrl(url = "https://" + searchEngine.url.substringAfter("https://").substringBefore("/"))
                 }
+
                 QuickActionTabMenu.CLOSE_ALL_TABS.ordinal -> {
                     if (binding.tabLayoutTabs.tabCount > 1) {
                         binding.showCloseAllTabsPopup()
@@ -1228,10 +1259,12 @@ class SearchFragment : Fragment() {
                         closeSearch()
                     }
                 }
+
                 QuickActionTabMenu.REFRESH_WEBSITE.ordinal -> {
                     val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     selectedWebpage?.getWebView()?.reload()
                 }
+
                 QuickActionTabMenu.INSIGHTS.ordinal -> {
                     val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     if (selectedWebpage?.getWebView()?.url.isNullOrBlank() || selectedWebpage?.getWebView()?.url?.isValidURL()?.not() == true) {
@@ -1245,6 +1278,7 @@ class SearchFragment : Fragment() {
                         AddApiKeyBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                     }
                 }
+
                 QuickActionTabMenu.ADD_TO_COLLECTIONS.ordinal -> addToCollectionsPopupMenu()
                 QuickActionTabMenu.MORE_OPTIONS.ordinal -> {
                     showMoreQuickActionsPopupMenu()
@@ -1286,6 +1320,7 @@ class SearchFragment : Fragment() {
                     val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
                     requireContext().addShortcut(webView = selectedWebpage?.getWebView(), favicon = selectedWebpage?.getFavicon())
                 }
+
                 QuickActionTabMenuAdvancedOptions.PRINT.title -> {}
                 QuickActionTabMenuAdvancedOptions.DETECT_MEDIA.title -> {}
                 QuickActionTabMenuAdvancedOptions.SET_THEME.title -> {}
@@ -1368,12 +1403,14 @@ class SearchFragment : Fragment() {
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                 }
+
                 optionsList[1].first -> {
                     etSearch.showKeyboard()
                     addTab(SearchTab(type = NewTabType.NEW_PRIVATE_TAB, link = NewTabType.NEW_PRIVATE_TAB.value))
                     etSearch.setSelection(0, etSearch.text.length)
                     etSearch.setSelectAllOnFocus(true)
                 }
+
                 optionsList[2].first -> {
                     etSearch.showKeyboard()
                     addTab(SearchTab(type = NewTabType.NEW_DISAPPEARING_TAB, link = NewTabType.NEW_DISAPPEARING_TAB.value))
@@ -1392,7 +1429,7 @@ class SearchFragment : Fragment() {
 //        binding.clWebsiteProfile.isVisible = isVisible
     }
 
-    fun setWebViewData() {
+    fun setWebViewData() = try {
         val selectedWebpage = parentFragmentManager.findFragmentByTag(ConnectMeUtils.webpageFragmentIdList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)) as? SearchTabFragment
         val webViewData = WebViewData(
             url = selectedWebpage?.getWebView()?.url,
@@ -1410,8 +1447,10 @@ class SearchFragment : Fragment() {
         )
         if (selectedWebpage?.getWebView()?.url.isNullOrBlank().not()) {
             historyViewModel.addToHistory(history)
+        } else {
         }
 //        webSearchTabsList[binding.tabLayoutTabs.selectedTabPosition] = webSearchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.copy(title = selectedWebpage?.getWebView()?.title)
+    } catch (_: Exception) {
     }
 
     // https://stackoverflow.com/questions/19765938/show-and-hide-a-view-with-a-slide-up-down-animation

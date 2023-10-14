@@ -20,12 +20,8 @@ import com.singularitycoder.connectme.ThisApp
 import com.singularitycoder.connectme.databinding.FragmentFeedBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.helpers.constants.FragmentsTag
-import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.helpers.constants.WorkerTag
 import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
-import com.singularitycoder.connectme.search.model.SearchTab
-import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import com.singularitycoder.connectme.search.viewmodel.WebsiteActionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -132,21 +128,26 @@ class FeedFragment : Fragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
-                        openSearchScreen(isPrivate = false, feed = feed)
+                        requireActivity().openSearchScreen(isPrivate = false, linkList = listOf(feed?.link))
                     }
+
                     optionsList[1].first -> {
-                        openSearchScreen(isPrivate = true, feed = feed)
+                        requireActivity().openSearchScreen(isPrivate = true, linkList = listOf(feed?.link))
                     }
+
                     optionsList[2].first -> {
                         websiteActionsViewModel.updatedFeedItemToSaved(feed?.copy(isSaved = true))
                     }
+
                     optionsList[3].first -> {
                         requireContext().shareTextOrImage(text = feed?.title, title = feed?.link)
                     }
+
                     optionsList[4].first -> {
                         requireContext().clipboard()?.text = feed?.link
                         requireContext().showToast("Copied link")
                     }
+
                     optionsList[5].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete item",
@@ -175,6 +176,7 @@ class FeedFragment : Fragment() {
                     rssFeedTypeList[0].first -> {
                         feedAdapter.feedList = feedList
                     }
+
                     rssFeedTypeList[1].first -> {
                         feedAdapter.feedList = feedSavedList
                     }
@@ -223,22 +225,6 @@ class FeedFragment : Fragment() {
         (requireActivity() as MainActivity).collectLatestLifecycleFlow(flow = websiteActionsViewModel.getAllSavedItemsStateFlow()) { it: List<Feed?> ->
             this.feedSavedList = it
         }
-    }
-
-    private fun openSearchScreen(
-        isPrivate: Boolean,
-        feed: Feed?
-    ) {
-        (requireActivity() as? MainActivity)?.showScreen(
-            fragment = SearchFragment.newInstance(websiteList = listOf(feed).mapIndexed { index, feed ->
-                SearchTab(
-                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
-                    link = feed?.link,
-                )
-            }.toArrayList()),
-            tag = FragmentsTag.SEARCH,
-            isAdd = true
-        )
     }
 
     private fun parseRssFeedEveryHourFromWorker() {

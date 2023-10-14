@@ -6,6 +6,7 @@ import androidx.annotation.DrawableRes
 import com.singularitycoder.connectme.BuildConfig
 import com.singularitycoder.connectme.MainFragment
 import com.singularitycoder.connectme.R
+import com.singularitycoder.connectme.downloads.BookReaderFragment
 import com.singularitycoder.connectme.downloads.MarkupFragment
 import com.singularitycoder.connectme.helpers.toLowCase
 import com.singularitycoder.connectme.helpers.trimIndentsAndNewLines
@@ -112,7 +113,7 @@ val LOCAL_TEXT_PROMPTS_MAP = mapOf(
         Do they adhere to all the consumer rights laid down by the government of my country like "right to repair", "responsibility to complain", etc. Do their policies harm me or favour me?
         Also let me know if their policies can be used against me in any way. Are they truthful? Are they trustworthy?
     """.trimIndentsAndNewLines(),
-    "= Similar sites" to "Find websites similar to this one.",
+    "⚖️ Similar sites" to "Find websites similar to this one.",
     "🙅‍ Past misdeeds" to "Find negative news about this website or the company that owns it. Is it involved in shady stuff? Provide links to the news and sources.",
     "😑 Check mood" to "What is the tone and mood of this website?", // U dont want to spoil ur day by reading bad stuff
     "📒 Summarize" to "Summarise the content of this website in 5 points with max 15 words per point.",
@@ -218,6 +219,7 @@ object FragmentsTag {
     val USER_PROFILE: String = UserProfileFragment::class.java.simpleName
     val SEARCH_TAB: String = SearchTabFragment::class.java.simpleName
     val MARKUP: String = MarkupFragment::class.java.simpleName
+    val BOOK_READER: String = BookReaderFragment::class.java.simpleName
 }
 
 object BottomSheetTag {
@@ -232,6 +234,7 @@ object BottomSheetTag {
     const val TAG_PEEK = "TAG_PEEK_BOTTOM_SHEET"
     const val TAG_SPEED_DIAL = "TAG_SPEED_DIAL_BOTTOM_SHEET"
     const val TAG_EDIT = "TAG_EDIT_BOTTOM_SHEET"
+    const val TAG_BOOK_READER_FILTERS = "TAG_BOOK_READER_FILTERS_BOTTOM_SHEET"
 }
 
 object WorkerData {
@@ -464,3 +467,22 @@ enum class MarkupColor(
     RED(colorValue = "#D10300", colorName = "Red", colorInt = R.color.markup_red),
     MAROON(colorValue = "#7C0002", colorName = "Maroon", colorInt = R.color.markup_maroon),
 }
+
+val ebookReaderFormats = listOf(
+    "pdf",
+    "epub",
+    "epub3",
+    "mobi",
+    "djvu",
+    "fb2",
+    "txt",
+    "rtf",
+    "azw",
+    "azw3",
+    "html",
+    "cbz",
+    "cbr",
+    "doc",
+    "docx",
+    "opds"
+)

@@ -30,14 +30,18 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import com.itextpdf.text.pdf.PdfReader
+import com.itextpdf.text.pdf.parser.PdfTextExtractor
 import com.singularitycoder.connectme.downloads.Download
 import com.singularitycoder.connectme.helpers.constants.FILE_PROVIDER
 import com.singularitycoder.connectme.helpers.constants.ImageFormat
 import com.singularitycoder.connectme.helpers.constants.MimeType
+import com.singularitycoder.connectme.helpers.librera.LinkedJSONObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import java.io.*
 import java.util.*
 import java.util.zip.ZipEntry
@@ -898,7 +902,7 @@ fun writeToTextFile(
 } catch (_: Exception) {
 }
 
-//
+// https://www.youtube.com/watch?v=tFdTNANwgcw&ab_channel=edureka%21
 fun readFromTextFile(
     inputFile: File,
 ): String {
@@ -912,4 +916,50 @@ fun readFromTextFile(
     } catch (_: Exception) {
     }
     return text
+}
+
+var rootPath = File(Environment.getExternalStorageDirectory(), "Librera").toString()
+
+fun File.getText(
+    withSeparator: Boolean = false
+): String? = try {
+    val stringBuilder = StringBuilder()
+    var aux: String? = ""
+    val reader = BufferedReader(FileReader(this))
+    val separator = System.getProperty("line.separator")
+    while (reader.readLine().also { aux = it } != null) {
+        stringBuilder.append(aux)
+        if (withSeparator) {
+            stringBuilder.append(separator)
+        }
+    }
+    reader.close()
+    stringBuilder.toString()
+} catch (_: Exception) {
+    null
+}
+
+// https://stackoverflow.com/questions/58750885/how-can-i-convert-pdf-file-to-text
+fun File.getTextFromPdf(): String? = try {
+    var parsedText = ""
+    val reader = PdfReader(this.absolutePath)
+    for (i in 0 until reader.numberOfPages) {
+        // Extracting the content from different pages
+        parsedText = "$parsedText${PdfTextExtractor.getTextFromPage(reader, i + 1).trim { it <= ' ' }}"
+    }
+    reader.close()
+    parsedText
+} catch (_: Exception) {
+    null
+}
+
+fun File?.getLinkedJsonObject(): LinkedJSONObject {
+    val fileText = this?.getText()
+    return if (fileText.isNullOrBlank()) {
+        LinkedJSONObject()
+    } else try {
+        LinkedJSONObject(fileText)
+    } catch (_: JSONException) {
+        LinkedJSONObject()
+    }
 }

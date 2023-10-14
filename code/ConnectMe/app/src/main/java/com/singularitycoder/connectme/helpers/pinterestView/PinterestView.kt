@@ -73,7 +73,7 @@ class PinterestView : ViewGroup, OnTouchListener {
         override fun onShowPress(e: MotionEvent) {
             mCenterX = e.rawX
             mCenterY = e.rawY
-            Log.i(TAG, "centerX:$mCenterX  centerY:$mCenterY")
+            println("centerX:$mCenterX  centerY:$mCenterY")
             confirmDegreeRangeByCenter(mCenterX, mCenterY)
             this@PinterestView.visibility = VISIBLE
             switchState()
@@ -205,7 +205,7 @@ class PinterestView : ViewGroup, OnTouchListener {
         getGlobalVisibleRect(mInner) // get PintertstView Height
         val innerTop = (resources.displayMetrics.heightPixels - (mInner.bottom - mInner.top)).toFloat() // distance from screen top
         mCenterY = mCenterY - innerTop
-        Log.i(TAG, "innerTop:$innerTop centerX:$mCenterX  centerY:$mCenterY")
+        println("innerTop:$innerTop centerX:$mCenterX  centerY:$mCenterY")
         val childCount = childCount
         //single degrees
         val perDegrees = (mToDegrees - mFromDegrees) / (childCount - 1)
@@ -224,7 +224,7 @@ class PinterestView : ViewGroup, OnTouchListener {
         for (i in 1 until childCount) {
             val frame = computeChildFrame(mCenterX, mCenterY, mRadius, degrees, mChildSize)
             if (i == 1) {
-                Log.i("computeChildFrame:", frame.toString() + "")
+                println("computeChildFrame: $frame")
             }
             degrees += perDegrees
             getChildAt(i).layout(frame.left, frame.top, frame.right, frame.bottom)

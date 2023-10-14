@@ -93,7 +93,8 @@
         android:paddingStart="8dp"
         android:text="dark_energy_light_energy.png"
         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-        android:textColor="@color/title_color" />
+        android:textColor="@color/title_color"
+        android:textStyle="bold" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_source"

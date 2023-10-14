@@ -93,6 +93,9 @@ class MarkupFragment : Fragment() {
         drawingView.layoutParams.height = bitmap?.height ?: 0
         drawingView.layoutParams.width = bitmap?.width ?: 0
 
+        // https://stackoverflow.com/questions/3332924/textview-marquee-not-working
+        tvTitle.isSelected = true
+
         ibColor.setColorFilter(requireContext().color(MarkupColor.RED.colorInt))
         drawingView.setBrushColor(requireContext().color(MarkupColor.RED.colorInt))
 

@@ -19,11 +19,7 @@ import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.databinding.FragmentHistoryBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.helpers.constants.FragmentsTag
-import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
-import com.singularitycoder.connectme.search.model.SearchTab
-import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -117,22 +113,27 @@ class HistoryFragment : Fragment() {
                         val time1Hour = TimeUnit.HOURS.toMillis(1)
                         historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time1Hour)
                     }
+
                     menuOptionsList[1] -> {
                         val time24Hours = TimeUnit.HOURS.toMillis(24)
                         historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time24Hours)
                     }
+
                     menuOptionsList[2] -> {
                         val time7Days = TimeUnit.DAYS.toMillis(7)
                         historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time7Days)
                     }
+
                     menuOptionsList[3] -> {
                         val time4Weeks = TimeUnit.DAYS.toMillis(28)
                         historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time4Weeks)
                     }
+
                     menuOptionsList[4] -> {
                         val time1Year = TimeUnit.DAYS.toMillis(28 * 12)
                         historyViewModel.deleteAllHistoryByTime(elapsedTime = timeNow - time1Year)
                     }
+
                     menuOptionsList[5] -> {
                         requireContext().showAlertDialog(
                             title = "Delete all history",
@@ -171,18 +172,22 @@ class HistoryFragment : Fragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
-                        openSearchScreen(isPrivate = false, history = history)
+                        requireActivity().openSearchScreen(isPrivate = false, linkList = listOf(history?.link))
                     }
+
                     optionsList[1].first -> {
-                        openSearchScreen(isPrivate = true, history = history)
+                        requireActivity().openSearchScreen(isPrivate = true, linkList = listOf(history?.link))
                     }
+
                     optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = history?.title, title = history?.link)
                     }
+
                     optionsList[3].first -> {
                         requireContext().clipboard()?.text = history?.link
                         requireContext().showToast("Copied link")
                     }
+
                     optionsList[4].first -> {
                         historyViewModel.deleteItem(history)
                     }
@@ -215,22 +220,6 @@ class HistoryFragment : Fragment() {
             this.historyList = historyList
             prepareHistoryList(historyList)
         }
-    }
-
-    private fun openSearchScreen(
-        isPrivate: Boolean,
-        history: History?
-    ) {
-        (requireActivity() as? MainActivity)?.showScreen(
-            fragment = SearchFragment.newInstance(websiteList = listOf(history).mapIndexed { index, history ->
-                SearchTab(
-                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
-                    link = history?.link,
-                )
-            }.toArrayList()),
-            tag = FragmentsTag.SEARCH,
-            isAdd = true
-        )
     }
 
     @SuppressLint("NotifyDataSetChanged")

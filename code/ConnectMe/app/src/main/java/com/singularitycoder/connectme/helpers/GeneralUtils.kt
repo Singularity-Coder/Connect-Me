@@ -33,6 +33,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.singularitycoder.connectme.MainActivity
+import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.helpers.constants.FragmentsTag
 import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.search.model.SearchTab
@@ -306,19 +307,22 @@ fun Context.shareImageAndTextViaApps(
     startActivity(Intent.createChooser(intent, intentTitle ?: "Share to..."))
 }
 
-/** Need to extend every obj with this */
-inline fun <reified T : GenericWebsite> Activity.openSearchScreen(
+fun Activity.openSearchScreen(
     isPrivate: Boolean,
-    genericWebsite: T?
+    linkList: List<String?>
 ) {
     (this as? MainActivity)?.showScreen(
-        fragment = SearchFragment.newInstance(websiteList = listOf(genericWebsite).mapIndexed { index, website ->
+        fragment = SearchFragment.newInstance(websiteList = linkList.mapIndexed { index: Int, link: String? ->
             SearchTab(
                 type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
-                link = website?.link,
+                link = link,
             )
         }.toArrayList()),
         tag = FragmentsTag.SEARCH,
-        isAdd = true
+        isAdd = true,
+        enterAnim = R.anim.slide_to_top,
+        exitAnim = R.anim.slide_to_bottom,
+        popEnterAnim = R.anim.slide_to_top,
+        popExitAnim = R.anim.slide_to_bottom,
     )
 }

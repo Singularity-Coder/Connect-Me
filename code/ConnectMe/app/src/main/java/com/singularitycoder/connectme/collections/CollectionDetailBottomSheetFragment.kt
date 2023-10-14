@@ -107,20 +107,24 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
-                        openSearchScreen(isPrivate = false, collectionWebPage = collectionWebPage)
+                        requireActivity().openSearchScreen(isPrivate = false, linkList = listOf(collectionWebPage?.link))
                         dismiss()
                     }
+
                     optionsList[1].first -> {
-                        openSearchScreen(isPrivate = true, collectionWebPage = collectionWebPage)
+                        requireActivity().openSearchScreen(isPrivate = true, linkList = listOf(collectionWebPage?.link))
                         dismiss()
                     }
+
                     optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = collectionWebPage?.title, title = collectionWebPage?.link)
                     }
+
                     optionsList[3].first -> {
                         requireContext().clipboard()?.text = collectionWebPage?.link
                         requireContext().showToast("Copied link")
                     }
+
                     optionsList[4].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete item",
@@ -167,6 +171,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         )
                         dismiss()
                     }
+
                     optionsList[1].first -> {
                         (requireActivity() as? MainActivity)?.showScreen(
                             fragment = SearchFragment.newInstance(websiteList = collectionDetailsAdapter.webPageList.mapIndexed { index, collectionWebPage ->
@@ -180,6 +185,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         )
                         dismiss()
                     }
+
                     optionsList[2].first -> {
                         CreateCollectionBottomSheetFragment.newInstance(
                             eventType = CollectionScreenEvent.RENAME_COLLECTION,
@@ -187,6 +193,7 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                         ).show(parentFragmentManager, BottomSheetTag.TAG_RENAME_COLLECTION)
                         dismiss()
                     }
+
                     optionsList[3].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete all items",
@@ -249,22 +256,6 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun openSearchScreen(
-        isPrivate: Boolean,
-        collectionWebPage: CollectionWebPage?
-    ) {
-        (requireActivity() as? MainActivity)?.showScreen(
-            fragment = SearchFragment.newInstance(websiteList = listOf(collectionWebPage).mapIndexed { index, collectionWebPage ->
-                SearchTab(
-                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
-                    link = collectionWebPage?.link,
-                )
-            }.toArrayList()),
-            tag = FragmentsTag.SEARCH,
-            isAdd = true
-        )
-    }
-
     private fun setBottomSheetBehaviour() {
         val bottomSheetDialog = dialog as BottomSheetDialog
         val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout? ?: return
@@ -279,10 +270,12 @@ class CollectionDetailBottomSheetFragment : BottomSheetDialogFragment() {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         behavior.state = BottomSheetBehavior.STATE_HIDDEN
                     }
+
                     BottomSheetBehavior.STATE_DRAGGING -> Unit
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         oldState = BottomSheetBehavior.STATE_EXPANDED
                     }
+
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> Unit
                     BottomSheetBehavior.STATE_HIDDEN -> dismiss()
                     BottomSheetBehavior.STATE_SETTLING -> {

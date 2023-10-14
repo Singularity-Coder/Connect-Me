@@ -59,7 +59,7 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
         val query: String = try {
             URLEncoder.encode(rawQuery, encoding)
         } catch (e: UnsupportedEncodingException) {
-            Log.e(TAG, "Unable to encode the URL", e)
+            println("Unable to encode the URL $e")
             return resultsList
         }
         val content = downloadSearchSuggestionsForQuery(query, deviceLanguage) ?: return resultsList
@@ -69,7 +69,7 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
                 resultsList.size < 5
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Unable to parse results", e)
+            println("Unable to parse results $e")
         }
         return resultsList
     }
@@ -134,7 +134,7 @@ internal abstract class SearchSuggestionProvider(private val encoding: String) {
                     urlConnection.disconnect()
                 }
             } catch (e: IOException) {
-                Log.e(TAG, "Problem getting search suggestions", e)
+                println("Problem getting search suggestions $e")
             }
         }
     }

@@ -9,18 +9,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.singularitycoder.connectme.MainActivity
 import com.singularitycoder.connectme.R
 import com.singularitycoder.connectme.ThisApp
 import com.singularitycoder.connectme.databinding.FragmentExploreBinding
 import com.singularitycoder.connectme.helpers.*
 import com.singularitycoder.connectme.helpers.constants.BottomSheetTag
-import com.singularitycoder.connectme.helpers.constants.FragmentsTag
-import com.singularitycoder.connectme.helpers.constants.NewTabType
 import com.singularitycoder.connectme.helpers.constants.globalLayoutAnimation
 import com.singularitycoder.connectme.helpers.constants.typefaceList
-import com.singularitycoder.connectme.search.model.SearchTab
-import com.singularitycoder.connectme.search.view.SearchFragment
 import com.singularitycoder.connectme.search.view.peek.PeekBottomSheetFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers.Default
@@ -122,18 +117,22 @@ class ExploreFragment : Fragment() {
             ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
                     optionsList[0].first -> {
-                        openSearchScreen(isPrivate = false, explore = explore)
+                        requireActivity().openSearchScreen(isPrivate = false, linkList = listOf(explore?.link))
                     }
+
                     optionsList[1].first -> {
-                        openSearchScreen(isPrivate = true, explore = explore)
+                        requireActivity().openSearchScreen(isPrivate = true, linkList = listOf(explore?.link))
                     }
+
                     optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = explore?.title, title = explore?.link)
                     }
+
                     optionsList[3].first -> {
                         requireContext().clipboard()?.text = explore?.link
                         requireContext().showToast("Copied link")
                     }
+
                     optionsList[4].first -> {
                         requireContext().showAlertDialog(
                             title = "Delete item",
@@ -151,21 +150,5 @@ class ExploreFragment : Fragment() {
     }
 
     private fun FragmentExploreBinding.observeForData() {
-    }
-
-    private fun openSearchScreen(
-        isPrivate: Boolean,
-        explore: Explore?
-    ) {
-        (requireActivity() as? MainActivity)?.showScreen(
-            fragment = SearchFragment.newInstance(websiteList = listOf(explore).mapIndexed { index, explore ->
-                SearchTab(
-                    type = if (isPrivate) NewTabType.NEW_PRIVATE_TAB else NewTabType.NEW_TAB,
-                    link = explore?.link,
-                )
-            }.toArrayList()),
-            tag = FragmentsTag.SEARCH,
-            isAdd = true
-        )
     }
 }

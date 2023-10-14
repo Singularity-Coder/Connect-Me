@@ -104,6 +104,10 @@ Explore
     Explore - will be based on time of the day. If its 8 am then show posts of breakfast. If evening then show entertainment stuff. User can customise topics
 
 
+TODO Ebook Reader
+https://github.com/foobnix/LibreraReader
+class TTSService : Service()
+class TTSEngine
 TODO RSS Reader
 https://zapier.com/blog/how-to-find-rss-feed-url/
 https://gitlab.com/spacecowboy/Feeder
