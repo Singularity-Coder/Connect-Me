@@ -125,7 +125,7 @@ val LOCAL_TEXT_PROMPTS_MAP = mapOf(
     "🗣️ Translate to ..." to "",
 
     // Tried to emulate heypi.com/talk
-    "🥹 Talk to me" to """
+    "🥺 Talk to me" to """
         Imagine you are my personal assistant who speaks like a normal human being. 
         Start by giving a natural introduction of yourself as if you are a human being with the name Ruby, and every time I give a reply, 
         follow up to that reply like a normal human being with emojis and other conversational fillers. 
@@ -263,7 +263,7 @@ enum class UrlSearchActions(val value: String) {
     LEFT_NAV(value = ""),
     RIGHT_NAV(value = ""),
     FORWARD_SLASH(value = "   /   "),
-    PERIOD(value = "   .   "),
+    HYPHEN(value = "   -   "),
     COM(value = ".com"),
     IN(value = "  .in  "),
     WWW(value = "www."),
