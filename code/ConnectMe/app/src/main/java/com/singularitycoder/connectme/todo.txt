@@ -13,7 +13,43 @@ TODO Checklist
 
 
 TODO THIS WEEK
-Downloads - markup, move to, copy to, rename,
+book reader settings
+- summarise,
+Open book
+List PDFs
+List converters to external websites - epub to pdf, etc
+Font adjustment
+Background adjustment
+Remember string position of book
+Restart reading
+Select text to start from that position
+Various skip options from 1 word 1 sentences 1 para 1 page
+
+
+Zip - export import
+Search in all files - global file search
+Brightness
+Proxy server settings - network tab
+Share file
+Copy file
+File info
+Add file - helper func
+Bluelight filter
+Db migration
+Resizing dialog views in reader mode
+Navigate with volume button
+Google translate
+Full TTS
+Show emoji keyboard when creating a new collection
+Recently closed tabs - u will need this if u closed a tab in btw n u can't find it at the top of the hostory
+
+Change disappearing tab to vanishing tab - too many syllables
+Use search suggestions as qs for insights as user types
+
+QR code scan and creation
+
+
+Downloads - move to, copy to, rename,
 Explore - Add time topics n location - fetch data from alarm manager for precise timing, fill weather
 finalise features for quick actions - url tab
 

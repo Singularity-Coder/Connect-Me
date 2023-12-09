@@ -945,7 +945,7 @@ fun File.getTextFromPdf(): String? = try {
     val reader = PdfReader(this.absolutePath)
     for (i in 0 until reader.numberOfPages) {
         // Extracting the content from different pages
-        parsedText = "$parsedText${PdfTextExtractor.getTextFromPage(reader, i + 1).trim { it <= ' ' }}"
+        parsedText = "$parsedText${PdfTextExtractor.getTextFromPage(reader, i + 1).trim { it <= ' ' }}\n\n\n\n"
     }
     reader.close()
     parsedText

@@ -18,7 +18,6 @@ import com.singularitycoder.connectme.helpers.drawable
 import com.singularitycoder.connectme.helpers.getTextFromPdf
 import com.singularitycoder.connectme.helpers.onSafeClick
 import com.singularitycoder.connectme.helpers.setNavigationBarColor
-import com.singularitycoder.connectme.helpers.trimIndentsAndNewLines
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
@@ -80,6 +79,8 @@ class BookReaderFragment : Fragment() {
         tvEraserThicknessValue.text = sliderEraserThickness.progress.toString()
 
 //        ibBrush.background = requireContext().drawable(R.drawable.shape_rounded_layout)?.changeColor(requireContext(), R.color.purple_50)
+
+        scrollViewFileText.isSmoothScrollingEnabled = true
     }
 
     private fun FragmentBookReaderBinding.setupUserActionListeners() {
@@ -137,6 +138,11 @@ class BookReaderFragment : Fragment() {
                 ibClose.performClick()
             }
         })
+
+        scrollViewFileText.setOnScrollChangeListener { view: View, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int ->
+//            scrollViewFileText.scrollY = scrollViewFileText.verticalScrollbarPosition
+            // Store scrollY position to resume reading from the same
+        }
     }
 
     private fun observeForData() = Unit

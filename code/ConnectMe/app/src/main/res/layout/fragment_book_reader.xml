@@ -74,7 +74,6 @@
         style="@style/CustomCardViewBottomRoundedStyle"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
         android:layout_weight="10"
         app:cardCornerRadius="0dp"
         app:cardElevation="0dp"
@@ -85,14 +84,29 @@
         app:strokeColor="@color/white"
         app:strokeWidth="1dp">
 
+<!--        android:fastScrollAlwaysVisible="true"-->
+<!--        android:scrollbarAlwaysDrawVerticalTrack="true"-->
+<!--        android:scrollbarStyle="outsideInset"-->
+<!--        android:verticalScrollbarPosition="right"-->
+<!--        android:scrollbarThumbVertical="@drawable/round_format_align_justify_24"-->
         <ScrollView
+            android:id="@+id/scroll_view_file_text"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:fadeScrollbars="false"
+            android:fastScrollEnabled="true"
+            android:scrollbarSize="16dp"
+            android:scrollbars="vertical">
 
             <TextView
                 android:id="@+id/tv_file_text"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:textColor="@color/title_color"
+                android:textIsSelectable="true"
+                android:textSize="16dp"
+                tools:text="Hello World" />
         </ScrollView>
     </com.google.android.material.card.MaterialCardView>
 
