@@ -330,6 +330,7 @@ class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
                         AddApiKeyBottomSheetFragment.newInstance().show(parentFragmentManager, BottomSheetTag.TAG_ADD_API_KEY)
                         dismiss()
                     }
+
                     optionsList[1].first -> {
                         setupAiModelMenu(view = pair.first)
                     }
@@ -343,45 +344,49 @@ class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         insightsAdapter.setOnItemLongClickListener { insight: Insight?, view: View?, position: Int ->
-            val popupMenu = PopupMenu(requireContext(), view)
-            val menuOptions = listOf("Ask again", "Copy", "Share", "Delete")
-            menuOptions.forEach {
-                popupMenu.menu.add(
-                    0, 1, 1, menuIconWithText(
-                        icon = when (it.trim()) {
-                            menuOptions[0] -> requireContext().drawable(R.drawable.round_refresh_24)?.changeColor(requireContext(), R.color.purple_500)
-                            menuOptions[1] -> requireContext().drawable(R.drawable.baseline_content_copy_24)?.changeColor(requireContext(), R.color.purple_500)
-                            menuOptions[2] -> requireContext().drawable(R.drawable.outline_share_24)?.changeColor(requireContext(), R.color.purple_500)
-                            menuOptions[3] -> requireContext().drawable(R.drawable.outline_delete_24)?.changeColor(requireContext(), R.color.purple_500)
-                            else -> requireContext().drawable(R.drawable.round_check_24)?.changeColor(requireContext(), android.R.color.transparent)
-                        },
-                        title = it
-                    )
-                )
-            }
-            popupMenu.setOnMenuItemClickListener { it: MenuItem? ->
-                view?.setHapticFeedback()
+            val optionsList = listOf(
+                Pair("Ask again", R.drawable.round_refresh_24),
+                Pair("Copy", R.drawable.baseline_content_copy_24),
+                Pair("Share", R.drawable.outline_share_24),
+                Pair("Delete", R.drawable.outline_delete_24)
+            )
+            requireContext().showPopupMenuWithIcons(
+                view = view,
+                menuList = optionsList,
+                customColor = R.color.md_red_700,
+                customColorItemText = optionsList.last().first
+            ) { it: MenuItem? ->
                 when (it?.title?.toString()?.trim()) {
-                    menuOptions[0] -> {
+                    optionsList[0].first -> {
                         etAskAnything.setText(insight?.insight)
                         etAskAnything.setSelection(etAskAnything.text?.length ?: 0)
                     }
-                    menuOptions[1] -> {
+
+                    optionsList[1].first -> {
                         root.context.clipboard()?.text = insight?.insight
                         root.context.showToast("Copied!")
                     }
-                    menuOptions[2] -> {
+
+                    optionsList[2].first -> {
                         requireContext().shareTextOrImage(text = insight?.insight)
                     }
-                    menuOptions[3] -> {
-                        searchViewModel.deleteInsight(insight)
-                        insightsAdapter.insightsList.removeAt(position)
-                        insightsAdapter.notifyItemRemoved(position)
+
+                    optionsList[3].first -> {
+                        requireContext().showAlertDialog(
+                            title = "Delete item",
+                            message = insight?.insight ?: "",
+                            positiveBtnText = "Delete",
+                            negativeBtnText = "Cancel",
+                            positiveBtnColor = R.color.md_red_700,
+                            positiveAction = {
+                                searchViewModel.deleteInsight(insight)
+                                insightsAdapter.insightsList.removeAt(position)
+                                insightsAdapter.notifyItemRemoved(position)
+                            }
+                        )
                     }
                 }
-                false
             }
-            popupMenu.show()
         }
 
         insightsAdapter.setOnFullScreenClickListener { insight: Insight?, currentImagePosition: Int ->
@@ -475,10 +480,12 @@ class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
                     insightsAdapter.notifyItemInserted(insightsAdapter.insightsList.size)
                     return@collectLatestLifecycleFlow
                 }
+
                 ApiState.SUCCESS -> {
                     removeLoadingItem()
                     insightsAdapter.insightsList.add(it.insight)
                 }
+
                 ApiState.ERROR -> {
                     removeLoadingItem()
                     val errorMessage = if (it.error?.error?.message.isNullOrBlank()) {
@@ -490,6 +497,7 @@ class InsightsBottomSheetFragment : BottomSheetDialogFragment() {
                     } else it.error?.error?.message
                     insightsAdapter.insightsList.add(Insight(insight = errorMessage/*, imageList = dummyFaceUrls2*/))
                 }
+
                 else -> Unit
             }
 

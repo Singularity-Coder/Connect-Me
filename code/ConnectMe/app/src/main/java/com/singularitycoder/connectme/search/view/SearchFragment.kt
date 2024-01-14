@@ -882,11 +882,16 @@ class SearchFragment : Fragment() {
         val tabText = if (selectedWebpage?.getWebView()?.title.isNullOrBlank().not()) {
             selectedWebpage?.getWebView()?.title
         } else searchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.type?.value
-        binding.tabLayoutTabs.getTabAt(binding.tabLayoutTabs.selectedTabPosition)?.text = if ((tabText?.length ?: 0) > 10) {
-            tabText?.substring(0, 10) + "..."
-        } else {
-            if ((tabText?.length ?: 0) < 5) "$tabText     " else tabText
-        }
+        binding.tabLayoutTabs.getTabAt(binding.tabLayoutTabs.selectedTabPosition)?.text =
+            if ((tabText?.length ?: 0) > 10 &&
+                (tabText?.contains(other = NewTabType.NEW_DISAPPEARING_TAB.value, ignoreCase = true)?.not() == true ||
+                tabText?.contains(other = NewTabType.NEW_PRIVATE_TAB.value, ignoreCase = true)?.not() == true ||
+                tabText?.contains(other = NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value, ignoreCase = true)?.not() == true)
+            ) {
+                tabText.substring(0, 10) + "..."
+            } else {
+                if ((tabText?.length ?: 0) < 5) "$tabText     " else tabText
+            }
         searchTabsList[binding.tabLayoutTabs.selectedTabPosition] = searchTabsList.getOrNull(binding.tabLayoutTabs.selectedTabPosition)?.copy(
             title = selectedWebpage?.getWebView()?.title,
             link = selectedWebpage?.getWebView()?.url,
@@ -1388,9 +1393,9 @@ class SearchFragment : Fragment() {
     private fun FragmentSearchBinding.showAddTabPopupMenu(view: View?) {
         view ?: return
         val optionsList = listOf(
-            Pair("New private disappearing tab", R.drawable.outline_policy_24),
-            Pair("New private tab", R.drawable.outline_policy_24),
-            Pair("New disappearing tab", R.drawable.outline_timer_24),
+            Pair(NewTabType.NEW_PRIVATE_DISAPPEARING_TAB.value, R.drawable.outline_policy_24),
+            Pair(NewTabType.NEW_PRIVATE_TAB.value, R.drawable.outline_policy_24),
+            Pair(NewTabType.NEW_DISAPPEARING_TAB.value, R.drawable.outline_timer_24),
         )
         requireContext().showPopupMenuWithIcons(
             view = view,
