@@ -19,10 +19,10 @@ class WebsiteActionsViewModel @Inject constructor(
     fun getAllSavedItemsStateFlow() = feedDao.getAllSavedItemsStateFlow()
 
     fun updatedFeedItemToSaved(feed: Feed?) = viewModelScope.launch {
-        feedDao.update(feed)
+        feedDao.update(feed ?: return@launch)
     }
 
     fun deleteItem(feed: Feed?) = viewModelScope.launch {
-        feedDao.delete(feed)
+        feedDao.delete(feed ?: return@launch)
     }
 }

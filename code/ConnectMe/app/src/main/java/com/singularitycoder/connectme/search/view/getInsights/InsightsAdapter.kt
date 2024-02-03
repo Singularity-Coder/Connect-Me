@@ -129,7 +129,7 @@ class InsightsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         insight?.insight?.contains(other = "painting...", ignoreCase = true) == true
                     ) {
                         cardResponse.setBackgroundResource(
-                            if (insight.insight.contains(other = "thinking...", ignoreCase = true)) {
+                            if (insight.insight?.contains(other = "thinking...", ignoreCase = true) == true) {
                                 R.drawable.animated_chat_gradient
                             } else {
                                 tvTextResponse.setTextColor(root.context.color(R.color.white))

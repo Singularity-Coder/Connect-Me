@@ -956,16 +956,16 @@ class SearchFragment : Fragment() {
             negativeAction = {
                 // TODO either give loader or do this in worker
                 lifecycleScope.launch {
-                    val tabsToSaveList = mutableListOf<CollectionWebPage?>()
+                    val tabsToSaveList = mutableListOf<CollectionWebPage>()
                     searchTabsList.forEach { it: SearchTab? ->
                         val historyItem = historyViewModel.getHistoryItemByLink(link = it?.link)
                         tabsToSaveList.add(
                             CollectionWebPage(
                                 collectionTitle = "⚡️ Session ${timeNow toTimeOfType DateType.dd_MMM_yyyy_hh_mm_a}",
-                                title = historyItem?.title,
-                                favicon = historyItem?.favicon,
+                                title = historyItem.title,
+                                favicon = historyItem.favicon,
                                 time = timeNow,
-                                link = historyItem?.link ?: ""
+                                link = historyItem.link
                             ),
                         )
                     }

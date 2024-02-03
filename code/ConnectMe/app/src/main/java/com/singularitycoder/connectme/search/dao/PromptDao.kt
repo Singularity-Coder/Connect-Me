@@ -11,15 +11,15 @@ interface PromptDao {
 
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(prompt: Prompt?)
+    suspend fun insert(prompt: Prompt)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(appList: List<Prompt?>)
+    suspend fun insertAll(appList: List<Prompt>)
 
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(prompt: Prompt?)
+    suspend fun update(prompt: Prompt)
 
     @Query("UPDATE ${Table.PROMPT} SET promptsJson = :promptsJson WHERE website LIKE :website")
     fun updateWithPromptsList(promptsJson: String?, website: String)
@@ -27,27 +27,27 @@ interface PromptDao {
 
     @Transaction
     @Query("SELECT * FROM ${Table.PROMPT} WHERE website LIKE :website LIMIT 1")
-    suspend fun getInsightByWebsite(website: String?): Prompt?
+    suspend fun getInsightByWebsite(website: String?): Prompt
 
     @Query("SELECT * FROM ${Table.PROMPT}")
-    fun getAllLiveData(): LiveData<List<Prompt?>>
+    fun getAllLiveData(): LiveData<List<Prompt>>
 
     @Query("SELECT * FROM ${Table.PROMPT}")
-    fun getAllStateFlow(): Flow<List<Prompt?>>
+    fun getAllStateFlow(): Flow<List<Prompt>>
 
     @Query("SELECT * FROM ${Table.PROMPT} WHERE website = :website")
-    fun getAllByWebsiteStateFlow(website: String?): Flow<List<Prompt?>>
+    fun getAllByWebsiteStateFlow(website: String?): Flow<List<Prompt>>
 
     @Query("SELECT * FROM ${Table.PROMPT} WHERE website = :website")
-    fun getByWebsiteStateFlow(website: String?): Flow<Prompt?>
+    fun getByWebsiteStateFlow(website: String?): Flow<Prompt>
 
     @Query("SELECT * FROM ${Table.PROMPT}")
-    suspend fun getAll(): List<Prompt?>
+    suspend fun getAll(): List<Prompt>
 
 
     @Transaction
     @Delete
-    suspend fun delete(prompt: Prompt?)
+    suspend fun delete(prompt: Prompt)
 
     @Transaction
     @Query("DELETE FROM ${Table.PROMPT} WHERE website = :website")

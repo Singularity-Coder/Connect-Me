@@ -17,7 +17,7 @@ class FollowingWebsiteViewModel @Inject constructor(
     suspend fun getTop4FollowingWebsites() = followingWebsiteDao.getTop4By()
 
     fun deleteItem(followingWebsite: FollowingWebsite?) = viewModelScope.launch {
-        followingWebsiteDao.delete(followingWebsite)
+        followingWebsiteDao.delete(followingWebsite ?: return@launch)
     }
 
     fun deleteAllFollowingWebsites() = viewModelScope.launch {
@@ -25,7 +25,7 @@ class FollowingWebsiteViewModel @Inject constructor(
     }
 
     fun addFollowingWebsite(followingWebsite: FollowingWebsite?) = viewModelScope.launch {
-        followingWebsiteDao.insert(followingWebsite)
+        followingWebsiteDao.insert(followingWebsite ?: return@launch)
     }
 
     suspend fun isItemPresent(website: String?): Boolean = followingWebsiteDao.isItemPresent(website)

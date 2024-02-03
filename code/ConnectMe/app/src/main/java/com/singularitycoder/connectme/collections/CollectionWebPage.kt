@@ -16,17 +16,17 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.COLLECTION)
 @Parcelize
 data class CollectionWebPage(
-    val collectionTitle: String? = "",
-    val title: String? = "",
-    val favicon: String? = "",
-    val time: Long? = 0L,
-    @PrimaryKey val link: String = "",
-    val tabType: String = NewTabType.NEW_TAB.value
+    var collectionTitle: String? = "",
+    var title: String? = "",
+    var favicon: String? = "",
+    var time: Long? = 0L,
+    @PrimaryKey var link: String = "",
+    var tabType: String = NewTabType.NEW_TAB.value
 ) : Parcelable
 
 data class LinksCollection(
-    val title: String? = "",
-    val count: Int? = 0,
-    val linkList: List<CollectionWebPage?> = listOf()
+    var title: String? = "",
+    var count: Int? = 0,
+    var linkList: List<CollectionWebPage?> = listOf()
 )
 

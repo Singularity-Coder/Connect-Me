@@ -11,15 +11,15 @@ interface DownloadDao {
     /** room database will replace data based on primary key */
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(download: Download?)
+    suspend fun insert(download: Download)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(list: List<Download?>)
+    suspend fun insertAll(list: List<Download>)
 
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(download: Download?)
+    suspend fun update(download: Download)
 
 //    @Query("UPDATE ${Table.DOWNLOAD} SET link = :link WHERE website LIKE :website")
 //    fun updateWithPromptsList(link: String?, website: String)
@@ -27,34 +27,34 @@ interface DownloadDao {
 
     @Transaction
     @Query("SELECT * FROM ${Table.DOWNLOAD} WHERE link LIKE :link LIMIT 1")
-    suspend fun getItemByLink(link: String?): Download?
+    suspend fun getItemByLink(link: String?): Download
 
 //    @Transaction
 //    @Query("SELECT * FROM ${Table.DOWNLOAD} WHERE website LIKE :website LIMIT 1")
-//    suspend fun getItemByWebsite(website: String?): Download?
+//    suspend fun getItemByWebsite(website: String?): Download
 
     @Query("SELECT * FROM ${Table.DOWNLOAD}")
-    fun getAllItemsLiveData(): LiveData<List<Download?>>
+    fun getAllItemsLiveData(): LiveData<List<Download>>
 
     @Query("SELECT * FROM ${Table.DOWNLOAD}")
-    fun getAllItemsStateFlow(): Flow<List<Download?>>
+    fun getAllItemsStateFlow(): Flow<List<Download>>
 
     @Query("SELECT * FROM ${Table.DOWNLOAD} ORDER BY time DESC LIMIT 3")
-    suspend fun getLast3By(): List<Download?>
+    suspend fun getLast3By(): List<Download>
 
 //    @Query("SELECT * FROM ${Table.DOWNLOAD} WHERE website = :website")
-//    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<Download?>>
+//    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<Download>>
 
 //    @Query("SELECT * FROM ${Table.DOWNLOAD} WHERE website = :website")
-//    fun getItemByWebsiteStateFlow(website: String?): Flow<Download?>
+//    fun getItemByWebsiteStateFlow(website: String?): Flow<Download>
 
     @Query("SELECT * FROM ${Table.DOWNLOAD}")
-    suspend fun getAll(): List<Download?>
+    suspend fun getAll(): List<Download>
 
 
     @Transaction
     @Delete
-    suspend fun delete(download: Download?)
+    suspend fun delete(download: Download)
 
 //    @Transaction
 //    @Query("DELETE FROM ${Table.DOWNLOAD} WHERE website = :website")

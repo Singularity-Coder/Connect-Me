@@ -11,34 +11,34 @@ interface WebAppDao {
 
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(app: WebApp?)
+    suspend fun insert(app: WebApp)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(appList: List<WebApp?>)
+    suspend fun insertAll(appList: List<WebApp>)
 
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(app: WebApp?)
+    suspend fun update(app: WebApp)
 
 
 //    @Transaction
 //    @Query("SELECT * FROM ${Table.WEB_APP} WHERE packageName LIKE :packageName LIMIT 1")
-//    suspend fun getAppByPackage(packageName: String): WebApp?
+//    suspend fun getAppByPackage(packageName: String): WebApp
 
     @Query("SELECT * FROM ${Table.WEB_APP}")
-    fun getAllLiveData(): LiveData<List<WebApp?>>
+    fun getAllLiveData(): LiveData<List<WebApp>>
 
     @Query("SELECT * FROM ${Table.WEB_APP}")
-    fun getAllStateFlow(): Flow<List<WebApp?>>
+    fun getAllStateFlow(): Flow<List<WebApp>>
 
     @Query("SELECT * FROM ${Table.WEB_APP}")
-    suspend fun getAll(): List<WebApp?>
+    suspend fun getAll(): List<WebApp>
 
 
     @Transaction
     @Delete
-    suspend fun delete(app: WebApp?)
+    suspend fun delete(app: WebApp)
 
 //    @Transaction
 //    @Query("DELETE FROM ${Table.WEB_APP} WHERE packageName = :packageName")

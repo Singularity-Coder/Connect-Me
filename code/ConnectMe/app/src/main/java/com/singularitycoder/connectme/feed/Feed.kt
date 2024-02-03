@@ -9,10 +9,10 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.FEED)
 @Parcelize
 data class Feed(
-    val image: String? = "",
-    @PrimaryKey val title: String = "",
-    val time: String? = "",
-    val website: String? = "",
-    val link: String = "",
-    val isSaved: Boolean = false
+    var image: String? = "",
+    @PrimaryKey var title: String = "",
+    var time: String? = "",
+    var website: String? = "",
+    var link: String = "",
+    var isSaved: Boolean = false
 ) : Parcelable

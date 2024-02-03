@@ -19,7 +19,7 @@ class DownloadsViewModel @Inject constructor(
     val markedUpBitmapStateFlow = _markedUpBitmapStateFlow.asStateFlow()
 
     fun addToDownloads(download: Download?) = viewModelScope.launch {
-        downloadDao.insert(download)
+        downloadDao.insert(download ?: return@launch)
     }
 
     fun getAllDownloadsFlow() = downloadDao.getAllItemsStateFlow()
@@ -31,7 +31,7 @@ class DownloadsViewModel @Inject constructor(
     suspend fun getLast3DownloadItems() = downloadDao.getLast3By()
 
     fun deleteItem(download: Download?) = viewModelScope.launch {
-        downloadDao.delete(download)
+        downloadDao.delete(download ?: return@launch)
     }
 
     fun deleteAllDownloads() = viewModelScope.launch {

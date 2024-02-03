@@ -20,15 +20,15 @@ class CollectionsViewModel @Inject constructor(
     suspend fun getTop4CollectionsBy(collectionTitle: String?) = collectionsDao.getTop4By(collectionTitle)
 
     fun addToCollections(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
-        collectionsDao.insert(collectionWebPage)
+        collectionsDao.insert(collectionWebPage ?: return@launch)
     }
 
-    fun addAllToCollections(collectionWebPageList: List<CollectionWebPage?>) = viewModelScope.launch {
+    fun addAllToCollections(collectionWebPageList: List<CollectionWebPage>) = viewModelScope.launch {
         collectionsDao.insertAll(collectionWebPageList)
     }
 
     fun updateCollection(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
-        collectionsDao.update(collectionWebPage)
+        collectionsDao.update(collectionWebPage ?: return@launch)
     }
 
     fun renameCollection(newCollectionTitle: String?, oldCollectionTitle: String?) = viewModelScope.launch {
@@ -36,7 +36,7 @@ class CollectionsViewModel @Inject constructor(
     }
 
     fun deleteItem(collectionWebPage: CollectionWebPage?) = viewModelScope.launch {
-        collectionsDao.delete(collectionWebPage)
+        collectionsDao.delete(collectionWebPage ?: return@launch)
     }
 
     fun deleteAllItemsBy(collectionTitle: String?) = viewModelScope.launch {

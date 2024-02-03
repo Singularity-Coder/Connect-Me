@@ -9,6 +9,6 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.PROMPT)
 @Parcelize
 data class Prompt(
-    @PrimaryKey val website: String = "",
-    val promptsJson: String? = null,
+    @PrimaryKey var website: String = "",
+    var promptsJson: String? = null,
 ) : Parcelable

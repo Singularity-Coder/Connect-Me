@@ -10,12 +10,12 @@ import java.io.File
 @Entity(tableName = Table.DOWNLOAD)
 @Parcelize
 data class Download(
-    @PrimaryKey val id: Long = 0,
-    val path: String? = "",
-    val title: String = "",
-    val time: Long? = 0L,
-    val size: String? = "",
-    val link: String? = "",
-    val extension: String? = "",
-    val isDirectory: Boolean = false
+    @PrimaryKey var id: Long = 0,
+    var path: String? = "",
+    var title: String = "",
+    var time: Long? = 0L,
+    var size: String? = "",
+    var link: String? = "",
+    var extension: String? = "",
+    var isDirectory: Boolean = false
 ) : Parcelable

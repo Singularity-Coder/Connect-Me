@@ -11,15 +11,15 @@ interface FollowingWebsiteDao {
     /** room database will replace data based on primary key */
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(followingWebsite: FollowingWebsite?)
+    suspend fun insert(followingWebsite: FollowingWebsite)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(appList: List<FollowingWebsite?>)
+    suspend fun insertAll(appList: List<FollowingWebsite>)
 
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(followingWebsite: FollowingWebsite?)
+    suspend fun update(followingWebsite: FollowingWebsite)
 
     @Query("UPDATE ${Table.FOLLOWING_WEBSITE} SET link = :link WHERE website LIKE :website")
     fun updateWithPromptsList(link: String?, website: String)
@@ -27,25 +27,25 @@ interface FollowingWebsiteDao {
 
     @Transaction
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE} WHERE website LIKE :website LIMIT 1")
-    suspend fun getItemByWebsite(website: String?): FollowingWebsite?
+    suspend fun getItemByWebsite(website: String?): FollowingWebsite
 
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE} LIMIT 4")
-    suspend fun getTop4By(): List<FollowingWebsite?>
+    suspend fun getTop4By(): List<FollowingWebsite>
 
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE}")
-    fun getAllItemsLiveData(): LiveData<List<FollowingWebsite?>>
+    fun getAllItemsLiveData(): LiveData<List<FollowingWebsite>>
 
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE}")
-    fun getAllItemsStateFlow(): Flow<List<FollowingWebsite?>>
+    fun getAllItemsStateFlow(): Flow<List<FollowingWebsite>>
 
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE} WHERE website = :website")
-    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<FollowingWebsite?>>
+    fun getAllItemsByWebsiteStateFlow(website: String?): Flow<List<FollowingWebsite>>
 
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE} WHERE website = :website")
-    fun getByItemWebsiteStateFlow(website: String?): Flow<FollowingWebsite?>
+    fun getByItemWebsiteStateFlow(website: String?): Flow<FollowingWebsite>
 
     @Query("SELECT * FROM ${Table.FOLLOWING_WEBSITE}")
-    suspend fun getAll(): List<FollowingWebsite?>
+    suspend fun getAll(): List<FollowingWebsite>
 
     @Query("SELECT rssUrl FROM ${Table.FOLLOWING_WEBSITE}")
     suspend fun getAllRssUrls(): List<String?>
@@ -53,7 +53,7 @@ interface FollowingWebsiteDao {
 
     @Transaction
     @Delete
-    suspend fun delete(followingWebsite: FollowingWebsite?)
+    suspend fun delete(followingWebsite: FollowingWebsite)
 
     @Transaction
     @Query("DELETE FROM ${Table.FOLLOWING_WEBSITE} WHERE website = :website")

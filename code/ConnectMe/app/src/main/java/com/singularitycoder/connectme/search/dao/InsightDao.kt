@@ -11,33 +11,33 @@ interface InsightDao {
 
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(insight: Insight?)
+    suspend fun insert(insight: Insight)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(appList: List<Insight?>)
+    suspend fun insertAll(appList: List<Insight>)
 
     @Transaction
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(insight: Insight?)
+    suspend fun update(insight: Insight)
 
     @Transaction
     @Query("SELECT * FROM ${Table.INSIGHT} WHERE website LIKE :website LIMIT 1")
-    suspend fun getInsightByWebsite(website: String?): Insight?
+    suspend fun getInsightByWebsite(website: String?): Insight
 
     @Query("SELECT * FROM ${Table.INSIGHT} WHERE website LIKE :website")
-    fun getInsightByWebsiteStateFlow(website: String?): Flow<Insight?>
+    fun getInsightByWebsiteStateFlow(website: String?): Flow<Insight>
 
     @Query("SELECT * FROM ${Table.INSIGHT}")
-    fun getAllLiveData(): LiveData<List<Insight?>>
+    fun getAllLiveData(): LiveData<List<Insight>>
 
     @Query("SELECT * FROM ${Table.INSIGHT}")
-    fun getAllStateFlow(): Flow<List<Insight?>>
+    fun getAllStateFlow(): Flow<List<Insight>>
 
     @Query("SELECT * FROM ${Table.INSIGHT} WHERE website = :website")
-    fun getAllByWebsiteStateFlow(website: String?): Flow<List<Insight?>>
+    fun getAllByWebsiteStateFlow(website: String?): Flow<List<Insight>>
 
     @Query("SELECT * FROM ${Table.INSIGHT}")
-    suspend fun getAll(): List<Insight?>
+    suspend fun getAll(): List<Insight>
 
     @Transaction
     @Query("SELECT insight FROM ${Table.INSIGHT} WHERE website LIKE :website")
@@ -46,7 +46,7 @@ interface InsightDao {
 
     @Transaction
     @Delete
-    suspend fun delete(insight: Insight?)
+    suspend fun delete(insight: Insight)
 
     @Transaction
     @Query("DELETE FROM ${Table.INSIGHT} WHERE website = :website")

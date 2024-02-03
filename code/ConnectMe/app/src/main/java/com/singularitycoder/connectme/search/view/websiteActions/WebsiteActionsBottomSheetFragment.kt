@@ -285,9 +285,9 @@ class WebsiteActionsBottomSheetFragment : BottomSheetDialogFragment() {
             when (it.apiState) {
                 ApiState.SUCCESS -> {
                     val rssUrl = if (it.insight?.insight?.contains("\"\"\"") == true) {
-                        it.insight.insight.substringAfter("\"\"\"").substringBefore("\"\"\"")
+                        it.insight.insight?.substringAfter("\"\"\"")?.substringBefore("\"\"\"")
                     } else ""
-                    val isValidRssUrl = rssUrl.isNotBlank() && rssUrl.contains("http")
+                    val isValidRssUrl = rssUrl?.isNotBlank() == true && rssUrl.contains("http")
                     if (isValidRssUrl) parseRssFollowFromWorker(rssUrl)
                 }
                 else -> Unit

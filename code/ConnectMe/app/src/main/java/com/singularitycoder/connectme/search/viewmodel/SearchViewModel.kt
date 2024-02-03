@@ -93,11 +93,11 @@ class SearchViewModel @Inject constructor(
     }
 
     fun addInsight(insight: Insight?) = viewModelScope.launch {
-        insightDao.insert(insight)
+        insightDao.insert(insight ?: return@launch)
     }
 
     fun deleteInsight(insight: Insight?) = viewModelScope.launch {
-        insightDao.delete(insight)
+        insightDao.delete(insight ?: return@launch)
     }
 
     fun setWebViewData(webViewData: WebViewData) {
@@ -109,7 +109,7 @@ class SearchViewModel @Inject constructor(
     fun getPromptBy(website: String?) = promptDao.getByWebsiteStateFlow(website)
 
     fun addPrompt(prompt: Prompt?) = viewModelScope.launch {
-        promptDao.insert(prompt)
+        promptDao.insert(prompt ?: return@launch)
     }
 
     fun resetInsight() = viewModelScope.launch(IO) {

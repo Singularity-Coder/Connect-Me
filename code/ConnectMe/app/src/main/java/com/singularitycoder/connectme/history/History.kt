@@ -13,11 +13,11 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Table.HISTORY)
 @Parcelize
 data class History(
-    val favicon: String? = "",
-    val title: String? = "",
-    val time: Long? = 0L,
-    val website: String? = "",
-    @PrimaryKey val link: String = ""
+    var favicon: String? = "",
+    var title: String? = "",
+    var time: Long? = 0L,
+    var website: String? = "",
+    @PrimaryKey var link: String = ""
 ) : Parcelable {
 
     @IgnoredOnParcel
