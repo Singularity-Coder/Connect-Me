@@ -230,3 +230,7 @@ STEP 2: Then to execute ADB commands prefix the command with ./
 
 x >> 1 is a faster way to divide by 2. Bitwise right shift
 
+Removed from libs dir
+1. crux-2.0.1-all.jar
+2. JavaxScript.jar
+
